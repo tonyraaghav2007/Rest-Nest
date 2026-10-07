@@ -284,8 +284,9 @@
 <div class="products-slider__card" data-order="0" data-price="1063.0" data-title="Premium White Sleeping Pillow" style="margin-bottom: 2rem; position: relative;">
 <a href="../product/?id=rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2" style="text-decoration: none; color: inherit;">
 <span class="products-slider__badge">-44%</span>
-<div class="products-slider__img-wrap">
-<img alt="Premium White Sleeping Pillow" src="../assets/product-1/2.jpg" onmouseover="this.src='../assets/product-1/4.jpg'" onmouseout="this.src='../assets/product-1/2.jpg'" style="transition: all 0.3s ease;"/>
+<div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
+<img alt="Premium White Sleeping Pillow" src="../assets/product-1/2.jpg"/>
+<img alt="Premium White Sleeping Pillow" class="hover-img" src="../assets/product-1/4.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
 <h3 class="products-slider__name" style="white-space: normal; text-overflow: clip;">Glace Cotton Pillow</h3>
 <div class="products-slider__price">
