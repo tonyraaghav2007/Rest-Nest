@@ -447,5 +447,113 @@
         "images": [
             "sold_out.jpg"
         ]
+    },
+    "slim-pipe-cushion": {
+        "title": "Slim Pipe Cushion",
+        "imgUrl": "product-slim-pipe-cushion/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,000.00",
+        "discount": "-10%",
+        "id": "slim-pipe-cushion",
+        "category": "Cushion",
+        "description": "Experience unmatched comfort and support with our premium Slim Pipe Cushion, designed for a refreshed you.",
+        "benefits": [
+            "Soft & Plush Feel",
+            "Adds Style to Any Space",
+            "Premium Fabric",
+            "Versatile Use"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            },
+            {
+                "label": "Queen",
+                "desc": "(28\" x 18\")"
+            }
+        ],
+        "images": [
+            "product-slim-pipe-cushion/1.jpg",
+            "product-slim-pipe-cushion/2.jpg",
+            "product-slim-pipe-cushion/3.jpg",
+            "product-slim-pipe-cushion/4.jpg",
+            "product-slim-pipe-cushion/5.jpg",
+            "product-slim-pipe-cushion/6.jpg"
+        ],
+        "available": true
+    },
+    "black-dotted-pillow": {
+        "title": "Black Dotted Pillow",
+        "imgUrl": "product-black-dotted-pillow/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,200.00",
+        "discount": "-25%",
+        "id": "black-dotted-pillow",
+        "category": "Pillow",
+        "description": "Experience unmatched comfort and support with our premium Black Dotted Pillow. Filled with Recron fibres for lasting bounce and support, designed for deeper sleep and a refreshed you.",
+        "benefits": [
+            "Premium recron fibre",
+            "Plus cloud-like softness",
+            "Better neck support",
+            "Retains it's shape",
+            "Lightweight & comfortable",
+            "Made for restfull sleep",
+            "Skin Friendly"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            },
+            {
+                "label": "Queen",
+                "desc": "(28\" x 18\")"
+            }
+        ],
+        "images": [
+            "product-black-dotted-pillow/1.jpg",
+            "product-black-dotted-pillow/2.jpg",
+            "product-black-dotted-pillow/3.jpg",
+            "product-black-dotted-pillow/4.jpg",
+            "product-black-dotted-pillow/5.jpg",
+            "product-black-dotted-pillow/6.jpg",
+            "product-black-dotted-pillow/7.jpg"
+        ],
+        "available": true
+    },
+    "glace-cotton-cushion": {
+        "title": "Glace Cotton Cushion",
+        "imgUrl": "product-glace-cotton-cushion/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,000.00",
+        "discount": "-10%",
+        "id": "glace-cotton-cushion",
+        "category": "Cushion",
+        "description": "Experience unmatched comfort and support with our premium Glace Cotton Cushion, designed to complete your space with simple, stylish comfort.",
+        "benefits": [
+            "Soft & Plush Feel",
+            "Adds Style to Any Space",
+            "Premium Fabric",
+            "Perfect for Home Decor",
+            "Versatile Use",
+            "Lightweight & Easy to Move",
+            "Easy to Maintain"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            }
+        ],
+        "images": [
+            "product-glace-cotton-cushion/1.jpg",
+            "product-glace-cotton-cushion/2.jpg",
+            "product-glace-cotton-cushion/3.jpg",
+            "product-glace-cotton-cushion/4.jpg",
+            "product-glace-cotton-cushion/5.jpg",
+            "product-glace-cotton-cushion/6.jpg"
+        ],
+        "available": true
     }
 }
