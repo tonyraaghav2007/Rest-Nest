@@ -625,5 +625,39 @@
             "product-honeycomb-cushion/3.jpg"
         ],
         "available": true
+    },
+    "white-latex-pillow": {
+        "title": "White Latex Pillow",
+        "imgUrl": "product-white-latex-pillow/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,000.00",
+        "discount": "-10%",
+        "id": "white-latex-pillow",
+        "category": "Pillow",
+        "description": "Experience unmatched comfort and support with our premium White Latex Pillow. Featuring an Advanced Sleep Technology design for shape retention and optimal neck support.",
+        "benefits": [
+            "Plush Comfort",
+            "Neck Support",
+            "Shape retention",
+            "Lightweight feel",
+            "Skin friendly",
+            "Premium Recron Fiber"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            }
+        ],
+        "images": [
+            "product-white-latex-pillow/1.jpg",
+            "product-white-latex-pillow/2.jpg",
+            "product-white-latex-pillow/3.jpg",
+            "product-white-latex-pillow/4.jpg",
+            "product-white-latex-pillow/5.jpg",
+            "product-white-latex-pillow/6.png",
+            "product-white-latex-pillow/7.jpg"
+        ],
+        "available": true
     }
 }
