@@ -555,5 +555,75 @@
             "product-glace-cotton-cushion/6.jpg"
         ],
         "available": true
+    },
+    "honeycomb-pillow": {
+        "title": "Honeycomb Pillow",
+        "imgUrl": "product-honeycomb-pillow/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,000.00",
+        "discount": "-10%",
+        "id": "honeycomb-pillow",
+        "category": "Pillow",
+        "description": "Experience unmatched comfort and support with our premium Honeycomb Pillow. Featuring an Advanced Sleep Technology design for shape retention and optimal neck support.",
+        "benefits": [
+            "Plush Comfort",
+            "Neck Support",
+            "Shape retention",
+            "Lightweight feel",
+            "Skin friendly",
+            "Premium Recron Fiber"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            },
+            {
+                "label": "Queen",
+                "desc": "(28\" x 18\")"
+            }
+        ],
+        "images": [
+            "product-honeycomb-pillow/1.jpg",
+            "product-honeycomb-pillow/2.jpg",
+            "product-honeycomb-pillow/3.jpg",
+            "product-honeycomb-pillow/4.jpg",
+            "product-honeycomb-pillow/5.jpg",
+            "product-honeycomb-pillow/6.jpg",
+            "product-honeycomb-pillow/7.png",
+            "product-honeycomb-pillow/8.jpg"
+        ],
+        "available": true
+    },
+    "honeycomb-cushion": {
+        "title": "Honeycomb Cushion",
+        "imgUrl": "product-honeycomb-cushion/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,000.00",
+        "discount": "-10%",
+        "id": "honeycomb-cushion",
+        "category": "Cushion",
+        "description": "Experience unmatched comfort and support with our premium Honeycomb Cushion, designed to complete your space with simple, stylish comfort.",
+        "benefits": [
+            "Soft & Plush Feel",
+            "Adds Style to Any Space",
+            "Premium Quilted Fabric",
+            "Trusted Quality",
+            "Smooth Zipper",
+            "Plush & Supportive",
+            "Versatile Use"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            }
+        ],
+        "images": [
+            "product-honeycomb-cushion/1.jpg",
+            "product-honeycomb-cushion/2.jpg",
+            "product-honeycomb-cushion/3.jpg"
+        ],
+        "available": true
     }
 }
