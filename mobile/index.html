@@ -1508,6 +1508,10 @@ button {
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
         })(window, document, "clarity", "script", "y1ui8xvx9v");
     </script>
+
+<!-- Meta Pixel -->
+<script src="../meta-pixel.js"></script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=29080819768207553&ev=PageView&noscript=1"/></noscript>
 </head>
 <body class="landing-page">
 
@@ -2627,6 +2631,16 @@ function initScrollReveal() {
                     saveCart();
                     updateCartUI();
                     openCart();
+
+                    // Meta Pixel: AddToCart event
+                    if (typeof fbq === 'function') {
+                        fbq('track', 'AddToCart', {
+                            content_name: name,
+                            content_type: 'product',
+                            value: price * qty,
+                            currency: 'INR'
+                        });
+                    }
 
                     
 

@@ -106,6 +106,16 @@ async function initCheckoutPage() {
     subtotalEl.textContent = formatPrice(totalAmount);
     totalEl.textContent = formatPrice(totalAmount);
 
+    // Meta Pixel: InitiateCheckout event
+    if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout', {
+            content_type: 'product',
+            num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+            value: totalAmount,
+            currency: 'INR'
+        });
+    }
+
     // Form Submission Handler
     const form = document.getElementById('checkout-form');
     form.addEventListener('submit', async (e) => {
@@ -291,6 +301,16 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
             localStorage.setItem('restnest_orders', JSON.stringify(existingOrders));
 
             showStatus('Order placed successfully! Redirecting...', 'success');
+
+            // Meta Pixel: Purchase event
+            if (typeof fbq === 'function') {
+                fbq('track', 'Purchase', {
+                    content_type: 'product',
+                    num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+                    value: totalAmount,
+                    currency: 'INR'
+                });
+            }
             localStorage.removeItem('restnest_cart');
             
             setTimeout(() => window.location.href = 'index.html', 2000);

@@ -649,6 +649,16 @@ async function initProductPage() {
         
         document.title = product.title + " – Cloudrest";
 
+        // Meta Pixel: ViewContent event
+        if (typeof fbq === 'function') {
+            fbq('track', 'ViewContent', {
+                content_name: product.title,
+                content_category: 'product',
+                value: parsePrice(product.salePrice),
+                currency: 'INR'
+            });
+        }
+
         const addToCartBtn = document.querySelector('.product-actions .btn--primary');
         const buyNowBtn = document.querySelector('.product-actions .btn--secondary');
         const qtyMinus = document.getElementById('qty-minus');
@@ -937,6 +947,16 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                     saveCart();
                     updateCartUI();
                     openCart();
+
+                    // Meta Pixel: AddToCart event
+                    if (typeof fbq === 'function') {
+                        fbq('track', 'AddToCart', {
+                            content_name: name,
+                            content_type: 'product',
+                            value: price * qty,
+                            currency: 'INR'
+                        });
+                    }
 
                     
 
