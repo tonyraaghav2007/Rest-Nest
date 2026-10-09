@@ -598,8 +598,40 @@ async function initProductPage() {
             productInfo.setAttribute('data-variant-id', product.variantId);
         }
 
-        // Generate Thumbnails
+        // Generate Thumbnails & Arrows
         const thumbnailsContainer = document.getElementById('product-thumbnails');
+        let currentImageIndex = 0;
+        
+        const updateMainImage = (index) => {
+            currentImageIndex = index;
+            document.getElementById('product-main-image').src = resolveImg(images[currentImageIndex]);
+            document.querySelectorAll('.thumbnail').forEach((t, i) => {
+                t.classList.toggle('active', i === currentImageIndex);
+            });
+        };
+
+        const prevArrow = document.getElementById('gallery-prev');
+        const nextArrow = document.getElementById('gallery-next');
+        
+        if (prevArrow && nextArrow) {
+            if (images.length <= 1) {
+                prevArrow.style.setProperty('display', 'none', 'important');
+                nextArrow.style.setProperty('display', 'none', 'important');
+            } else {
+                prevArrow.addEventListener('click', () => {
+                    let nextIndex = currentImageIndex - 1;
+                    if (nextIndex < 0) nextIndex = images.length - 1;
+                    updateMainImage(nextIndex);
+                });
+                
+                nextArrow.addEventListener('click', () => {
+                    let nextIndex = currentImageIndex + 1;
+                    if (nextIndex >= images.length) nextIndex = 0;
+                    updateMainImage(nextIndex);
+                });
+            }
+        }
+
         if (thumbnailsContainer) {
             thumbnailsContainer.innerHTML = '';
             images.forEach((img, index) => {
@@ -608,9 +640,7 @@ async function initProductPage() {
                 thumb.innerHTML = `<img src="${resolveImg(img)}" alt="Thumbnail ${index+1}">`;
                 
                 thumb.addEventListener('click', () => {
-                    document.getElementById('product-main-image').src = resolveImg(img);
-                    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-                    thumb.classList.add('active');
+                    updateMainImage(index);
                 });
                 
                 thumbnailsContainer.appendChild(thumb);
@@ -690,23 +720,44 @@ async function initProductPage() {
             }
         } else {
             if (buyNowBtn) {
-                buyNowBtn.addEventListener('click', async () => {
-                    if (typeof ShopifyCart !== 'undefined' && product.variantId) {
-                        const originalText = buyNowBtn.innerHTML;
-                        buyNowBtn.innerHTML = 'Redirecting...';
-                        buyNowBtn.disabled = true;
+                buyNowBtn.addEventListener('click', () => {
+                    const originalText = buyNowBtn.innerHTML;
+                    buyNowBtn.innerHTML = 'Redirecting...';
+                    buyNowBtn.disabled = true;
+                    
+                    try {
+                        const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
                         
-                        try {
-                            const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-                            
-                            window.location.href = basePath + 'checkout.html';
-                        } catch (err) {
-                            buyNowBtn.innerHTML = 'Error';
-                            setTimeout(() => {
-                                buyNowBtn.innerHTML = originalText;
-                                buyNowBtn.disabled = false;
-                            }, 2000);
+                        let cart = JSON.parse(localStorage.getItem('restnest_cart')) || [];
+                        const name = product.title;
+                        const price = parsePrice(product.salePrice);
+                        const img = product.images && product.images.length > 0 ? product.images[0] : '';
+                        
+                        const existing = cart.find(i => i.name === name);
+                        if (existing) {
+                            existing.quantity += qty;
+                        } else {
+                            cart.push({ name, price, img, quantity: qty });
                         }
+                        localStorage.setItem('restnest_cart', JSON.stringify(cart));
+                        
+                        // Meta Pixel: AddToCart (Optional but good for tracking Buy Now)
+                        if (typeof fbq === 'function') {
+                            fbq('track', 'AddToCart', {
+                                content_name: name,
+                                content_type: 'product',
+                                value: price * qty,
+                                currency: 'INR'
+                            });
+                        }
+                        
+                        window.location.href = basePath + 'checkout.html';
+                    } catch (err) {
+                        buyNowBtn.innerHTML = 'Error';
+                        setTimeout(() => {
+                            buyNowBtn.innerHTML = originalText;
+                            buyNowBtn.disabled = false;
+                        }, 2000);
                     }
                 });
             }

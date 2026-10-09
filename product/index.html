@@ -9,6 +9,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Great+Vibes&family=Inter:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css?v=20">
+    <style>
+        .gallery-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            font-size: 2rem;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gallery-arrow:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+        .gallery-arrow--prev { left: 10px; }
+        .gallery-arrow--next { right: 10px; }
+
+        @media (max-width: 768px) {
+            .gallery-arrow { display: flex; }
+        }
+    </style>
 
 <!-- Meta Pixel -->
 <script src="../meta-pixel.js"></script>
@@ -284,8 +316,10 @@
                 <div class="product-gallery__thumbnails" id="product-thumbnails">
                     <!-- Thumbnails will be injected here -->
                 </div>
-                <div class="product-gallery__main">
+                <div class="product-gallery__main" style="position: relative;">
                     <img id="product-main-image" src="" alt="Product Image">
+                    <button id="gallery-prev" class="gallery-arrow gallery-arrow--prev" aria-label="Previous Image">‹</button>
+                    <button id="gallery-next" class="gallery-arrow gallery-arrow--next" aria-label="Next Image">›</button>
                 </div>
             </div>
 
@@ -402,6 +436,134 @@
             </div>
         </div>
     </section>
+
+    <!-- ===== PRODUCT REVIEWS ===== -->
+    <section class="reviews" id="reviews" style="background: var(--bg-secondary); padding: 4rem 1rem;">
+        <div class="reviews__header" style="text-align: center; margin-bottom: 3rem;">
+            <span class="reviews__label">Real Experiences</span>
+            <h2 class="reviews__heading">Customer Reviews</h2>
+        </div>
+        <div class="reviews__carousel">
+            <button class="reviews__arrow reviews__arrow--prev" id="reviews-prev">‹</button>
+            <div class="reviews__track" id="reviews-track">
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-1.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Rahul M.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"The quality of the material is exceptional. Truly feels like a premium product."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-2.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Sneha P.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"I was skeptical at first, but this completely exceeded my expectations. Very comfortable!"</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-3.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Vikram S.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"Fast delivery and the packaging was great. The product itself is super soft and well-made."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-1.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Anjali D.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"I've been using this for a week now, and it's the best purchase I've made this year."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-2.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Ravi K.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"Exactly as described on the website. The stitching is flawless and support is great."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-3.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Pooja N.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"Highly recommended! It gives the perfect amount of support and looks beautiful."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-1.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Arjun V.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"Bought this for my parents and they absolutely love it. Will definitely buy again."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-2.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Meera T.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"Worth every rupee. You can really feel the premium quality the moment you touch it."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-3.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Siddharth J.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"I've tried many brands before, but RestNest really stands out in terms of comfort."</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-card">
+                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-1.jpg"/>
+                    <div class="review-card__content">
+                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
+                        <div class="review-card__box">
+                            <h4 class="review-card__name">Kavya R.</h4>
+                            <div class="review-card__stars">★★★★★</div>
+                            <p class="review-card__text">"It's so cozy and soft! Makes my room feel like a luxury hotel. Absolutely fantastic."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="reviews__arrow reviews__arrow--next" id="reviews-next">›</button>
+        </div>
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn btn--primary" id="writeReviewBtn" style="padding: 1rem 2rem; font-weight: bold;">Write a Review</button>
+        </div>
+    </section>
+
     <!-- ===== SEARCH MODAL ===== -->
     <div class="search-modal" id="search-modal">
         <div class="search-modal__overlay" id="search-overlay"></div>
@@ -423,6 +585,30 @@
 
     
 
+    <!-- ===== WRITE REVIEW MODAL ===== -->
+    <div class="search-modal" id="review-modal" style="z-index: 100000; display: none;">
+        <div class="search-modal__overlay" id="review-overlay"></div>
+        <div class="search-modal__content" style="max-width: 500px; padding: 2rem; background: var(--bg-main); border-radius: 8px;">
+            <button class="search-modal__close" id="review-close" aria-label="Close" style="top: 10px; right: 10px;">&times;</button>
+            <h2 class="search-modal__heading" style="margin-bottom: 1rem; font-size: 1.5rem;">Write a Review</h2>
+            <form id="reviewForm" onsubmit="submitReview(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Name</label>
+                    <input type="text" id="reviewName" required style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;" placeholder="Your Name">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Rating (1-5)</label>
+                    <input type="number" id="reviewRating" min="1" max="5" required style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;" value="5">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Review</label>
+                    <textarea id="reviewText" required rows="4" style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px; resize: vertical;" placeholder="What did you like about the product?"></textarea>
+                </div>
+                <button type="submit" class="btn btn--primary" id="submitReviewBtn" style="padding: 1rem; margin-top: 0.5rem;">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
 <!-- Cart Overlay & Dropdown -->
     <div class="cart-overlay" id="cartOverlay"></div>
     <div class="cart-dropdown" id="cartDropdown">
@@ -443,31 +629,118 @@
     </div>
 
         <script src="../script.js?v=5"></script>
+        <script>
+            // Review Modal Logic
+            const reviewModal = document.getElementById('review-modal');
+            const writeReviewBtn = document.getElementById('writeReviewBtn');
+            const reviewClose = document.getElementById('review-close');
+            const reviewOverlay = document.getElementById('review-overlay');
+
+            if (writeReviewBtn && reviewModal) {
+                writeReviewBtn.addEventListener('click', () => {
+                    reviewModal.style.display = 'flex';
+                });
+                
+                const closeReviewModal = () => {
+                    reviewModal.style.display = 'none';
+                };
+                
+                reviewClose.addEventListener('click', closeReviewModal);
+                reviewOverlay.addEventListener('click', closeReviewModal);
+            }
+
+            async function submitReview(e) {
+                e.preventDefault();
+                const btn = document.getElementById('submitReviewBtn');
+                btn.disabled = true;
+                btn.textContent = 'Submitting...';
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('id') || 'unknown-product';
+                
+                const payload = {
+                    product_id: productId,
+                    reviewer_name: document.getElementById('reviewName').value,
+                    rating: document.getElementById('reviewRating').value,
+                    review_text: document.getElementById('reviewText').value
+                };
+                
+                try {
+                    const res = await fetch('https://restienestie.onrender.com/api/reviews', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert('Thank you for your review!');
+                        document.getElementById('reviewForm').reset();
+                        document.getElementById('review-modal').style.display = 'none';
+                    } else {
+                        alert('Failed to submit review. Please try again.');
+                    }
+                } catch (err) {
+                    alert('An error occurred while submitting your review.');
+                }
+                
+                btn.disabled = false;
+                btn.textContent = 'Submit Review';
+            }
+        </script>
 
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
-        <div class="site-footer__inner">
-            <div class="site-footer__links">
-                <a href="../pillows/">Pillows collection</a>
-                <a href="../cushions/">Cushion collection</a>
+        <div class="footer-grid">
+            <div class="footer-col footer-col--brand">
+                <h2 class="footer-brand">REST NEST</h2>
+                <form class="footer-subscribe" onsubmit="event.preventDefault();">
+                    <input placeholder="Your email" required="" type="email"/>
+                    <button type="submit">SUBSCRIBE</button>
+                </form>
+                <div class="footer-social">
+                    <a aria-label="Facebook" href="https://m.facebook.com/profile.php?id=61577983328975" target="_blank">
+                        <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    </a>
+                    <a aria-label="Instagram" href="https://www.instagram.com/restnest.in/" target="_blank">
+                        <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20"><rect height="20" rx="5" ry="5" width="20" x="2" y="2"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                    </a>
+                </div>
             </div>
-            <div class="site-footer__social">
-                <a href="https://www.instagram.com/restnest.in/" target="_blank" aria-label="Instagram">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                    </svg>
-                </a>
-                <a href="https://m.facebook.com/profile.php?id=61577983328975&name=xhp_nt__fb__action__open_user" target="_blank" aria-label="Facebook" style="margin-left: 1.5rem;">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                    </svg>
-                </a>
+            <div class="footer-col">
+                <h3 class="footer-heading">SHOP</h3>
+                <ul class="footer-list">
+                    <li><a href="../pillows/">Pillow</a></li>
+                    <li><a href="../cushions/">Cushion</a></li>
+                    <li><a href="#">New Launch</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3 class="footer-heading">PARTNER</h3>
+                <ul class="footer-list">
+                    <li><a href="../bulk/">Place Your Bulk Order</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3 class="footer-heading">HELP</h3>
+                <ul class="footer-list">
+                    <li><a href="../contact/">Contact us</a></li>
+                    <li><a href="../faqs/">FAQ's</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3 class="footer-heading">COMPANY</h3>
+                <ul class="footer-list">
+                    <li><a href="../about/">About us</a></li>
+                    <li><a href="../privacy/">Privacy Policy</a></li>
+                    <li><a href="../terms/">Terms and Conditions</a></li>
+                    <li><a href="../shipping/">Shipping Policy</a></li>
+                </ul>
             </div>
         </div>
-        <div class="site-footer__copyright">
-            &copy; 2021 RestNest. All rights reserved.
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                © 2021, Rest Nest. All rights reserved. Hari Shankar Trading Co.
+            </div>
         </div>
     </footer>
 

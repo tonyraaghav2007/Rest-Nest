@@ -151,6 +151,17 @@ if (mongoose) {
     });
 
     PageTraffic = mongoose.model('PageTraffic', pageTrafficSchema);
+
+    const productReviewSchema = new mongoose.Schema({
+        product_id: String,
+        reviewer_name: String,
+        rating: Number,
+        review_text: String,
+        status: { type: String, default: 'Approved' },
+        created_at: { type: Date, default: Date.now }
+    });
+
+    ProductReview = mongoose.model('ProductReview', productReviewSchema);
 }
 
 
@@ -417,6 +428,43 @@ app.get('/api/orders', async (req, res) => {
         res.json({ success: true, orders });
     } catch (error) {
         console.error('Error fetching orders:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+// ----------------------------------------------------
+// Endpoint: Get Product Reviews
+// ----------------------------------------------------
+app.get('/api/reviews', async (req, res) => {
+    try {
+        const { product_id } = req.query;
+        let query = {};
+        if (product_id) {
+            query.product_id = product_id;
+        }
+        // sort by newest
+        const reviews = await ProductReview.find(query).sort({ created_at: -1 });
+        res.json({ success: true, reviews });
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/reviews', async (req, res) => {
+    try {
+        const { product_id, reviewer_name, rating, review_text } = req.body;
+        const newReview = new ProductReview({
+            product_id,
+            reviewer_name,
+            rating,
+            review_text,
+            status: 'Approved' // auto-approve for now
+        });
+        await newReview.save();
+        res.json({ success: true, review: newReview });
+    } catch (error) {
+        console.error('Error adding review:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 });
