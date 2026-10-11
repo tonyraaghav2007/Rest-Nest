@@ -156,14 +156,41 @@ function showStatus(message, type) {
     statusEl.style.display = 'block';
 }
 
+function setPayButtonState(state, text = '') {
+    const payBtn = document.getElementById('pay-btn');
+    if (!payBtn) return;
+
+    if (state === 'loading') {
+        payBtn.disabled = true;
+        payBtn.classList.add('is-loading');
+        payBtn.innerHTML = `
+            <span class="pay-btn-spinner" aria-hidden="true"></span>
+            <span class="btn-text">${text || 'Connecting to Payment Gateway...'}</span>
+        `;
+    } else if (state === 'awaiting') {
+        payBtn.disabled = true;
+        payBtn.classList.add('is-loading');
+        payBtn.innerHTML = `
+            <span class="pay-btn-spinner" aria-hidden="true"></span>
+            <span class="btn-text">${text || 'Awaiting Payment...'}</span>
+        `;
+    } else {
+        payBtn.disabled = false;
+        payBtn.classList.remove('is-loading');
+        payBtn.innerHTML = `Place Order <span class="btn-icon">→</span>`;
+    }
+}
+
 // ----------------------------------------------------
 // Checkout Flow (Razorpay -> Shiprocket)
 // ----------------------------------------------------
 async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
-    const payBtn = document.getElementById('pay-btn');
-    payBtn.disabled = true;
-    payBtn.textContent = 'Preparing Payment...';
-    showStatus('Connecting to payment gateway...', 'loading');
+    setPayButtonState('loading', 'Connecting to Payment Gateway...');
+    showStatus('Connecting to secure payment gateway...', 'loading');
+
+    let gatewayTimer = setTimeout(() => {
+        setPayButtonState('loading', 'Opening Razorpay...');
+    }, 2500);
 
     // Use localhost for local testing, otherwise use the live Render backend
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
@@ -183,13 +210,15 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
         });
         const orderDataRes = await orderRes.json();
         
-        if (!orderDataRes.success) throw new Error('Failed to create order');
+        if (!orderDataRes.success) throw new Error(orderDataRes.error || 'Failed to create order');
 
         const order = orderDataRes.order;
 
         // 3. Handle Mock vs Real Payment
         if (order.id.startsWith('order_mock_')) {
+            clearTimeout(gatewayTimer);
             showStatus('Mock Mode: Simulating Payment Success...', 'loading');
+            setPayButtonState('loading', 'Simulating Payment...');
             setTimeout(() => handlePaymentSuccess({
                 razorpay_payment_id: 'pay_mock_' + Date.now(),
                 razorpay_order_id: order.id,
@@ -199,6 +228,9 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
         }
 
         // 4. Open Razorpay Widget for real/test credentials
+        clearTimeout(gatewayTimer);
+        setPayButtonState('awaiting', 'Awaiting Payment in Razorpay...');
+
         const options = {
             key: razorpayKeyId,
             amount: order.amount,
@@ -219,25 +251,28 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
             modal: {
                 ondismiss: function() {
                     showStatus('Payment cancelled.', 'error');
-                    payBtn.disabled = false;
-                    payBtn.textContent = 'Place Order';
+                    setPayButtonState('default');
                 }
             }
         };
 
         const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+            showStatus('Payment failed: ' + (response.error?.description || 'Transaction declined'), 'error');
+            setPayButtonState('default');
+        });
         rzp.open();
 
     } catch (error) {
+        clearTimeout(gatewayTimer);
         console.error('Checkout error:', error);
         showStatus('Error preparing payment. Ensure backend is running.', 'error');
-        payBtn.disabled = false;
-        payBtn.textContent = 'Place Order';
+        setPayButtonState('default');
     }
 
     async function handlePaymentSuccess(paymentResponse, isMock = false) {
         showStatus('Payment successful! Verifying...', 'loading');
-        payBtn.textContent = 'Finalizing Order...';
+        setPayButtonState('loading', 'Finalizing Order...');
 
         try {
             // A. Verify Payment
@@ -327,6 +362,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
         } catch (error) {
             console.error('Post-payment error:', error);
             showStatus('Payment succeeded, but error finalizing order. Please contact support.', 'error');
+            setPayButtonState('default');
         }
     }
 }

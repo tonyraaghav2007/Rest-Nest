@@ -504,6 +504,52 @@
             display: none;
         }
 
+        /* Loading State */
+        .pay-btn.is-loading,
+        .pay-btn.is-loading:disabled {
+            background: linear-gradient(135deg, #4B3621 0%, #63472d 50%, #4B3621 100%) !important;
+            background-size: 200% 200%;
+            animation: payPulse 1.6s ease-in-out infinite alternate;
+            color: #FAF9F6 !important;
+            cursor: wait !important;
+            transform: none !important;
+            box-shadow: 0 4px 18px rgba(75, 54, 33, 0.35) !important;
+            opacity: 1 !important;
+            gap: 0.75rem;
+        }
+
+        @keyframes payPulse {
+            0% {
+                box-shadow: 0 4px 14px rgba(75, 54, 33, 0.25);
+            }
+            100% {
+                box-shadow: 0 6px 24px rgba(75, 54, 33, 0.45);
+            }
+        }
+
+        .pay-btn-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(250, 249, 246, 0.25);
+            border-top-color: #FAF9F6;
+            border-radius: 50%;
+            display: inline-block;
+            animation: payBtnSpin 0.75s linear infinite;
+            flex-shrink: 0;
+            vertical-align: middle;
+        }
+
+        @keyframes payBtnSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .pay-btn.is-loading .btn-text {
+            display: inline-flex;
+            align-items: center;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+
         .pay-btn .btn-icon {
             font-size: 1.15rem;
             transition: transform 0.3s ease;
@@ -1042,7 +1088,7 @@
 
     <!-- Razorpay SDK -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script type="module" src="checkout.js?v=6"></script>
+    <script type="module" src="checkout.js?v=7"></script>
 
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
