@@ -690,7 +690,6 @@ async function initProductPage() {
         }
 
         const addToCartBtn = document.querySelector('.product-actions .btn--primary');
-        const buyNowBtn = document.querySelector('.product-actions .btn--secondary');
         const qtyMinus = document.getElementById('qty-minus');
         const qtyPlus = document.getElementById('qty-plus');
         const qtyInput = document.getElementById('qty-input');
@@ -714,47 +713,6 @@ async function initProductPage() {
                 addToCartBtn.style.opacity = '0.5';
                 addToCartBtn.classList.remove('add-to-cart-btn');
                 addToCartBtn.classList.remove('btn--primary');
-            }
-            if (buyNowBtn) {
-                buyNowBtn.style.display = 'none';
-            }
-        } else {
-            if (buyNowBtn) {
-                buyNowBtn.addEventListener('click', () => {
-                    const originalText = buyNowBtn.innerHTML;
-                    buyNowBtn.innerHTML = 'Redirecting...';
-                    buyNowBtn.disabled = true;
-                    
-                    try {
-                        const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-                        
-                        const name = product.title;
-                        const price = parsePrice(product.salePrice);
-                        const img = product.images && product.images.length > 0 ? product.images[0] : '';
-                        
-                        // Store only this product for direct checkout (bypasses the cart)
-                        const buyNowItem = [{ name, price, img, quantity: qty }];
-                        localStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
-                        
-                        // Meta Pixel: AddToCart (Optional but good for tracking Buy Now)
-                        if (typeof fbq === 'function') {
-                            fbq('track', 'AddToCart', {
-                                content_name: name,
-                                content_type: 'product',
-                                value: price * qty,
-                                currency: 'INR'
-                            });
-                        }
-                        
-                        window.location.href = basePath + 'checkout.html';
-                    } catch (err) {
-                        buyNowBtn.innerHTML = 'Error';
-                        setTimeout(() => {
-                            buyNowBtn.innerHTML = originalText;
-                            buyNowBtn.disabled = false;
-                        }, 2000);
-                    }
-                });
             }
         }
 
