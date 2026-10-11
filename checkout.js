@@ -36,7 +36,13 @@ function formatPrice(num) {
 }
 
 async function initCheckoutPage() {
-    const cart = JSON.parse(localStorage.getItem('restnest_cart')) || [];
+    // Buy Now uses a separate key so only that product is checked out
+    const buyNowData = JSON.parse(localStorage.getItem('restnest_buy_now'));
+    const cart = buyNowData || JSON.parse(localStorage.getItem('restnest_cart')) || [];
+    const isBuyNow = !!buyNowData;
+
+    // Clean up the buy-now flag immediately so refreshing falls back to cart
+    if (isBuyNow) localStorage.removeItem('restnest_buy_now');
     
     if (cart.length === 0) {
         alert('Your cart is empty!');
@@ -311,7 +317,10 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
                     currency: 'INR'
                 });
             }
-            localStorage.removeItem('restnest_cart');
+            // Only clear the cart if this was a cart checkout (not Buy Now)
+            if (!isBuyNow) {
+                localStorage.removeItem('restnest_cart');
+            }
             
             setTimeout(() => window.location.href = 'index.html', 2000);
 

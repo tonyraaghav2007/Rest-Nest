@@ -728,18 +728,13 @@ async function initProductPage() {
                     try {
                         const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
                         
-                        let cart = JSON.parse(localStorage.getItem('restnest_cart')) || [];
                         const name = product.title;
                         const price = parsePrice(product.salePrice);
                         const img = product.images && product.images.length > 0 ? product.images[0] : '';
                         
-                        const existing = cart.find(i => i.name === name);
-                        if (existing) {
-                            existing.quantity += qty;
-                        } else {
-                            cart.push({ name, price, img, quantity: qty });
-                        }
-                        localStorage.setItem('restnest_cart', JSON.stringify(cart));
+                        // Store only this product for direct checkout (bypasses the cart)
+                        const buyNowItem = [{ name, price, img, quantity: qty }];
+                        localStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
                         
                         // Meta Pixel: AddToCart (Optional but good for tracking Buy Now)
                         if (typeof fbq === 'function') {
