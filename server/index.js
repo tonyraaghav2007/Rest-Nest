@@ -226,20 +226,37 @@ app.get('/api/config', (req, res) => {
 // ----------------------------------------------------
 const PRODUCT_REGISTRY = {
     "Glace Cotton Pillow": 899.0,
+    "Rest Nest Premium White Sleeping Pillow": 899.0,
     "Contour Memory Foam Pillow": 899.0,
+    "Orthopedic Cervical Memory Foam Pillow": 899.0,
+    "Rest Nest Orthopedic Cervical Memory Foam Pillow": 899.0,
     "Slim Pillow": 899.0,
+    "Rest Nest Slim Microfiber Pillow": 899.0,
     "Black Latex": 899.0,
+    "Pipe Pillow": 899.0,
+    "Rest Nest Premium White Glace Cotton Pillows": 899.0,
+    "Stripe Pillow": 899.0,
+    "Rest Nest Soft Pillow": 899.0,
+    "Honeycomb Pillow": 899.0,
+    "Rest Nest Honeycomb Pillow": 899.0,
+    "Honeycomb Cushion": 899.0,
+    "Rest Nest Honeycomb Cushion": 899.0,
+    "White Latex Pillow": 899.0,
+    "Rest Nest White Latex Pillow": 899.0,
+    "Black Dotted Pillow": 899.0,
+    "Rest Nest Black Dotted Pillow": 899.0,
+    "Slim Pipe Cushion": 899.0,
+    "Rest Nest Slim Pipe Cushion": 899.0,
+    "Glace Cotton Cushion": 899.0,
+    "Rest Nest Glace Cotton Cushion": 899.0,
+    "16x16 White Stripe Soft Cushions": 899.0,
     "Rest Nest 16x16 White Stripe Soft Cushions": 899.0,
     "Rest Nest 5 Premium White Cushions": 899.0,
     "Rest Nest 16x16 White Premium Cushions": 899.0,
     "Rest Nest ContourCare Memory Foam Pillow": 899.0,
+    "Rest Nest ContourCare™ Memory Foam Pillow": 899.0,
     "Rest Nest Soft Cushion Set of 5": 899.0,
     "Rest Nest White & Gold Glace Cotton Pillows": 899.0,
-    "Stripe Pillow": 899.0,
-    "Contour Memory Foam Pillow": 899.0,
-    "Slim Pillow": 899.0,
-    "Black Latex": 899.0,
-    "Rest Nest ContourCare™ Memory Foam Pillow": 899.0,
     "Rest Nest White & Gold Glace Cotton Sleeping Pillows": 899.0,
     "Rest Nest Blue & White Polycotton Pillow": 899.0,
     "Rest Nest Premium Polycotton Pillow With Recron Fiber Filling": 899.0,
@@ -251,8 +268,7 @@ const PRODUCT_REGISTRY = {
     "Rest Nest White & Gold Glace Cotton Sleeping Cushions": 899.0,
     "Rest Nest Premium White Sleeping Cushion": 899.0,
     "Rest Nest Blue & White Polycotton Cushion": 899.0,
-    "Rest Nest Premium Polycotton Cushion With Recron Fiber Filling": 899.0,
-    "Rest Nest Premium White Sleeping Pillow": 899.0
+    "Rest Nest Premium Polycotton Cushion With Recron Fiber Filling": 899.0
 };
 
 function calculateCartTotal(cart) {
@@ -260,9 +276,36 @@ function calculateCartTotal(cart) {
     if (!Array.isArray(cart)) return total;
     
     for (const item of cart) {
-        // Find real price from registry, fallback to 0 if unknown product
-        const realPrice = PRODUCT_REGISTRY[item.name] || 0; 
-        total += (realPrice * (item.quantity || 1));
+        if (!item || !item.name) continue;
+        const cleanName = item.name.trim();
+        const strippedName = cleanName.replace(/^Rest Nest\s+/i, '').trim();
+
+        // 1. Direct registry match
+        let realPrice = PRODUCT_REGISTRY[cleanName] 
+            || PRODUCT_REGISTRY[strippedName] 
+            || PRODUCT_REGISTRY[`Rest Nest ${strippedName}`];
+
+        // 2. Case-insensitive registry search
+        if (!realPrice) {
+            const lowerClean = cleanName.toLowerCase();
+            const lowerStripped = strippedName.toLowerCase();
+            for (const [key, price] of Object.entries(PRODUCT_REGISTRY)) {
+                const lowerKey = key.toLowerCase();
+                if (lowerKey === lowerClean || lowerKey === lowerStripped || lowerKey.includes(lowerStripped)) {
+                    realPrice = price;
+                    break;
+                }
+            }
+        }
+
+        // 3. Fallback to valid positive item.price sent from client (default Rs. 899 if unlisted standard product)
+        if (!realPrice && typeof item.price === 'number' && item.price > 0) {
+            realPrice = item.price;
+        } else if (!realPrice) {
+            realPrice = 899.0;
+        }
+
+        total += (realPrice * (parseInt(item.quantity) || 1));
     }
     return total;
 }
