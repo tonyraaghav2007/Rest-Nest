@@ -526,6 +526,7 @@ function initSearchModal() {
             if (!query || !productData) return;
             
             const matches = productData.filter(p => p.title.toLowerCase().includes(query));
+            matches.sort((a, b) => (a.available === false ? 1 : 0) - (b.available === false ? 1 : 0));
             
             if (matches.length === 0) {
                 searchResults.innerHTML = '<p style="color: #666; font-style: italic;">No products found.</p>';
@@ -731,21 +732,33 @@ function initProductSort() {
 
     const cards = Array.from(productsGrid.querySelectorAll('.products-slider__card'));
     
+    const isSoldOut = (card) => {
+        const btn = card.querySelector('button');
+        return btn && (btn.disabled || btn.textContent.toLowerCase().includes('out of stock'));
+    };
+
     sortSelect.addEventListener('change', (e) => {
         const val = e.target.value;
         let sortedCards = [...cards];
 
-        if (val === 'most-selling') {
-            sortedCards.sort((a, b) => parseInt(a.dataset.order) - parseInt(b.dataset.order));
-        } else if (val === 'price-low') {
-            sortedCards.sort((a, b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
-        } else if (val === 'price-high') {
-            sortedCards.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
-        } else if (val === 'a-z') {
-            sortedCards.sort((a, b) => a.dataset.title.localeCompare(b.dataset.title));
-        } else if (val === 'z-a') {
-            sortedCards.sort((a, b) => b.dataset.title.localeCompare(a.dataset.title));
-        }
+        sortedCards.sort((a, b) => {
+            const aSold = isSoldOut(a) ? 1 : 0;
+            const bSold = isSoldOut(b) ? 1 : 0;
+            if (aSold !== bSold) return aSold - bSold;
+
+            if (val === 'most-selling') {
+                return (parseInt(a.dataset.order) || 0) - (parseInt(b.dataset.order) || 0);
+            } else if (val === 'price-low') {
+                return (parseFloat(a.dataset.price) || 0) - (parseFloat(b.dataset.price) || 0);
+            } else if (val === 'price-high') {
+                return (parseFloat(b.dataset.price) || 0) - (parseFloat(a.dataset.price) || 0);
+            } else if (val === 'a-z') {
+                return (a.dataset.title || '').localeCompare(b.dataset.title || '');
+            } else if (val === 'z-a') {
+                return (b.dataset.title || '').localeCompare(a.dataset.title || '');
+            }
+            return 0;
+        });
 
         productsGrid.innerHTML = '';
         sortedCards.forEach(card => productsGrid.appendChild(card));
