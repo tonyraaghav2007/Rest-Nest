@@ -715,6 +715,10 @@ async function initProductPage() {
                 addToCartBtn.classList.remove('add-to-cart-btn');
                 addToCartBtn.classList.remove('btn--primary');
             }
+            const buyNowBtn = document.querySelector('.product-actions .buy-now-btn');
+            if (buyNowBtn) {
+                buyNowBtn.style.display = 'none';
+            }
         }
 
     } catch (error) {
@@ -993,4 +997,61 @@ document.addEventListener('DOMContentLoaded', initProductSort);
             }
         }
     });
+
+    // Buy Now: stores only this product and goes straight to checkout
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.buy-now-btn');
+        if (!btn) return;
+        e.preventDefault();
+
+        const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
+        if (!card) return;
+
+        const titleEl = card.querySelector('.product-title') || card.querySelector('.products-slider__name') || document.getElementById('product-title');
+        const priceEl = card.querySelector('.sale-price') || card.querySelector('.products-slider__sale') || document.getElementById('product-sale-price');
+        const imgEl = card.querySelector('img') || document.getElementById('product-main-image');
+
+        if (titleEl && priceEl && imgEl) {
+            const name = titleEl.textContent.trim();
+            const price = parsePrice(priceEl.textContent);
+            let img = imgEl.getAttribute('src');
+            if (img) {
+                img = img.replace(/^(\.\.\/)+/, '');
+            }
+
+            let qty = 1;
+            const qtyInput = document.getElementById('qty-input');
+            if (qtyInput && (card.classList.contains('product-details') || document.querySelector('.product-page'))) {
+                qty = parseInt(qtyInput.value) || 1;
+            }
+
+            // Store as a single-item array in restnest_buy_now
+            const buyNowItem = [{ name, price, img, quantity: qty }];
+            localStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
+            sessionStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
+
+            // Meta Pixel: InitiateCheckout event
+            if (typeof fbq === 'function') {
+                fbq('track', 'InitiateCheckout', {
+                    content_name: name,
+                    content_type: 'product',
+                    value: price * qty,
+                    currency: 'INR'
+                });
+            }
+
+            window.location.href = basePath + 'checkout.html';
+        }
+    });
+
+    // Disable Buy Now button when product is out of stock
+    const outOfStockBtn = document.querySelector('.product-actions .btn--primary[disabled]');
+    if (outOfStockBtn) {
+        const buyNowBtn = document.querySelector('.product-actions .buy-now-btn');
+        if (buyNowBtn) {
+            buyNowBtn.disabled = true;
+            buyNowBtn.style.cursor = 'not-allowed';
+            buyNowBtn.style.opacity = '0.5';
+        }
+    }
 })();

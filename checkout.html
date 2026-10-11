@@ -395,12 +395,74 @@
         .checkout-item-price {
             font-size: 0.8rem;
             color: #8B7355;
+            margin-bottom: 0.45rem;
+        }
+        .checkout-qty-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(75, 54, 33, 0.05);
+            border: 1px solid rgba(75, 54, 33, 0.14);
+            border-radius: 20px;
+            padding: 0.2rem 0.5rem;
+            box-shadow: inset 0 1px 2px rgba(75, 54, 33, 0.03);
+        }
+        .checkout-qty-btn {
+            background: none;
+            border: none;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            line-height: 1;
+            color: #4B3621;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            user-select: none;
+            padding: 0;
+        }
+        .checkout-qty-btn:hover {
+            background: #4B3621;
+            color: #FAF9F6;
+        }
+        .checkout-qty-btn:active {
+            transform: scale(0.9);
+        }
+        .checkout-qty-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+            color: #333;
+            user-select: none;
+        }
+        .checkout-item-remove-btn {
+            background: none;
+            border: none;
+            color: #a08c7d;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin-left: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .checkout-item-remove-btn:hover {
+            color: #c62828;
+            transform: scale(1.15);
         }
         .checkout-item-total {
             font-weight: 600;
             font-size: 0.95rem;
             color: #4B3621;
             white-space: nowrap;
+            text-align: right;
+            padding-left: 0.5rem;
         }
 
         /* ----- Totals ----- */

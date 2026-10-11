@@ -37,18 +37,34 @@ function formatPrice(num) {
 
 async function initCheckoutPage() {
     // Buy Now uses a separate key so only that product is checked out
-    const buyNowData = JSON.parse(localStorage.getItem('restnest_buy_now'));
-    const cart = buyNowData || JSON.parse(localStorage.getItem('restnest_cart')) || [];
-    const isBuyNow = !!buyNowData;
+    const buyNowRaw = sessionStorage.getItem('restnest_buy_now') || localStorage.getItem('restnest_buy_now');
+    let buyNowData = null;
+    try {
+        buyNowData = buyNowRaw ? JSON.parse(buyNowRaw) : null;
+    } catch (e) {
+        buyNowData = null;
+    }
 
-    // Clean up the buy-now flag immediately so refreshing falls back to cart
-    if (isBuyNow) localStorage.removeItem('restnest_buy_now');
-    
+    const isBuyNow = !!(buyNowData && Array.isArray(buyNowData) && buyNowData.length > 0);
+    let cart = isBuyNow 
+        ? buyNowData 
+        : (JSON.parse(localStorage.getItem('restnest_cart')) || []);
+
     if (cart.length === 0) {
         alert('Your cart is empty!');
         window.location.href = 'index.html';
         return;
     }
+
+    // Clean up buy-now when leaving checkout via navigation links
+    document.querySelectorAll('.checkout-header__back, .checkout-breadcrumb a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (isBuyNow) {
+                localStorage.removeItem('restnest_buy_now');
+                sessionStorage.removeItem('restnest_buy_now');
+            }
+        });
+    });
 
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
         ? 'http://localhost:3000/api' 
@@ -67,22 +83,22 @@ async function initCheckoutPage() {
         supabase.auth.getSession().then(async ({ data: { session } }) => {
             if (session) {
                 document.getElementById('email').value = session.user.email || '';
-            try {
-                const res = await fetch('http://localhost:3000/api/my-profile', {
-                    headers: { 'Authorization': `Bearer ${session.access_token}` }
-                });
-                const data = await res.json();
-                if (data.success && data.profile) {
-                    if(data.profile.first_name) {
-                        const parts = data.profile.first_name.split(' ');
-                        document.getElementById('fname').value = parts[0] || '';
-                        document.getElementById('lname').value = parts.slice(1).join(' ') || '';
+                try {
+                    const res = await fetch('http://localhost:3000/api/my-profile', {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success && data.profile) {
+                        if(data.profile.first_name) {
+                            const parts = data.profile.first_name.split(' ');
+                            document.getElementById('fname').value = parts[0] || '';
+                            document.getElementById('lname').value = parts.slice(1).join(' ') || '';
+                        }
+                        if(data.profile.phone) document.getElementById('phone').value = data.profile.phone;
                     }
-                    if(data.profile.phone) document.getElementById('phone').value = data.profile.phone;
-                }
-            } catch(e) { console.error('Error fetching profile for checkout:', e); }
-        }
-    });
+                } catch(e) { console.error('Error fetching profile for checkout:', e); }
+            }
+        });
     }
 
     const itemsContainer = document.getElementById('checkout-items');
@@ -91,26 +107,103 @@ async function initCheckoutPage() {
     
     let totalAmount = 0;
 
-    itemsContainer.innerHTML = '';
-    
-    cart.forEach(item => {
-        totalAmount += (item.price * item.quantity);
-        
-        const div = document.createElement('div');
-        div.className = 'checkout-item';
-        div.innerHTML = `
-            <img src="${item.img}" alt="${item.name}">
-            <div class="checkout-item-details">
-                <div class="checkout-item-title">${item.name}</div>
-                <div class="checkout-item-price">Qty: ${item.quantity} × ${formatPrice(item.price)}</div>
-            </div>
-            <div style="font-weight: 500;">${formatPrice(item.price * item.quantity)}</div>
-        `;
-        itemsContainer.appendChild(div);
+    function saveCheckoutState() {
+        if (isBuyNow) {
+            localStorage.setItem('restnest_buy_now', JSON.stringify(cart));
+            sessionStorage.setItem('restnest_buy_now', JSON.stringify(cart));
+        } else {
+            localStorage.setItem('restnest_cart', JSON.stringify(cart));
+        }
+    }
+
+    function renderCheckoutItems() {
+        itemsContainer.innerHTML = '';
+        totalAmount = 0;
+
+        if (cart.length === 0) {
+            itemsContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem 1rem; color: #8B7355;">
+                    <p style="margin-bottom: 1rem; font-size: 0.95rem;">Your cart is empty.</p>
+                    <a href="index.html" class="btn btn--primary" style="display: inline-block; padding: 0.6rem 1.25rem; background: #4B3621; color: #FAF9F6; text-decoration: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500;">Continue Shopping</a>
+                </div>
+            `;
+            subtotalEl.textContent = formatPrice(0);
+            totalEl.textContent = formatPrice(0);
+            const payBtn = document.getElementById('pay-btn');
+            if (payBtn) payBtn.disabled = true;
+            return;
+        }
+
+        const payBtn = document.getElementById('pay-btn');
+        if (payBtn) payBtn.disabled = false;
+
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.quantity;
+            totalAmount += itemTotal;
+
+            let cleanImg = item.img || 'assets/logo-nav.png';
+            cleanImg = cleanImg.replace(/^(\.\.\/)+/, '');
+
+            const div = document.createElement('div');
+            div.className = 'checkout-item';
+            div.innerHTML = `
+                <img src="${cleanImg}" alt="${item.name}">
+                <div class="checkout-item-details">
+                    <div class="checkout-item-title">${item.name}</div>
+                    <div class="checkout-item-price">${formatPrice(item.price)} each</div>
+                    <div class="checkout-qty-control">
+                        <button type="button" class="checkout-qty-btn checkout-qty-minus" data-index="${index}" aria-label="Decrease quantity">−</button>
+                        <span class="checkout-qty-value">${item.quantity}</span>
+                        <button type="button" class="checkout-qty-btn checkout-qty-plus" data-index="${index}" aria-label="Increase quantity">+</button>
+                        <button type="button" class="checkout-item-remove-btn" data-index="${index}" title="Remove item" aria-label="Remove item">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="checkout-item-total">${formatPrice(itemTotal)}</div>
+            `;
+            itemsContainer.appendChild(div);
+        });
+
+        subtotalEl.textContent = formatPrice(totalAmount);
+        totalEl.textContent = formatPrice(totalAmount);
+    }
+
+    // Interactive quantity controls in checkout items
+    itemsContainer.addEventListener('click', (e) => {
+        const minusBtn = e.target.closest('.checkout-qty-minus');
+        const plusBtn = e.target.closest('.checkout-qty-plus');
+        const removeBtn = e.target.closest('.checkout-item-remove-btn');
+
+        if (plusBtn) {
+            const idx = parseInt(plusBtn.getAttribute('data-index'), 10);
+            if (!isNaN(idx) && cart[idx]) {
+                cart[idx].quantity += 1;
+                saveCheckoutState();
+                renderCheckoutItems();
+            }
+        } else if (minusBtn) {
+            const idx = parseInt(minusBtn.getAttribute('data-index'), 10);
+            if (!isNaN(idx) && cart[idx]) {
+                if (cart[idx].quantity > 1) {
+                    cart[idx].quantity -= 1;
+                } else {
+                    cart.splice(idx, 1);
+                }
+                saveCheckoutState();
+                renderCheckoutItems();
+            }
+        } else if (removeBtn) {
+            const idx = parseInt(removeBtn.getAttribute('data-index'), 10);
+            if (!isNaN(idx) && cart[idx]) {
+                cart.splice(idx, 1);
+                saveCheckoutState();
+                renderCheckoutItems();
+            }
+        }
     });
 
-    subtotalEl.textContent = formatPrice(totalAmount);
-    totalEl.textContent = formatPrice(totalAmount);
+    renderCheckoutItems();
 
     // Meta Pixel: InitiateCheckout event
     if (typeof fbq === 'function') {
@@ -127,6 +220,11 @@ async function initCheckoutPage() {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        if (cart.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+
         const customerInfo = {
             name: `${document.getElementById('fname').value} ${document.getElementById('lname').value}`.trim(),
             email: document.getElementById('email').value,
@@ -143,7 +241,7 @@ async function initCheckoutPage() {
             userId = session ? session.user.id : null;
         }
 
-        await processCheckout(cart, totalAmount, customerInfo, userId);
+        await processCheckout(cart, totalAmount, customerInfo, userId, isBuyNow);
     });
 }
 
@@ -184,7 +282,7 @@ function setPayButtonState(state, text = '') {
 // ----------------------------------------------------
 // Checkout Flow (Razorpay -> Shiprocket)
 // ----------------------------------------------------
-async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
+async function processCheckout(cart, totalAmount, customerInfo, userId = null, isBuyNow = false) {
     setPayButtonState('loading', 'Connecting to Payment Gateway...');
     showStatus('Connecting to secure payment gateway...', 'loading');
 
@@ -352,8 +450,11 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null) {
                     currency: 'INR'
                 });
             }
-            // Only clear the cart if this was a cart checkout (not Buy Now)
-            if (!isBuyNow) {
+            // Clear checkout storage
+            if (isBuyNow) {
+                localStorage.removeItem('restnest_buy_now');
+                sessionStorage.removeItem('restnest_buy_now');
+            } else {
                 localStorage.removeItem('restnest_cart');
             }
             
