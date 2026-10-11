@@ -3,8 +3,28 @@
    Hero Slider, Scroll Reveal, Interactions
    ============================================ */
 
-const basePath = window.location.pathname.includes('/product/') || window.location.pathname.includes('/cushions/') || window.location.pathname.includes('/pillows/') || window.location.pathname.includes('/about/') ? '../' : './';
-const resolveImg = (url) => url ? (url.startsWith('http') ? url : (basePath + 'assets/' + url)) : '';
+// Universal Page Loader Safeguard - guarantees the mattress loader never gets stuck
+(function ensurePageLoaderDismissed() {
+    function hideLoader() {
+        var loader = document.getElementById('page-loader');
+        if (loader) {
+            loader.classList.remove('active');
+            loader.style.opacity = '0';
+            loader.style.visibility = 'hidden';
+            loader.style.pointerEvents = 'none';
+        }
+    }
+    if (document.readyState === 'complete') {
+        hideLoader();
+    } else {
+        window.addEventListener('load', hideLoader);
+        document.addEventListener('DOMContentLoaded', () => setTimeout(hideLoader, 400));
+        setTimeout(hideLoader, 1500); // safety fallback
+    }
+})();
+
+var basePath = window.basePath || (window.location.pathname.includes('/product/') || window.location.pathname.includes('/cushions/') || window.location.pathname.includes('/pillows/') || window.location.pathname.includes('/about/') || window.location.pathname.includes('/mobile/') || window.location.pathname.includes('/shipping/') || window.location.pathname.includes('/contact/') || window.location.pathname.includes('/terms/') || window.location.pathname.includes('/privacy/') || window.location.pathname.includes('/faqs/') || window.location.pathname.includes('/bulk/') ? '../' : './');
+var resolveImg = (url) => url ? (url.startsWith('http') ? url : (basePath + 'assets/' + url)) : '';
 
 document.addEventListener('DOMContentLoaded', () => {
     initHeroSlider();

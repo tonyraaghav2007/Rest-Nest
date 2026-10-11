@@ -5,14 +5,15 @@
 
 /* ---- CSS Custom Properties ---- */
 :root {
-    --color-bg-cream: #0b1411;
-    --color-bg-white: #111e19;
-    --color-text-dark: #ffffff;
-    --color-text-body: #4b3621;
-    --color-text-light: #4b3621;
-    --color-border: rgba(255, 255, 255, 0.1);
-    --color-cta-dark: #e5c599;
-    --color-cta-hover: #c4a173;
+    --color-bg-cream: #FAF9F6;
+    --color-bg-white: #FAF9F6;
+    --color-text-dark: #2A1D11;
+    --color-text-body: #4B3621;
+    --color-text-light: #7A5C3D;
+    --color-text-muted: #8C7A6B;
+    --color-border: rgba(75, 54, 33, 0.12);
+    --color-cta-dark: #C4A173;
+    --color-cta-hover: #A67C52;
 
     --font-script: 'Great Vibes', cursive;
     --font-serif: 'Cormorant Garamond', Georgia, serif;
@@ -58,16 +59,29 @@ html {
 
 body {
     font-family: var(--font-sans);
-    color: var(--color-text-dark);
+    color: var(--color-text-body);
     background-color: var(--color-bg-white);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background-image: url('assets/bg-leaves.png');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    line-height: 1.6;
-    overflow-x: hidden;
-    position: relative;
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Sections with solid backgrounds cover the texture; categories & collection are transparent to reveal it */
@@ -2891,43 +2905,78 @@ button {
         overflow: visible;
     }
 
-    .products-slider__track {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
+    .products-slider__track,
+    .products-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem !important;
         transform: none !important;
     }
 
     .products-slider__card {
-        flex: unset;
-        width: 100%;
+        flex: unset !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        position: relative !important;
+    }
+
+    .products-slider__card > a,
+    .products-slider__card > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 auto !important;
+        text-decoration: none !important;
+        color: inherit !important;
     }
 
     .products-slider__img-wrap {
         border-radius: 0.625rem;
-        margin-bottom: 0.625rem;
+        margin-bottom: 0.5rem;
+        aspect-ratio: 1 !important;
+        overflow: hidden !important;
+        width: 100% !important;
+    }
+
+    .products-slider__img-wrap img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
     }
 
     .products-slider__name {
-        font-size: 0.6875rem;
-        line-height: 1.3;
-        white-space: normal;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        font-size: 0.75rem !important;
+        line-height: 1.35 !important;
+        color: #2A1D11 !important;
+        font-weight: 500 !important;
+        white-space: normal !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        height: 2.7em !important; /* Uniform height ensures button rows perfectly align */
+        margin-bottom: 0.35rem !important;
     }
 
     .products-slider__price {
-        gap: 0.375rem;
+        display: flex !important;
+        align-items: baseline !important;
+        gap: 0.375rem !important;
+        margin-top: auto !important; /* Pins prices and buttons to bottom */
+        margin-bottom: 0.5rem !important;
     }
 
     .products-slider__sale {
-        font-size: 0.75rem;
+        font-size: 0.8125rem !important;
+        font-weight: 700 !important;
+        color: #4B3621 !important;
     }
 
     .products-slider__original {
-        font-size: 0.625rem;
+        font-size: 0.6875rem !important;
+        color: #8C7A6B !important;
+        text-decoration: line-through !important;
     }
 
     .products-slider__badge {
@@ -2937,12 +2986,28 @@ button {
         left: 0.5rem;
     }
 
-    /* Inline Add to Cart buttons on mobile */
+    /* Inline Add to Cart and Buy Now buttons on mobile */
     .products-slider__card .add-to-cart-btn,
+    .products-slider__card .buy-now-btn,
     .products-slider__card .btn--primary {
-        margin-top: 0.5rem !important;
-        padding: 0.5rem !important;
+        box-sizing: border-box !important;
+        height: 36px !important;
         font-size: 0.6875rem !important;
+        font-weight: 600 !important;
+        border-radius: 4px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 0.25rem !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+    }
+
+    .products-slider__card > div:last-child {
+        margin-top: auto !important;
+        display: flex !important;
+        gap: 0.35rem !important;
+        width: 100% !important;
     }
 
 
@@ -3247,35 +3312,126 @@ button {
 }
 
 
-/* Adjust font sizes inside products-grid to match the larger 2-column cards */
+/* Adjust font sizes and alignment inside products-grid */
+.products-grid .products-slider__card {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+}
+
+.products-grid .products-slider__card > a {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+.products-grid .products-slider__card .products-slider__img-wrap {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    overflow: hidden !important;
+    border-radius: 8px !important;
+    background: #f0ebe1 !important;
+    position: relative !important;
+}
+
+.products-grid .products-slider__card .products-slider__img-wrap img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
 .products-grid .products-slider__name {
-    font-size: 1rem;
-    margin-top: 1rem;
-    margin-bottom: 0.75rem;
-    white-space: normal;
-    overflow: visible;
-    display: block;
-    -webkit-line-clamp: unset;
-    height: auto;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #2A1D11 !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.35 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    height: 2.7em !important;
+    white-space: normal !important;
+}
+
+.products-grid .products-slider__price {
+    margin-top: auto !important;
+    margin-bottom: 0.5rem !important;
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 0.4rem !important;
 }
 
 .products-grid .products-slider__sale {
-    font-size: 1.125rem;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: #2A1D11 !important;
 }
 
 .products-grid .products-slider__original {
-    font-size: 0.875rem;
+    font-size: 0.85rem !important;
+    color: #888 !important;
+    text-decoration: line-through !important;
+}
+
+.products-grid .products-slider__card > div:last-child {
+    margin-top: auto !important;
+    display: flex !important;
+    gap: 0.4rem !important;
+}
+
+.products-grid .products-slider__card button {
+    height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 0.5rem !important;
+    font-size: 0.78rem !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
 }
 
 @media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 2.25rem !important;
+        margin: 5.5rem 0 1.5rem 0 !important;
+        line-height: 1.25 !important;
+    }
+    .collection {
+        padding: 0 1rem 3rem !important;
+    }
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+    .products-grid .products-slider__card {
+        margin-bottom: 0.75rem !important;
+    }
     .products-grid .products-slider__name {
-        font-size: 0.875rem;
+        font-size: 0.82rem !important;
+        height: 2.7em !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.35rem !important;
     }
     .products-grid .products-slider__sale {
-        font-size: 1rem;
+        font-size: 0.95rem !important;
     }
     .products-grid .products-slider__original {
-        font-size: 0.75rem;
+        font-size: 0.75rem !important;
+    }
+    .products-grid .products-slider__card > div:last-child {
+        gap: 0.3rem !important;
+    }
+    .products-grid .products-slider__card button {
+        height: 36px !important;
+        font-size: 0.72rem !important;
+        padding: 0 0.25rem !important;
     }
 }
 
@@ -3411,6 +3567,30 @@ button {
     }
 }
 
+/* Mobile container scaling for text pages (shipping, terms, privacy, faqs, about) */
+@media (max-width: 768px) {
+    .shipping-container,
+    .legal-container,
+    .terms-container,
+    .privacy-container,
+    .faqs-container,
+    .about-container {
+        padding: 5.5rem 1.25rem 3rem !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .shipping-container h1,
+    .legal-container h1,
+    .terms-container h1,
+    .privacy-container h1,
+    .faqs-container h1,
+    .about-container h1 {
+        font-size: 2.25rem !important;
+        margin-bottom: 1.5rem !important;
+        line-height: 1.2 !important;
+    }
+}
+
 /* Make logo black when not scrolled on pages other than home */
 body:not(.page-home) .pill-nav:not(.scrolled) .pill-nav__logo img {
     filter: brightness(0);
@@ -3470,6 +3650,8 @@ body:not(.page-home) .pill-nav:not(.scrolled) .pill-nav__logo img {
 
 @media (max-width: 900px) {
     .pill-nav__logo img {
-        height: 26px !important;
+        height: 38px !important;
+        max-height: 40px !important;
+        width: auto !important;
     }
 }

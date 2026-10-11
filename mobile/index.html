@@ -22,14 +22,15 @@
 
 /* ---- CSS Custom Properties ---- */
 :root {
-    --color-bg-cream: #0b1411;
-    --color-bg-white: #111e19;
-    --color-text-dark: #ffffff;
-    --color-text-body: #4b3621;
-    --color-text-light: #4b3621;
-    --color-border: rgba(255, 255, 255, 0.1);
-    --color-cta-dark: #e5c599;
-    --color-cta-hover: #c4a173;
+    --color-bg-cream: #FAF9F6;
+    --color-bg-white: #FAF9F6;
+    --color-text-dark: #2A1D11;
+    --color-text-body: #4B3621;
+    --color-text-light: #7A5C3D;
+    --color-text-muted: #8C7A6B;
+    --color-border: rgba(75, 54, 33, 0.12);
+    --color-cta-dark: #C4A173;
+    --color-cta-hover: #A67C52;
     --font-script: 'Great Vibes', cursive;
     --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -60,16 +61,29 @@ html {
 
 body {
     font-family: var(--font-sans);
-    color: var(--color-text-dark);
+    color: var(--color-text-body);
     background-color: var(--color-bg-white);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background-image: url('../assets/bg-leaves.png');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    line-height: 1.6;
-    overflow-x: hidden;
-    position: relative;
+    z-index: -1;
+    pointer-events: none;
 }
 
 a {
@@ -108,6 +122,7 @@ button {
 }
 
 .m-nav__inner {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -120,6 +135,24 @@ button {
     height: 3.5rem;
     gap: 0.5rem;
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.m-nav__logo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.m-nav__logo img {
+    height: 25px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 /* Scrolled state */
@@ -408,15 +441,17 @@ button {
 
 .hero__heading {
     font-family: var(--font-script);
-    font-size: clamp(2rem, 7vw, 3rem);
+    font-size: clamp(2rem, 7.5vw, 3rem);
     font-weight: 400;
     color: #ffffff;
-    line-height: 1.15;
+    line-height: 1.35;
     margin-bottom: 2rem;
     text-shadow: 0 0.125rem 1.25rem rgba(0, 0, 0, 0.4);
     opacity: 0;
     transform: translateY(1.875rem);
     max-width: 90%;
+    overflow: visible;
+    padding: 0.25rem 0;
 }
 
 .hero__slide--active .hero__heading {
@@ -593,12 +628,12 @@ button {
 
 .categories__heading {
     font-family: var(--font-script);
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 400;
     text-align: center;
-    color: #4b3621;
-    margin-bottom: 2rem;
-    letter-spacing: 0.125rem;
+    color: #4B3621;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
 }
 
 .categories__grid {
@@ -620,7 +655,7 @@ button {
 
 .categories__img-wrap {
     width: 100%;
-    aspect-ratio: 1.25;
+    aspect-ratio: 1;
     border-radius: 1rem;
     overflow: hidden;
     margin-bottom: 0.5rem;
@@ -631,17 +666,16 @@ button {
 }
 
 .categories__img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     border-radius: 1rem;
     transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .categories__label {
     font-family: var(--font-sans);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--color-text-body);
     text-decoration: none;
@@ -663,11 +697,11 @@ button {
 
 .collection__heading {
     font-family: var(--font-script);
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 400;
-    color: #4b3621;
-    margin-bottom: 0.375rem;
-    line-height: 1.1;
+    color: #4B3621;
+    margin-bottom: 1.25rem;
+    line-height: 1.3;
 }
 
 .products-slider {
@@ -691,12 +725,12 @@ button {
 }
 
 .products-slider__card > a,
-.products-slider__card > div {
+.products-slider__card > div:first-child {
     text-decoration: none;
     color: inherit;
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 1 1 auto;
 }
 
 .products-slider__badge {
@@ -704,7 +738,7 @@ button {
     top: 0.5rem;
     left: 0.5rem;
     background: var(--color-cta-dark);
-    color: #0b1411;
+    color: #FAF9F6;
     font-size: 0.5625rem;
     font-weight: 700;
     padding: 0.15rem 0.4rem;
@@ -719,7 +753,7 @@ button {
     overflow: hidden;
     border-radius: 0.625rem;
     background: rgba(255, 255, 255, 0.05);
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.5rem;
 }
 
 .products-slider__img-wrap img {
@@ -730,12 +764,12 @@ button {
 
 .products-slider__name {
     font-family: var(--font-sans);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--color-text-dark);
-    margin-bottom: 0.5rem;
-    line-height: 1.3;
-    height: 2.6em !important; /* Exactly 2 lines */
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #2A1D11 !important;
+    margin-bottom: 0.35rem;
+    line-height: 1.35;
+    height: 2.7em !important; /* Uniform height ensures cards and buttons align */
     white-space: normal !important;
     display: -webkit-box !important;
     -webkit-line-clamp: 2 !important;
@@ -746,32 +780,79 @@ button {
 
 .products-slider__price {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: flex-start;
     gap: 0.375rem;
     margin-top: auto;
+    margin-bottom: 0.5rem;
 }
 
 .products-slider__sale {
     font-family: var(--font-sans);
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-text-light);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #4B3621;
 }
 
 .products-slider__original {
     font-family: var(--font-sans);
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 400;
-    color: var(--color-cta-dark);
+    color: #8C7A6B;
     text-decoration: line-through;
 }
 
-.products-slider__card .add-to-cart-btn,
-.products-slider__card .btn--primary {
+.products-slider__card .product-card-btns,
+.products-slider__card > div:last-child {
     margin-top: auto !important;
-    padding: 0.5rem !important;
+    display: flex;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.products-slider__card .add-to-cart-btn,
+.products-slider__card .buy-now-btn,
+.products-slider__card .btn--primary {
+    box-sizing: border-box !important;
+    height: 36px !important;
     font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 0.25rem !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    flex: 1 1 50%;
+    cursor: pointer;
+}
+
+.products-slider__card .add-to-cart-btn {
+    background: #4B3621;
+    color: #FAF9F6;
+    border: none;
+}
+
+.products-slider__card .buy-now-btn {
+    background: #A67C52;
+    color: #FAF9F6;
+    border: none;
+    transition: background 0.3s;
+}
+
+.products-slider__card > .btn--primary[disabled] {
+    margin-top: auto !important;
+    width: 100% !important;
+    height: 36px !important;
+    background: #4B3621 !important;
+    color: #FAF9F6 !important;
+    border: none !important;
+    font-weight: 600 !important;
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
+    font-size: 0.75rem !important;
+    border-radius: 4px !important;
 }
 
 
@@ -983,7 +1064,8 @@ button {
 .reviews__arrow {
     width: 2.25rem;
     height: 2.25rem;
-    background: #000;
+    background: rgba(75, 54, 33, 0.85);
+    backdrop-filter: blur(4px);
     color: #fff;
     border-radius: 50%;
     display: flex;
@@ -993,6 +1075,10 @@ button {
     flex-shrink: 0;
     z-index: 10;
     position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .reviews__arrow--prev { left: 0.5rem; }
@@ -1136,7 +1222,7 @@ button {
     top: -3rem;
     right: 0;
     font-size: 3rem;
-    color: var(--color-text-light);
+    color: #ffffff;
     background: none;
     border: none;
     cursor: pointer;
@@ -1147,7 +1233,7 @@ button {
     font-family: var(--font-serif);
     font-size: 1.5rem;
     font-weight: 300;
-    color: var(--color-text-dark);
+    color: #ffffff;
     margin-bottom: 2rem;
 }
 
@@ -1162,7 +1248,7 @@ button {
     flex: 1;
     background: transparent;
     border: none;
-    color: var(--color-text-dark);
+    color: #ffffff;
     font-family: var(--font-sans);
     font-size: 1rem;
     outline: none;
@@ -1170,7 +1256,7 @@ button {
 }
 
 .search-modal__input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .search-modal__submit {
@@ -1407,11 +1493,12 @@ button {
     margin-bottom: 1rem;
 }
 .footer-brand {
-    font-family: var(--font-script, 'Great Vibes', cursive);
-    font-size: 2.5rem;
-    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
     margin-bottom: 1.5rem;
     letter-spacing: 2px;
+    color: #FAF9F6;
 }
 .footer-subscribe {
     display: flex;
@@ -1682,16 +1769,28 @@ button {
     </div>
     <script>
         (function() {
+            function hideLoader() {
+                var loader = document.getElementById('page-loader');
+                if (loader) {
+                    loader.classList.remove('active');
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'hidden';
+                    loader.style.pointerEvents = 'none';
+                }
+            }
             var loaderTimeout = setTimeout(function() {
                 var loader = document.getElementById('page-loader');
                 if (loader) loader.classList.add('active');
-            }, 500); // 500ms threshold for fast connections
+            }, 600);
 
             window.addEventListener('load', function() {
                 clearTimeout(loaderTimeout);
-                var loader = document.getElementById('page-loader');
-                if (loader) loader.classList.remove('active');
+                hideLoader();
             });
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(hideLoader, 400);
+            });
+            setTimeout(hideLoader, 1500); // Safety fallback
         })();
     </script>
 
@@ -1706,9 +1805,9 @@ button {
         <span class="mobile-menu-toggle__bar"></span>
     </button>
     <!-- Logo -->
-    <div class="m-nav__logo" style="position: absolute; left: 50%; transform: translateX(-45%) scale(2.0);">
+    <div class="m-nav__logo">
         <a href="./" style="display: flex; align-items: center;">
-            <img src="../assets/logo.png" alt="RestNest" style="height: 40px; object-fit: contain;">
+            <img src="../assets/logo-nav.png" alt="RestNest">
         </a>
     </div>
     <!-- Utils -->
@@ -1890,9 +1989,9 @@ button {
                         <span class="products-slider__original">Rs. 1,000.00</span>
                     </div>
                 </a>
-                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                    <button class="add-to-cart-btn btn--primary" style="flex: 1; padding: 0.6rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Add to Cart</button>
-                    <button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
+                <div class="product-card-btns">
+                    <button class="add-to-cart-btn btn--primary">Add to Cart</button>
+                    <button class="buy-now-btn">Buy Now</button>
                 </div>
             </div>
             <!-- Product Card 2: Slim Pillow (In Stock) -->
@@ -1908,9 +2007,9 @@ button {
                         <span class="products-slider__original">Rs. 1,000.00</span>
                     </div>
                 </a>
-                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                    <button class="add-to-cart-btn btn--primary" style="flex: 1; padding: 0.6rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Add to Cart</button>
-                    <button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
+                <div class="product-card-btns">
+                    <button class="add-to-cart-btn btn--primary">Add to Cart</button>
+                    <button class="buy-now-btn">Buy Now</button>
                 </div>
             </div>
             <!-- Product Card 3: Orthopedic Cervical Memory Foam Pillow (Sold Out) -->
@@ -1926,7 +2025,7 @@ button {
                         <span class="products-slider__original">Rs. 1,000.00</span>
                     </div>
                 </div>
-                <button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
+                <button class="btn--primary" disabled>Out of Stock</button>
             </div>
             <!-- Product Card 4: White & Gold Glace Cotton Pillows (Sold Out) -->
             <div class="products-slider__card">
@@ -1941,7 +2040,7 @@ button {
                         <span class="products-slider__original">Rs. 1,000.00</span>
                     </div>
                 </div>
-                <button class="btn--primary" disabled style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
+                <button class="btn--primary" disabled>Out of Stock</button>
             </div>
         </div>
     </div>
@@ -2121,8 +2220,22 @@ button {
    RESTNEST — Mobile Scripts
    ============================================ */
 
-const basePath = '../';
-const resolveImg = (url) => url ? (url.startsWith('http') ? url : (basePath + 'assets/' + url)) : '';
+var basePath = '../';
+var resolveImg = (url) => url ? (url.startsWith('http') ? url : (basePath + 'assets/' + url)) : '';
+
+function trackPageView() {
+    let page = 'Home (Mobile)';
+    const lastTracked = sessionStorage.getItem('last_tracked_page');
+    if (lastTracked === page) return;
+    fetch('https://restienestie.onrender.com/api/track-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page: page })
+    })
+    .then(res => res.json())
+    .then(() => sessionStorage.setItem('last_tracked_page', page))
+    .catch(err => console.warn('Failed to track page view', err));
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initHeroSlider();
@@ -2133,6 +2246,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initReviewsSlider();
     initScrollReveal();
     initProductsSlider();
+    trackPageView();
+    
+    const token = localStorage.getItem('sb-julktcdhbnvxsjuqsimp-auth-token');
+    if (token) {
+        const accountLink = document.getElementById('account-link');
+        if (accountLink) {
+            accountLink.innerHTML = accountLink.innerHTML.replace('ACCOUNT', 'YOU');
+        }
+    }
 });
 
 
@@ -2725,8 +2847,6 @@ function initScrollReveal() {
             </div>
         </div>
     </footer>
-
-    <script src="../script.js?v=25"></script>
 </body>
 </html>
 
