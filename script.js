@@ -578,12 +578,13 @@ async function initProductPage() {
     try {
         const response = await fetch('../assets/products.json?v=' + new Date().getTime());
         const products = await response.json();
-        
+        window.productsData = products;
         const product = products[productId];
         if (!product) {
             document.getElementById('product-title').innerText = "Product Not Found";
             return;
         }
+        window.currentProduct = product;
 
         document.getElementById('product-title').innerText = product.title;
         document.getElementById('product-desc').innerText = product.description;
@@ -936,6 +937,9 @@ document.addEventListener('DOMContentLoaded', initProductSort);
     updateCartUI();
 
     document.addEventListener('click', (e) => {
+        // Prevent Buy Now buttons from triggering regular Add to Cart
+        if (e.target.closest('.buy-now-btn')) return;
+
         if (e.target.classList.contains('add-to-cart-btn') || e.target.classList.contains('btn--primary')) {
             const btn = e.target;
             const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
@@ -948,13 +952,12 @@ document.addEventListener('DOMContentLoaded', initProductSort);
 
                 if (titleEl && priceEl && imgEl) {
                     const name = titleEl.textContent.trim();
-                    const price = parsePrice(priceEl.textContent);
+                    const price = parsePrice(priceEl.textContent) || 899.0;
                     const img = imgEl.getAttribute('src');
-                    
                     
                     let qty = 1;
                     const qtyInput = document.getElementById('qty-input');
-                    if (qtyInput && card.classList.contains('product-details')) {
+                    if (qtyInput && (card.classList.contains('product-details') || document.querySelector('.product-page'))) {
                         qty = parseInt(qtyInput.value) || 1;
                     }
 
@@ -979,8 +982,6 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                         });
                     }
 
-                    
-
                     // Show green "Added" feedback then restore original brown styling
                     const origText = btn.textContent;
                     btn.textContent = 'Added!';
@@ -998,50 +999,144 @@ document.addEventListener('DOMContentLoaded', initProductSort);
         }
     });
 
+    const CATALOG_FALLBACK_PRICES = {
+        "White Latex Pillow": 899.0,
+        "Honeycomb Pillow": 899.0,
+        "Black Dotted Pillow": 899.0,
+        "Glace Cotton Pillow": 899.0,
+        "Premium White Sleeping Pillow": 1063.0,
+        "Slim Pillow": 899.0,
+        "Slim Microfiber Pillow": 1014.0,
+        "Black Latex": 899.0,
+        "Premium White Glace Cotton Pillows": 1140.0,
+        "Contour Memory Foam Pillow": 899.0,
+        "Orthopedic Cervical Memory Foam Pillow": 1175.0,
+        "Stripe Pillow": 899.0,
+        "Rest Nest Soft Pillow": 899.0,
+        "Honeycomb Cushion": 899.0,
+        "Glace Cotton Cushion": 899.0,
+        "Slim Pipe Cushion": 899.0,
+        "Soft Cushion Pack Of 2": 1065.0,
+        "Orthopedic Cervical Memory Foam Cushion": 1175.0,
+        "Slim Microfiber Cushion": 1014.0,
+        "Premium White Glace Cotton Cushions": 1140.0,
+        "ContourCare™ Memory Foam Pillow": 1175.0,
+        "ContourCare Memory Foam Pillow": 1175.0,
+        "ContourCare™ Memory Foam Cushion": 1270.0,
+        "ContourCare Memory Foam Cushion": 1270.0,
+        "White & Gold Glace Cotton Sleeping Pillows": 1110.0,
+        "White & Gold Glace Cotton Sleeping Cushions": 1270.0,
+        "Blue & White Polycotton Pillow": 1110.0,
+        "Blue & White Polycotton Cushion": 1175.0,
+        "Premium Polycotton Pillow With Recron Fiber Filling": 964.0,
+        "Premium White Sleeping Cushion": 1386.0,
+        "16x16 White Stripe Soft Cushions": 1110.0
+    };
+
     // Buy Now: stores only this product and goes straight to checkout
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.buy-now-btn');
         if (!btn) return;
         e.preventDefault();
+        e.stopPropagation();
 
         const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
-        if (!card) return;
+        const isProductDetailPage = !!document.querySelector('.product-page');
 
-        const titleEl = card.querySelector('.product-title') || card.querySelector('.products-slider__name') || document.getElementById('product-title');
-        const priceEl = card.querySelector('.sale-price') || card.querySelector('.products-slider__sale') || document.getElementById('product-sale-price');
-        const imgEl = card.querySelector('img') || document.getElementById('product-main-image');
+        let name = '';
+        let price = 0;
+        let img = '';
+        let qty = 1;
 
-        if (titleEl && priceEl && imgEl) {
-            const name = titleEl.textContent.trim();
-            const price = parsePrice(priceEl.textContent);
-            let img = imgEl.getAttribute('src');
-            if (img) {
-                img = img.replace(/^(\.\.\/)+/, '');
+        if (isProductDetailPage) {
+            // Product detail page
+            if (window.currentProduct) {
+                name = window.currentProduct.title || '';
+                price = parsePrice(window.currentProduct.salePrice || '');
+                img = (window.currentProduct.images && window.currentProduct.images[0]) || window.currentProduct.imgUrl || '';
             }
 
-            let qty = 1;
+            if (!name || name === 'Loading...') {
+                const titleEl = document.getElementById('product-title');
+                if (titleEl && titleEl.innerText.trim() && titleEl.innerText.trim() !== 'Loading...') {
+                    name = titleEl.innerText.trim();
+                }
+            }
+
+            if (!price || price <= 0) {
+                const priceEl = document.getElementById('product-sale-price');
+                if (priceEl) price = parsePrice(priceEl.innerText);
+            }
+
+            if (!img) {
+                const imgEl = document.getElementById('product-main-image');
+                if (imgEl) img = imgEl.getAttribute('src') || '';
+            }
+
             const qtyInput = document.getElementById('qty-input');
-            if (qtyInput && (card.classList.contains('product-details') || document.querySelector('.product-page'))) {
-                qty = parseInt(qtyInput.value) || 1;
+            if (qtyInput) {
+                qty = parseInt(qtyInput.value, 10) || 1;
+            }
+        } else if (card) {
+            // Card on category/home/slider page
+            name = card.dataset.title || '';
+            if (!name) {
+                const titleEl = card.querySelector('.products-slider__name') || card.querySelector('.product-title');
+                if (titleEl) name = titleEl.textContent.trim();
             }
 
-            // Store as a single-item array in restnest_buy_now
-            const buyNowItem = [{ name, price, img, quantity: qty }];
-            localStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
-            sessionStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
-
-            // Meta Pixel: InitiateCheckout event
-            if (typeof fbq === 'function') {
-                fbq('track', 'InitiateCheckout', {
-                    content_name: name,
-                    content_type: 'product',
-                    value: price * qty,
-                    currency: 'INR'
-                });
+            if (card.dataset.price) {
+                price = parseFloat(card.dataset.price) || 0;
+            }
+            if (!price || price <= 0) {
+                const priceEl = card.querySelector('.products-slider__sale') || card.querySelector('.sale-price');
+                if (priceEl) price = parsePrice(priceEl.textContent);
             }
 
-            window.location.href = basePath + 'checkout.html';
+            const imgEl = card.querySelector('img');
+            if (imgEl) img = imgEl.getAttribute('src') || '';
         }
+
+        // Clean & ensure valid title
+        name = name.trim();
+        if (!name || name === 'Loading...') {
+            name = 'Rest Nest Premium Pillow';
+        }
+
+        // Clean & ensure non-zero price
+        if (!price || price <= 0 || isNaN(price)) {
+            const stripped = name.replace(/^Rest Nest\s+/i, '').trim();
+            price = CATALOG_FALLBACK_PRICES[name] || CATALOG_FALLBACK_PRICES[stripped] || 899.0;
+        }
+
+        // Clean image path
+        if (img) {
+            img = img.replace(/^(\.\.\/)+/, '').replace(/^(\.\/)+/, '');
+        }
+        if (!img || img === 'sold_out.jpg') {
+            img = 'assets/logo-nav.png';
+        } else if (!img.startsWith('assets/') && !img.startsWith('http') && !img.startsWith('/')) {
+            img = 'assets/' + img;
+        }
+
+        if (qty < 1 || isNaN(qty)) qty = 1;
+
+        // Store as single-item array in restnest_buy_now
+        const buyNowItem = [{ name, price, img, quantity: qty }];
+        localStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
+        sessionStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
+
+        // Meta Pixel: InitiateCheckout event
+        if (typeof fbq === 'function') {
+            fbq('track', 'InitiateCheckout', {
+                content_name: name,
+                content_type: 'product',
+                value: price * qty,
+                currency: 'INR'
+            });
+        }
+
+        window.location.href = basePath + 'checkout.html';
     });
 
     // Disable Buy Now button when product is out of stock

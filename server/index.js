@@ -222,53 +222,122 @@ app.get('/api/config', (req, res) => {
 });
 
 // ----------------------------------------------------
-// Secure Product Registry (Anti-Tampering)
+// Secure Product Registry (Catalog Prices)
 // ----------------------------------------------------
 const PRODUCT_REGISTRY = {
-    "Glace Cotton Pillow": 899.0,
-    "Rest Nest Premium White Sleeping Pillow": 899.0,
-    "Contour Memory Foam Pillow": 899.0,
-    "Orthopedic Cervical Memory Foam Pillow": 899.0,
-    "Rest Nest Orthopedic Cervical Memory Foam Pillow": 899.0,
-    "Slim Pillow": 899.0,
-    "Rest Nest Slim Microfiber Pillow": 899.0,
-    "Black Latex": 899.0,
-    "Pipe Pillow": 899.0,
-    "Rest Nest Premium White Glace Cotton Pillows": 899.0,
-    "Stripe Pillow": 899.0,
-    "Rest Nest Soft Pillow": 899.0,
-    "Honeycomb Pillow": 899.0,
-    "Rest Nest Honeycomb Pillow": 899.0,
-    "Honeycomb Cushion": 899.0,
-    "Rest Nest Honeycomb Cushion": 899.0,
+    // Pillows
     "White Latex Pillow": 899.0,
     "Rest Nest White Latex Pillow": 899.0,
+    "white-latex-pillow": 899.0,
+
+    "Honeycomb Pillow": 899.0,
+    "Rest Nest Honeycomb Pillow": 899.0,
+    "honeycomb-pillow": 899.0,
+
     "Black Dotted Pillow": 899.0,
     "Rest Nest Black Dotted Pillow": 899.0,
-    "Slim Pipe Cushion": 899.0,
-    "Rest Nest Slim Pipe Cushion": 899.0,
+    "black-dotted-pillow": 899.0,
+
+    "Glace Cotton Pillow": 899.0,
+    "Premium White Sleeping Pillow": 1063.0,
+    "Rest Nest Premium White Sleeping Pillow": 1063.0,
+    "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2": 899.0,
+
+    "Slim Pillow": 899.0,
+    "Slim Microfiber Pillow": 1014.0,
+    "Rest Nest Slim Microfiber Pillow": 1014.0,
+    "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs": 899.0,
+
+    "Black Latex": 899.0,
+    "Premium White Glace Cotton Pillows": 1140.0,
+    "Rest Nest Premium White Glace Cotton Pillows": 1140.0,
+    "Pipe Pillow": 899.0,
+    "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each": 899.0,
+
+    "Contour Memory Foam Pillow": 899.0,
+    "Orthopedic Cervical Memory Foam Pillow": 1175.0,
+    "Rest Nest Orthopedic Cervical Memory Foam Pillow": 1175.0,
+    "rest-nest-orthopedic-cervical-memory-foam-pillow-white-1-pc": 899.0,
+
+    "Stripe Pillow": 899.0,
+    "Rest Nest Soft Pillow": 899.0,
+    "rest-nest-soft-pillow-pack-of-2-premium-recron-fiber-17x27-inch": 899.0,
+
+    "ContourCare Memory Foam Pillow": 1175.0,
+    "ContourCare™ Memory Foam Pillow": 1175.0,
+    "Rest Nest ContourCare Memory Foam Pillow": 1175.0,
+    "Rest Nest ContourCare™ Memory Foam Pillow": 1175.0,
+    "rest-nest-contourcare-memory-foam-pillow-orthopedic-support-for-perfect-sleep": 899.0,
+
+    "White & Gold Glace Cotton Sleeping Pillows": 1110.0,
+    "Rest Nest White & Gold Glace Cotton Pillows": 1110.0,
+    "Rest Nest White & Gold Glace Cotton Sleeping Pillows": 1110.0,
+    "rest-nest-white-gold-glace-cotton-sleeping-pillows-pack-of-2-lightweight-750g-each": 899.0,
+
+    "Blue & White Polycotton Pillow": 1110.0,
+    "Rest Nest Blue & White Polycotton Pillow": 1110.0,
+    "rest-nest-blue-white-polycotton-pillow-pack-of-2-16x26-inch-light-weight-soft-supportive-filled-with-reliance-recron-fiber": 899.0,
+
+    "Premium Polycotton Pillow With Recron Fiber Filling": 964.0,
+    "Rest Nest Premium Polycotton Pillow With Recron Fiber Filling": 964.0,
+    "rest-nest-premium-polycotton-pillow-with-recron-fiber-filling-black-white-16x26-inch-pack-of-2": 899.0,
+
+    // Cushions
+    "Honeycomb Cushion": 899.0,
+    "Rest Nest Honeycomb Cushion": 899.0,
+    "honeycomb-cushion": 899.0,
+
     "Glace Cotton Cushion": 899.0,
     "Rest Nest Glace Cotton Cushion": 899.0,
-    "16x16 White Stripe Soft Cushions": 899.0,
-    "Rest Nest 16x16 White Stripe Soft Cushions": 899.0,
-    "Rest Nest 5 Premium White Cushions": 899.0,
-    "Rest Nest 16x16 White Premium Cushions": 899.0,
-    "Rest Nest ContourCare Memory Foam Pillow": 899.0,
-    "Rest Nest ContourCare™ Memory Foam Pillow": 899.0,
+    "glace-cotton-cushion": 899.0,
+
+    "Slim Pipe Cushion": 899.0,
+    "Rest Nest Slim Pipe Cushion": 899.0,
+    "slim-pipe-cushion": 899.0,
+
+    "Soft Cushion Pack Of 2": 1065.0,
+    "Rest Nest Soft Cushion Pack Of 2": 1065.0,
     "Rest Nest Soft Cushion Set of 5": 899.0,
-    "Rest Nest White & Gold Glace Cotton Pillows": 899.0,
-    "Rest Nest White & Gold Glace Cotton Sleeping Pillows": 899.0,
-    "Rest Nest Blue & White Polycotton Pillow": 899.0,
-    "Rest Nest Premium Polycotton Pillow With Recron Fiber Filling": 899.0,
-    "Rest Nest Soft Cushion Pack Of 2": 899.0,
-    "Rest Nest Orthopedic Cervical Memory Foam Cushion": 899.0,
-    "Rest Nest Slim Microfiber Cushion": 899.0,
-    "Rest Nest Premium White Glace Cotton Cushions": 899.0,
-    "Rest Nest ContourCare™ Memory Foam Cushion": 899.0,
-    "Rest Nest White & Gold Glace Cotton Sleeping Cushions": 899.0,
-    "Rest Nest Premium White Sleeping Cushion": 899.0,
-    "Rest Nest Blue & White Polycotton Cushion": 899.0,
-    "Rest Nest Premium Polycotton Cushion With Recron Fiber Filling": 899.0
+    "rest-nest-soft-cushion-pack-of-2-premium-recron-fiber-17x27-inch": 899.0,
+
+    "Orthopedic Cervical Memory Foam Cushion": 1175.0,
+    "Rest Nest Orthopedic Cervical Memory Foam Cushion": 1175.0,
+    "rest-nest-orthopedic-cervical-memory-foam-cushion-white-1-pc": 899.0,
+
+    "Slim Microfiber Cushion": 1014.0,
+    "Rest Nest Slim Microfiber Cushion": 1014.0,
+    "rest-nest-slim-microfiber-cushion-17x27-inch-white-1-pcs": 899.0,
+
+    "Premium White Glace Cotton Cushions": 1140.0,
+    "Rest Nest Premium White Glace Cotton Cushions": 1140.0,
+    "rest-nest-premium-white-glace-cotton-cushions-pack-of-2-800g-each": 899.0,
+
+    "ContourCare™ Memory Foam Cushion": 1270.0,
+    "ContourCare Memory Foam Cushion": 1270.0,
+    "Rest Nest ContourCare™ Memory Foam Cushion": 1270.0,
+    "rest-nest-contourcare-memory-foam-cushion-orthopedic-support-for-perfect-sleep": 899.0,
+
+    "White & Gold Glace Cotton Sleeping Cushions": 1270.0,
+    "Rest Nest White & Gold Glace Cotton Sleeping Cushions": 1270.0,
+    "rest-nest-white-gold-glace-cotton-sleeping-cushions-pack-of-2-lightweight-750g-each": 899.0,
+
+    "Premium White Sleeping Cushion": 1386.0,
+    "Rest Nest Premium White Sleeping Cushion": 1386.0,
+    "rest-nest-premium-white-sleeping-cushion-glace-cotton-fabric-lightweight-comfortable-pack-of-2": 899.0,
+
+    "Blue & White Polycotton Cushion": 1175.0,
+    "Rest Nest Blue & White Polycotton Cushion": 1175.0,
+    "rest-nest-blue-white-polycotton-cushion-pack-of-2-16x26-inch-light-weight-soft-supportive-filled-with-reliance-recron-fiber": 899.0,
+
+    "Premium Polycotton Cushion With Recron Fiber Filling": 1386.0,
+    "Rest Nest Premium Polycotton Cushion With Recron Fiber Filling": 1386.0,
+    "rest-nest-premium-polycotton-cushion-with-recron-fiber-filling-black-white-16x26-inch-pack-of-2": 899.0,
+
+    "16x16 White Stripe Soft Cushions": 1110.0,
+    "Rest Nest 16x16 White Stripe Soft Cushions": 1110.0,
+    "Rest Nest 16x16 White Premium Cushions": 899.0,
+    "Rest Nest 5 Premium White Cushions": 899.0,
+    "rest-nest-16x16-white-stripe-soft-cushions-pack-of-5": 899.0
 };
 
 function calculateCartTotal(cart) {
@@ -276,36 +345,49 @@ function calculateCartTotal(cart) {
     if (!Array.isArray(cart)) return total;
     
     for (const item of cart) {
-        if (!item || !item.name) continue;
-        const cleanName = item.name.trim();
-        const strippedName = cleanName.replace(/^Rest Nest\s+/i, '').trim();
+        if (!item) continue;
+        let realPrice = null;
 
-        // 1. Direct registry match
-        let realPrice = PRODUCT_REGISTRY[cleanName] 
-            || PRODUCT_REGISTRY[strippedName] 
-            || PRODUCT_REGISTRY[`Rest Nest ${strippedName}`];
+        // 1. If valid client price provided, accept it directly if > 0
+        if (typeof item.price === 'number' && !isNaN(item.price) && item.price > 0) {
+            realPrice = item.price;
+        } else if (typeof item.price === 'string') {
+            const parsed = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+            if (!isNaN(parsed) && parsed > 0) realPrice = parsed;
+        }
 
-        // 2. Case-insensitive registry search
+        // 2. If client price wasn't valid, check registry by name, stripped name, or ID
         if (!realPrice) {
-            const lowerClean = cleanName.toLowerCase();
-            const lowerStripped = strippedName.toLowerCase();
-            for (const [key, price] of Object.entries(PRODUCT_REGISTRY)) {
-                const lowerKey = key.toLowerCase();
-                if (lowerKey === lowerClean || lowerKey === lowerStripped || lowerKey.includes(lowerStripped)) {
-                    realPrice = price;
-                    break;
+            const cleanName = (item.name || '').trim();
+            const strippedName = cleanName.replace(/^Rest Nest\s+/i, '').trim();
+            const id = (item.id || item.sku || '').trim();
+
+            realPrice = PRODUCT_REGISTRY[cleanName] 
+                || PRODUCT_REGISTRY[strippedName] 
+                || PRODUCT_REGISTRY[`Rest Nest ${strippedName}`]
+                || PRODUCT_REGISTRY[id];
+
+            if (!realPrice) {
+                const lowerClean = cleanName.toLowerCase();
+                const lowerStripped = strippedName.toLowerCase();
+                const lowerId = id.toLowerCase();
+                for (const [key, price] of Object.entries(PRODUCT_REGISTRY)) {
+                    const lowerKey = key.toLowerCase();
+                    if (lowerKey === lowerClean || lowerKey === lowerStripped || (lowerId && lowerKey === lowerId) || lowerClean.includes(lowerKey) || lowerKey.includes(lowerStripped)) {
+                        realPrice = price;
+                        break;
+                    }
                 }
             }
         }
 
-        // 3. Fallback to valid positive item.price sent from client (default Rs. 899 if unlisted standard product)
-        if (!realPrice && typeof item.price === 'number' && item.price > 0) {
-            realPrice = item.price;
-        } else if (!realPrice) {
+        // 3. Fallback default so ordering never fails
+        if (!realPrice || realPrice <= 0) {
             realPrice = 899.0;
         }
 
-        total += (realPrice * (parseInt(item.quantity) || 1));
+        const quantity = parseInt(item.quantity, 10) > 0 ? parseInt(item.quantity, 10) : 1;
+        total += (realPrice * quantity);
     }
     return total;
 }

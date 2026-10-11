@@ -22,20 +22,100 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ----------------------------------------------------
-// UI Initialization
+// UI Initialization & Fallback Catalog Prices
 // ----------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
-    // Only run on checkout page
-    if (document.getElementById('checkout-form')) {
-        initCheckoutPage();
-    }
-});
+const PRODUCT_PRICES = {
+    "White Latex Pillow": 899.0,
+    "Honeycomb Pillow": 899.0,
+    "Black Dotted Pillow": 899.0,
+    "Glace Cotton Pillow": 899.0,
+    "Premium White Sleeping Pillow": 1063.0,
+    "Slim Pillow": 899.0,
+    "Slim Microfiber Pillow": 1014.0,
+    "Black Latex": 899.0,
+    "Premium White Glace Cotton Pillows": 1140.0,
+    "Contour Memory Foam Pillow": 899.0,
+    "Orthopedic Cervical Memory Foam Pillow": 1175.0,
+    "Stripe Pillow": 899.0,
+    "Rest Nest Soft Pillow": 899.0,
+    "Rest Nest ContourCare™ Memory Foam Pillow": 1175.0,
+    "Rest Nest ContourCare Memory Foam Pillow": 1175.0,
+    "ContourCare™ Memory Foam Pillow": 1175.0,
+    "ContourCare Memory Foam Pillow": 1175.0,
+    "White & Gold Glace Cotton Sleeping Pillows": 1110.0,
+    "Rest Nest White & Gold Glace Cotton Sleeping Pillows": 1110.0,
+    "Blue & White Polycotton Pillow": 1110.0,
+    "Rest Nest Blue & White Polycotton Pillow": 1110.0,
+    "Premium Polycotton Pillow With Recron Fiber Filling": 964.0,
+    "Rest Nest Premium Polycotton Pillow With Recron Fiber Filling": 964.0,
+    "Honeycomb Cushion": 899.0,
+    "Glace Cotton Cushion": 899.0,
+    "Slim Pipe Cushion": 899.0,
+    "Soft Cushion Pack Of 2": 1065.0,
+    "Rest Nest Soft Cushion Pack Of 2": 1065.0,
+    "Orthopedic Cervical Memory Foam Cushion": 1175.0,
+    "Rest Nest Orthopedic Cervical Memory Foam Cushion": 1175.0,
+    "Slim Microfiber Cushion": 1014.0,
+    "Rest Nest Slim Microfiber Cushion": 1014.0,
+    "Premium White Glace Cotton Cushions": 1140.0,
+    "Rest Nest Premium White Glace Cotton Cushions": 1140.0,
+    "ContourCare™ Memory Foam Cushion": 1270.0,
+    "ContourCare Memory Foam Cushion": 1270.0,
+    "Rest Nest ContourCare™ Memory Foam Cushion": 1270.0,
+    "White & Gold Glace Cotton Sleeping Cushions": 1270.0,
+    "Rest Nest White & Gold Glace Cotton Sleeping Cushions": 1270.0,
+    "Premium White Sleeping Cushion": 1386.0,
+    "Rest Nest Premium White Sleeping Cushion": 1386.0,
+    "Blue & White Polycotton Cushion": 1175.0,
+    "Rest Nest Blue & White Polycotton Cushion": 1175.0,
+    "Premium Polycotton Cushion With Recron Fiber Filling Cushion": 1386.0,
+    "16x16 White Stripe Soft Cushions": 1110.0,
+    "Rest Nest 16x16 White Stripe Soft Cushions": 1110.0
+};
 
-function formatPrice(num) {
-    return 'Rs. ' + parseFloat(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function getPriceForProduct(name, currentPrice) {
+    if (typeof currentPrice === 'number' && !isNaN(currentPrice) && currentPrice > 0) {
+        return currentPrice;
+    }
+    if (typeof currentPrice === 'string') {
+        const parsed = parseFloat(currentPrice.replace(/[^0-9.]/g, ''));
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+    if (!name) return 899.0;
+    const cleanName = name.trim();
+    const strippedName = cleanName.replace(/^Rest Nest\s+/i, '').trim();
+
+    if (PRODUCT_PRICES[cleanName]) return PRODUCT_PRICES[cleanName];
+    if (PRODUCT_PRICES[strippedName]) return PRODUCT_PRICES[strippedName];
+    if (PRODUCT_PRICES[`Rest Nest ${strippedName}`]) return PRODUCT_PRICES[`Rest Nest ${strippedName}`];
+
+    const lowerClean = cleanName.toLowerCase();
+    for (const [key, price] of Object.entries(PRODUCT_PRICES)) {
+        if (key.toLowerCase() === lowerClean || key.toLowerCase().includes(lowerClean) || lowerClean.includes(key.toLowerCase())) {
+            return price;
+        }
+    }
+    return 899.0;
 }
 
-async function initCheckoutPage() {
+function startCheckout() {
+    if (document.getElementById('checkout-form') || document.getElementById('checkout-items')) {
+        initCheckoutPage();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startCheckout);
+} else {
+    // In module scripts or fast caches DOMContentLoaded may have already fired
+    startCheckout();
+}
+
+function formatPrice(num) {
+    return 'Rs. ' + parseFloat(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function initCheckoutPage() {
     // Buy Now uses a separate key so only that product is checked out
     const buyNowRaw = sessionStorage.getItem('restnest_buy_now') || localStorage.getItem('restnest_buy_now');
     let buyNowData = null;
@@ -50,11 +130,35 @@ async function initCheckoutPage() {
         ? buyNowData 
         : (JSON.parse(localStorage.getItem('restnest_cart')) || []);
 
-    if (cart.length === 0) {
+    if (!Array.isArray(cart) || cart.length === 0) {
+        // Double check fallback from either storage
+        const fallbackRaw = localStorage.getItem('restnest_buy_now') || sessionStorage.getItem('restnest_buy_now') || localStorage.getItem('restnest_cart');
+        try {
+            const fallback = JSON.parse(fallbackRaw);
+            if (Array.isArray(fallback) && fallback.length > 0) {
+                cart = fallback;
+            }
+        } catch (e) {}
+    }
+
+    if (!Array.isArray(cart) || cart.length === 0) {
         alert('Your cart is empty!');
         window.location.href = 'index.html';
         return;
     }
+
+    // Sanitize items: ensure valid price, quantity, name, and image
+    cart = cart.map(item => {
+        const name = (item.name && item.name !== 'Loading...') ? item.name : 'Rest Nest Premium Pillow';
+        const price = getPriceForProduct(name, item.price);
+        const quantity = (parseInt(item.quantity, 10) > 0) ? parseInt(item.quantity, 10) : 1;
+        let img = item.img || 'assets/logo-nav.png';
+        img = img.replace(/^(\.\.\/)+/, '').replace(/^(\.\/)+/, '');
+        if (!img.startsWith('assets/') && !img.startsWith('http') && !img.startsWith('/')) {
+            img = 'assets/' + img;
+        }
+        return { ...item, name, price, quantity, img };
+    });
 
     // Clean up buy-now when leaving checkout via navigation links
     document.querySelectorAll('.checkout-header__back, .checkout-breadcrumb a').forEach(link => {
@@ -65,41 +169,6 @@ async function initCheckoutPage() {
             }
         });
     });
-
-    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'http://localhost:3000/api' 
-        : 'https://restienestie.onrender.com/api';
-
-    try {
-        const configRes = await fetch(`${API_BASE}/public-config`);
-        const config = await configRes.json();
-        supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
-    } catch (e) {
-        console.error("Failed to load config", e);
-    }
-
-    // Attempt to fetch user profile and auto-fill
-    if (supabase) {
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (session) {
-                document.getElementById('email').value = session.user.email || '';
-                try {
-                    const res = await fetch('http://localhost:3000/api/my-profile', {
-                        headers: { 'Authorization': `Bearer ${session.access_token}` }
-                    });
-                    const data = await res.json();
-                    if (data.success && data.profile) {
-                        if(data.profile.first_name) {
-                            const parts = data.profile.first_name.split(' ');
-                            document.getElementById('fname').value = parts[0] || '';
-                            document.getElementById('lname').value = parts.slice(1).join(' ') || '';
-                        }
-                        if(data.profile.phone) document.getElementById('phone').value = data.profile.phone;
-                    }
-                } catch(e) { console.error('Error fetching profile for checkout:', e); }
-            }
-        });
-    }
 
     const itemsContainer = document.getElementById('checkout-items');
     const subtotalEl = document.getElementById('summary-subtotal');
@@ -117,6 +186,7 @@ async function initCheckoutPage() {
     }
 
     function renderCheckoutItems() {
+        if (!itemsContainer) return;
         itemsContainer.innerHTML = '';
         totalAmount = 0;
 
@@ -127,8 +197,8 @@ async function initCheckoutPage() {
                     <a href="index.html" class="btn btn--primary" style="display: inline-block; padding: 0.6rem 1.25rem; background: #4B3621; color: #FAF9F6; text-decoration: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500;">Continue Shopping</a>
                 </div>
             `;
-            subtotalEl.textContent = formatPrice(0);
-            totalEl.textContent = formatPrice(0);
+            if (subtotalEl) subtotalEl.textContent = formatPrice(0);
+            if (totalEl) totalEl.textContent = formatPrice(0);
             const payBtn = document.getElementById('pay-btn');
             if (payBtn) payBtn.disabled = true;
             return;
@@ -142,12 +212,12 @@ async function initCheckoutPage() {
             totalAmount += itemTotal;
 
             let cleanImg = item.img || 'assets/logo-nav.png';
-            cleanImg = cleanImg.replace(/^(\.\.\/)+/, '');
+            cleanImg = cleanImg.replace(/^(\.\.\/)+/, '').replace(/^(\.\/)+/, '');
 
             const div = document.createElement('div');
             div.className = 'checkout-item';
             div.innerHTML = `
-                <img src="${cleanImg}" alt="${item.name}">
+                <img src="${cleanImg}" alt="${item.name}" onerror="this.src='assets/logo-nav.png'">
                 <div class="checkout-item-details">
                     <div class="checkout-item-title">${item.name}</div>
                     <div class="checkout-item-price">${formatPrice(item.price)} each</div>
@@ -165,45 +235,49 @@ async function initCheckoutPage() {
             itemsContainer.appendChild(div);
         });
 
-        subtotalEl.textContent = formatPrice(totalAmount);
-        totalEl.textContent = formatPrice(totalAmount);
+        if (subtotalEl) subtotalEl.textContent = formatPrice(totalAmount);
+        if (totalEl) totalEl.textContent = formatPrice(totalAmount);
     }
 
     // Interactive quantity controls in checkout items
-    itemsContainer.addEventListener('click', (e) => {
-        const minusBtn = e.target.closest('.checkout-qty-minus');
-        const plusBtn = e.target.closest('.checkout-qty-plus');
-        const removeBtn = e.target.closest('.checkout-item-remove-btn');
+    if (itemsContainer) {
+        itemsContainer.addEventListener('click', (e) => {
+            const minusBtn = e.target.closest('.checkout-qty-minus');
+            const plusBtn = e.target.closest('.checkout-qty-plus');
+            const removeBtn = e.target.closest('.checkout-item-remove-btn');
 
-        if (plusBtn) {
-            const idx = parseInt(plusBtn.getAttribute('data-index'), 10);
-            if (!isNaN(idx) && cart[idx]) {
-                cart[idx].quantity += 1;
-                saveCheckoutState();
-                renderCheckoutItems();
-            }
-        } else if (minusBtn) {
-            const idx = parseInt(minusBtn.getAttribute('data-index'), 10);
-            if (!isNaN(idx) && cart[idx]) {
-                if (cart[idx].quantity > 1) {
-                    cart[idx].quantity -= 1;
-                } else {
-                    cart.splice(idx, 1);
+            if (plusBtn) {
+                const idx = parseInt(plusBtn.getAttribute('data-index'), 10);
+                if (!isNaN(idx) && cart[idx]) {
+                    cart[idx].quantity += 1;
+                    saveCheckoutState();
+                    renderCheckoutItems();
                 }
-                saveCheckoutState();
-                renderCheckoutItems();
+            } else if (minusBtn) {
+                const idx = parseInt(minusBtn.getAttribute('data-index'), 10);
+                if (!isNaN(idx) && cart[idx]) {
+                    if (cart[idx].quantity > 1) {
+                        cart[idx].quantity -= 1;
+                    } else {
+                        cart.splice(idx, 1);
+                    }
+                    saveCheckoutState();
+                    renderCheckoutItems();
+                }
+            } else if (removeBtn) {
+                const idx = parseInt(removeBtn.getAttribute('data-index'), 10);
+                if (!isNaN(idx) && cart[idx]) {
+                    cart.splice(idx, 1);
+                    saveCheckoutState();
+                    renderCheckoutItems();
+                }
             }
-        } else if (removeBtn) {
-            const idx = parseInt(removeBtn.getAttribute('data-index'), 10);
-            if (!isNaN(idx) && cart[idx]) {
-                cart.splice(idx, 1);
-                saveCheckoutState();
-                renderCheckoutItems();
-            }
-        }
-    });
+        });
+    }
 
+    // RENDER IMMEDIATELY AND SYNCHRONOUSLY! Never let async network lag block order summary!
     renderCheckoutItems();
+    saveCheckoutState();
 
     // Meta Pixel: InitiateCheckout event
     if (typeof fbq === 'function') {
@@ -215,34 +289,80 @@ async function initCheckoutPage() {
         });
     }
 
+    // Background asynchronous configuration & profile fetch (non-blocking)
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000/api' 
+        : 'https://restienestie.onrender.com/api';
+
+    fetch(`${API_BASE}/public-config`)
+        .then(res => res.json())
+        .then(config => {
+            if (config && config.SUPABASE_URL && config.SUPABASE_ANON_KEY) {
+                supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+                // Attempt to fetch user profile and auto-fill
+                supabase.auth.getSession().then(async ({ data: { session } }) => {
+                    if (session) {
+                        const emailInput = document.getElementById('email');
+                        if (emailInput && !emailInput.value) emailInput.value = session.user.email || '';
+                        try {
+                            const res = await fetch(`${API_BASE}/my-profile`, {
+                                headers: { 'Authorization': `Bearer ${session.access_token}` }
+                            });
+                            const data = await res.json();
+                            if (data.success && data.profile) {
+                                if (data.profile.first_name) {
+                                    const parts = data.profile.first_name.split(' ');
+                                    const fnameInput = document.getElementById('fname');
+                                    const lnameInput = document.getElementById('lname');
+                                    if (fnameInput && !fnameInput.value) fnameInput.value = parts[0] || '';
+                                    if (lnameInput && !lnameInput.value) lnameInput.value = parts.slice(1).join(' ') || '';
+                                }
+                                if (data.profile.phone) {
+                                    const phoneInput = document.getElementById('phone');
+                                    if (phoneInput && !phoneInput.value) phoneInput.value = data.profile.phone;
+                                }
+                            }
+                        } catch (err) {
+                            console.warn('Profile auto-fill skipped:', err);
+                        }
+                    }
+                });
+            }
+        })
+        .catch(e => console.warn('Public config non-blocking fetch note:', e));
+
     // Form Submission Handler
     const form = document.getElementById('checkout-form');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (cart.length === 0) {
-            alert('Your cart is empty!');
-            return;
-        }
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
 
-        const customerInfo = {
-            name: `${document.getElementById('fname').value} ${document.getElementById('lname').value}`.trim(),
-            email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
-            address: document.getElementById('address').value,
-            city: document.getElementById('city').value,
-            state: document.getElementById('state').value,
-            pincode: document.getElementById('pincode').value
-        };
+            const customerInfo = {
+                name: `${document.getElementById('fname').value} ${document.getElementById('lname').value}`.trim(),
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                pincode: document.getElementById('pincode').value
+            };
 
-        let userId = null;
-        if (supabase) {
-            const { data: { session } } = await supabase.auth.getSession();
-            userId = session ? session.user.id : null;
-        }
+            let userId = null;
+            if (supabase) {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    userId = session ? session.user.id : null;
+                } catch (err) {}
+            }
 
-        await processCheckout(cart, totalAmount, customerInfo, userId, isBuyNow);
-    });
+            await processCheckout(cart, totalAmount, customerInfo, userId, isBuyNow);
+        });
+    }
 }
 
 function showStatus(message, type) {
