@@ -627,9 +627,13 @@ async function initProductPage() {
         const updateMainImage = (index) => {
             currentImageIndex = index;
             document.getElementById('product-main-image').src = resolveImg(images[currentImageIndex]);
-            document.querySelectorAll('.thumbnail').forEach((t, i) => {
+            const allThumbs = document.querySelectorAll('.thumbnail');
+            allThumbs.forEach((t, i) => {
                 t.classList.toggle('active', i === currentImageIndex);
             });
+            if (allThumbs[currentImageIndex]) {
+                allThumbs[currentImageIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
         };
 
         const prevArrow = document.getElementById('gallery-prev');
