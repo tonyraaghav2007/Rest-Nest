@@ -181,8 +181,17 @@ button {
 }
 
 .pill-nav.scrolled .main-nav__link,
-.pill-nav.scrolled .top-bar__link {
-    color: #fff;
+.pill-nav.scrolled .top-bar__link,
+.pill-nav.scrolled .cart-btn,
+.pill-nav.scrolled #cart-link {
+    color: #fff !important;
+}
+
+.pill-nav.scrolled .top-bar__link svg,
+.pill-nav.scrolled .cart-btn svg,
+.pill-nav.scrolled #cart-link svg {
+    stroke: #fff !important;
+    color: #fff !important;
 }
 
 .pill-nav__logo {
@@ -2845,6 +2854,18 @@ button {
         margin-left: 0 !important;
     }
 
+    .pill-nav.scrolled .pill-nav__utils .top-bar__link,
+    .pill-nav.scrolled .pill-nav__utils .cart-btn,
+    .pill-nav.scrolled #cart-link {
+        color: #fff !important;
+    }
+    .pill-nav.scrolled .pill-nav__utils .top-bar__link svg,
+    .pill-nav.scrolled .pill-nav__utils .cart-btn svg,
+    .pill-nav.scrolled #cart-link svg {
+        stroke: #fff !important;
+        color: #fff !important;
+    }
+
 
     /* ---- HERO ---- */
     .hero {
@@ -3439,6 +3460,12 @@ button {
     .pill-nav__utils .cart-btn svg {
         width: 16px !important;
         height: 16px !important;
+    }
+
+    .pill-nav.scrolled .pill-nav__utils .top-bar__link svg,
+    .pill-nav.scrolled .pill-nav__utils .cart-btn svg {
+        stroke: #fff !important;
+        color: #fff !important;
     }
 
     .hero {

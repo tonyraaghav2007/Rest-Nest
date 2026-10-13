@@ -260,7 +260,7 @@
 </svg>
                     ACCOUNT
                 </a>
-<button aria-label="Cart" class="top-bar__link cart-btn" id="cart-link" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; color: inherit; font-family: inherit; font-size: inherit; text-transform: uppercase;">
+<button aria-label="Cart" class="top-bar__link cart-btn" id="cart-link" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: inherit; font-size: inherit; text-transform: uppercase;">
 <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14">
 <circle cx="9" cy="21" r="1"></circle>
 <circle cx="20" cy="21" r="1"></circle>
@@ -418,14 +418,15 @@
 <!-- Product Card 1 -->
 <div class="products-slider__card">
 <a href="product/?id=rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2">
-<div class="products-slider__img-wrap">
-<span class="products-slider__badge">-44%</span>
-<img alt="Premium White Sleeping Pillow" src="assets/product-img-1.jpg"/>
+<div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
+<span class="products-slider__badge" style="background: #e74c3c; color: white;">-25%</span>
+<img alt="Premium White Sleeping Pillow" src="assets/product-1/2.jpg"/>
+<img alt="Premium White Sleeping Pillow" class="hover-img" src="assets/product-1/4.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
 <h3 class="products-slider__name">Glace Cotton Pillow</h3>
 <div class="products-slider__price">
 <span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
+<span class="products-slider__original">Rs. 1,200.00</span>
 </div>
 </a>
 <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -433,16 +434,18 @@
 <button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
 </div>
 </div>
+<!-- Product Card 2 -->
 <div class="products-slider__card">
 <a href="product/?id=rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs" style="text-decoration: none; color: inherit;">
-<span class="products-slider__badge">-47%</span>
-<div class="products-slider__img-wrap">
-<img alt="Slim Microfiber Pillow" src="assets/product-3/xd_image.png"/>
+<div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
+<span class="products-slider__badge" style="background: #e74c3c; color: white;">-25%</span>
+<img alt="Slim Microfiber Pillow" src="assets/product-3/1.jpg"/>
+<img alt="Slim Microfiber Pillow" class="hover-img" src="assets/product-3/2.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
 <h3 class="products-slider__name">Slim Pillow</h3>
 <div class="products-slider__price">
 <span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
+<span class="products-slider__original">Rs. 1,200.00</span>
 </div>
 </a>
 <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -450,17 +453,18 @@
 <button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
 </div>
 </div>
+<!-- Product Card 3 -->
 <div class="products-slider__card">
 <a href="product/?id=rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each" style="text-decoration: none; color: inherit;">
-<span class="products-slider__badge">-54%</span>
 <div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
-<img alt="Glace Cotton Pillows Pack of 2" src="assets/product-4/1.jpg"/>
-<img alt="Glace Cotton Pillows Pack of 2" class="hover-img" src="assets/product-4/2.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
+<span class="products-slider__badge" style="background: #e74c3c; color: white;">-25%</span>
+<img alt="Black Fiber" src="assets/product-4/1.jpg"/>
+<img alt="Black Fiber" class="hover-img" src="assets/product-4/2.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
-<h3 class="products-slider__name">Black Latex</h3>
+<h3 class="products-slider__name">Black Fiber</h3>
 <div class="products-slider__price">
 <span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
+<span class="products-slider__original">Rs. 1,200.00</span>
 </div>
 </a>
 <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
@@ -468,103 +472,62 @@
 <button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
 </div>
 </div>
+<!-- Product Card 4 -->
 <div class="products-slider__card">
-<div style="text-decoration: none; color: inherit;; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-47%</span>
-<div class="products-slider__img-wrap">
-<img alt="Orthopedic Memory Foam Pillow" src="assets/sold_out.jpg"/>
+<a href="product/?id=white-latex-pillow" style="text-decoration: none; color: inherit;">
+<div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
+<span class="products-slider__badge" style="background: #e74c3c; color: white;">-25%</span>
+<img alt="White Fiber Pillow" src="assets/product-white-latex-pillow/1.jpg"/>
+<img alt="White Fiber Pillow" class="hover-img" src="assets/product-white-latex-pillow/2.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
-<h3 class="products-slider__name">Contour Memory Foam Pillow</h3>
+<h3 class="products-slider__name">White Fiber Pillow</h3>
 <div class="products-slider__price">
 <span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
+<span class="products-slider__original">Rs. 1,200.00</span>
+</div>
+</a>
+<div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+<button class="add-to-cart-btn btn--primary" style="flex: 1; padding: 0.6rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Add to Cart</button>
+<button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
 </div>
 </div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
-</div>
+<!-- Product Card 5 -->
 <div class="products-slider__card">
-<div style="; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-44%</span>
-<div class="products-slider__img-wrap">
-<img alt="White Stripe Cushions Pack of 5" src="assets/sold_out.jpg"/>
+<a href="product/?id=honeycomb-pillow" style="text-decoration: none; color: inherit;">
+<div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
+<span class="products-slider__badge" style="background: #e74c3c; color: white;">-25%</span>
+<img alt="Honeycomb Pillow" src="assets/product-honeycomb-pillow/1.jpg"/>
+<img alt="Honeycomb Pillow" class="hover-img" src="assets/product-honeycomb-pillow/2.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
-<h3 class="products-slider__name">Rest Nest 16x16 White Stripe Soft Cushions</h3>
+<h3 class="products-slider__name">Rest Nest Honeycomb Pillow</h3>
 <div class="products-slider__price">
 <span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
+<span class="products-slider__original">Rs. 1,200.00</span>
+</div>
+</a>
+<div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+<button class="add-to-cart-btn btn--primary" style="flex: 1; padding: 0.6rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Add to Cart</button>
+<button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
 </div>
 </div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
-</div>
+<!-- Product Card 6 -->
 <div class="products-slider__card">
-<div style="; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-44%</span>
-<div class="products-slider__img-wrap">
-<img alt="Premium White Cushions 5 Pack" src="assets/sold_out.jpg"/>
+<a href="product/?id=black-dotted-pillow" style="text-decoration: none; color: inherit;">
+<div class="products-slider__img-wrap" style="position: relative;" onmouseover="this.querySelector('.hover-img').style.opacity='1'" onmouseout="this.querySelector('.hover-img').style.opacity='0'">
+<span class="products-slider__badge" style="background: #e74c3c; color: white;">-25%</span>
+<img alt="Black Dotted Pillow" src="assets/product-black-dotted-pillow/1.jpg"/>
+<img alt="Black Dotted Pillow" class="hover-img" src="assets/product-black-dotted-pillow/2.jpg" style="position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.8s ease-in-out, transform 0.4s ease; pointer-events: none;"/>
 </div>
-<h3 class="products-slider__name">Rest Nest 5 Premium White Cushions</h3>
+<h3 class="products-slider__name">Rest Nest Black Dotted Pillow</h3>
 <div class="products-slider__price">
 <span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
+<span class="products-slider__original">Rs. 1,200.00</span>
 </div>
+</a>
+<div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+<button class="add-to-cart-btn btn--primary" style="flex: 1; padding: 0.6rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Add to Cart</button>
+<button class="buy-now-btn" style="flex: 1; padding: 0.6rem; background: #A67C52; color: #FAF9F6; border: none; font-weight: bold; cursor: pointer; transition: background 0.3s; font-size: 0.8rem; border-radius: 4px;">Buy Now</button>
 </div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
-</div>
-<div class="products-slider__card">
-<div style="; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-45%</span>
-<div class="products-slider__img-wrap">
-<img alt="White Premium Cushions Pack of 5" src="assets/sold_out.jpg"/>
-</div>
-<h3 class="products-slider__name">Rest Nest 16x16 White Premium Cushions</h3>
-<div class="products-slider__price">
-<span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
-</div>
-</div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
-</div>
-<div class="products-slider__card">
-<div style="; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-47%</span>
-<div class="products-slider__img-wrap">
-<img alt="ContourCare Memory Foam Pillow" src="assets/sold_out.jpg"/>
-</div>
-<h3 class="products-slider__name">Rest Nest ContourCare Memory Foam Pillow</h3>
-<div class="products-slider__price">
-<span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
-</div>
-</div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
-</div>
-<div class="products-slider__card">
-<div style="; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-47%</span>
-<div class="products-slider__img-wrap">
-<img alt="Soft Cushion Set of 5" src="assets/sold_out.jpg"/>
-</div>
-<h3 class="products-slider__name">Rest Nest Soft Cushion Set of 5</h3>
-<div class="products-slider__price">
-<span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
-</div>
-</div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
-</div>
-<div class="products-slider__card">
-<div style="; text-decoration: none; color: inherit; cursor: default;">
-<span class="products-slider__badge">-41%</span>
-<div class="products-slider__img-wrap">
-<img alt="White Gold Glace Cotton Pillows" src="assets/sold_out.jpg"/>
-</div>
-<h3 class="products-slider__name">Rest Nest White &amp; Gold Glace Cotton Pillows</h3>
-<div class="products-slider__price">
-<span class="products-slider__sale">Rs. 899.00</span>
-<span class="products-slider__original">Rs. 1,000.00</span>
-</div>
-</div>
-<button class="btn--primary" disabled="" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #4B3621; color: #FAF9F6; border: none; font-weight: bold; cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
 </div>
 </div>
 </div>

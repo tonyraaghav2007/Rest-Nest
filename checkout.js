@@ -25,6 +25,7 @@ const db = getFirestore(app);
 // UI Initialization & Fallback Catalog Prices
 // ----------------------------------------------------
 const PRODUCT_PRICES = {
+    "White Fiber Pillow": 899.0,
     "White Latex Pillow": 899.0,
     "Honeycomb Pillow": 899.0,
     "Black Dotted Pillow": 899.0,
@@ -32,6 +33,7 @@ const PRODUCT_PRICES = {
     "Premium White Sleeping Pillow": 1063.0,
     "Slim Pillow": 899.0,
     "Slim Microfiber Pillow": 1014.0,
+    "Black Fiber": 899.0,
     "Black Latex": 899.0,
     "Premium White Glace Cotton Pillows": 1140.0,
     "Contour Memory Foam Pillow": 899.0,

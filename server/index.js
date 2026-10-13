@@ -226,6 +226,8 @@ app.get('/api/config', (req, res) => {
 // ----------------------------------------------------
 const PRODUCT_REGISTRY = {
     // Pillows
+    "White Fiber Pillow": 899.0,
+    "Rest Nest White Fiber Pillow": 899.0,
     "White Latex Pillow": 899.0,
     "Rest Nest White Latex Pillow": 899.0,
     "white-latex-pillow": 899.0,
@@ -248,6 +250,8 @@ const PRODUCT_REGISTRY = {
     "Rest Nest Slim Microfiber Pillow": 1014.0,
     "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs": 899.0,
 
+    "Black Fiber": 899.0,
+    "Rest Nest Black Fiber": 899.0,
     "Black Latex": 899.0,
     "Premium White Glace Cotton Pillows": 1140.0,
     "Rest Nest Premium White Glace Cotton Pillows": 1140.0,
