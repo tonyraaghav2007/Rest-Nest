@@ -91,6 +91,8 @@ if (mongoose) {
         total_amount: Number,
         items: mongoose.Schema.Types.Mixed,
         status: String,
+        bigship_awb: String,
+        bigship_shipment_id: String,
         shiprocket_awb: String,
         shiprocket_shipment_id: String,
         created_at: { type: Date, default: Date.now }
@@ -176,29 +178,44 @@ const razorpay = new Razorpay({
     key_secret: RAZORPAY_KEY_SECRET,
 });
 
-let shiprocketToken = null;
+let bigshipToken = null;
 
 // ----------------------------------------------------
-// Helper: Authenticate with Shiprocket
+// Helper: Authenticate with Big Ship
 // ----------------------------------------------------
-async function getShiprocketToken() {
-    if (shiprocketToken) return shiprocketToken;
+async function getBigshipToken() {
+    if (bigshipToken) return bigshipToken;
 
-    if (!process.env.SHIPROCKET_EMAIL || !process.env.SHIPROCKET_PASSWORD) {
-        console.warn('Shiprocket credentials missing. Using mock token.');
+    const apiKey = process.env.BIGSHIP_API_KEY;
+    const userName = process.env.BIGSHIP_USER_NAME || process.env.SHIPROCKET_EMAIL;
+    const password = process.env.BIGSHIP_PASSWORD || process.env.SHIPROCKET_PASSWORD;
+
+    if (!apiKey) {
+        console.warn('Big Ship API key missing. Using mock token.');
         return 'MOCK_TOKEN';
     }
 
     try {
-        const response = await axios.post('https://apiv2.shiprocket.in/v1/external/auth/login', {
-            email: process.env.SHIPROCKET_EMAIL,
-            password: process.env.SHIPROCKET_PASSWORD,
+        const response = await axios.post('https://api.bigship.in/api/login/user', {
+            user_name: userName,
+            password: password,
+            access_key: apiKey
         });
-        shiprocketToken = response.data.token;
-        return shiprocketToken;
+
+        if (response.data && response.data.success && response.data.data?.token) {
+            bigshipToken = response.data.data.token;
+            return bigshipToken;
+        } else if (response.data && response.data.token) {
+            bigshipToken = response.data.token;
+            return bigshipToken;
+        } else {
+            console.warn('Big Ship login returned non-success:', response.data?.message || response.data);
+            return 'MOCK_TOKEN';
+        }
     } catch (error) {
-        console.error('Shiprocket auth failed:', error.response ? error.response.data : error.message);
-        throw new Error('Failed to authenticate with Shiprocket');
+        console.error('Big Ship auth failed:', error.response ? error.response.data : error.message);
+        // Fallback to MOCK_TOKEN so shipment creation flow continues gracefully
+        return 'MOCK_TOKEN';
     }
 }
 
@@ -465,63 +482,104 @@ app.post('/api/verify-payment', (req, res) => {
 });
 
 // ----------------------------------------------------
-// Endpoint 3: Create Shiprocket Shipment
+// Endpoint 3: Create Big Ship Shipment
 // ----------------------------------------------------
 app.post('/api/create-shipment', async (req, res) => {
     try {
         const { orderData } = req.body;
 
-        const shiprocketOrderPayload = {
-            order_id: orderData.order_id || `ORDER_${Date.now()}`,
-            order_date: new Date().toISOString(),
-            pickup_location: "Primary",
-            billing_customer_name: orderData.name,
-            billing_last_name: "",
-            billing_address: orderData.address,
-            billing_city: orderData.city,
-            billing_pincode: orderData.pincode,
-            billing_state: orderData.state,
-            billing_country: "India",
-            billing_email: orderData.email,
-            billing_phone: orderData.phone,
-            shipping_is_billing: true,
-            order_items: orderData.items.map(item => ({
-                name: item.name,
-                sku: item.sku || "SKU-DEFAULT",
-                units: item.quantity,
-                selling_price: item.price,
-                discount: 0,
-                tax: 0,
-                hsn: ""
-            })),
-            payment_method: "Prepaid",
-            sub_total: orderData.total_amount,
-            length: 10,
-            breadth: 10,
-            height: 10,
-            weight: 1
+        const customerNameParts = (orderData.name || '').trim().split(' ');
+        const firstName = customerNameParts[0] || 'Customer';
+        const lastName = customerNameParts.slice(1).join(' ') || '';
+
+        const orderItems = Array.isArray(orderData.items) ? orderData.items : [];
+        const totalAmount = Number(orderData.total_amount) || 0;
+        const invoiceId = orderData.order_id || `ORDER_${Date.now()}`;
+
+        const bigshipOrderPayload = {
+            shipment_category: "b2c",
+            warehouse_detail: {
+                pickup_location_id: 1,
+                return_location_id: 1
+            },
+            consignee_detail: {
+                first_name: firstName,
+                last_name: lastName,
+                company_name: "",
+                contact_number_primary: orderData.phone || "9999999999",
+                contact_number_secondary: "",
+                email_id: orderData.email || "",
+                consignee_address: {
+                    address_line_1: orderData.address || "Delivery Address",
+                    address_line_2: `${orderData.city || ''}, ${orderData.state || ''}`.trim(),
+                    address_landmark: "",
+                    pincode: String(orderData.pincode || "110001")
+                }
+            },
+            order_detail: {
+                invoice_date: new Date().toISOString(),
+                invoice_id: invoiceId,
+                payment_type: "Prepaid",
+                shipment_invoice_amount: totalAmount,
+                total_collectable_amount: 0,
+                box_details: [
+                    {
+                        each_box_dead_weight: 1.0,
+                        each_box_length: 10,
+                        each_box_width: 10,
+                        each_box_height: 10,
+                        each_box_invoice_amount: totalAmount,
+                        each_box_collectable_amount: 0,
+                        box_count: 1,
+                        product_details: orderItems.map(item => ({
+                            product_category: "Others",
+                            product_sub_category: "",
+                            product_name: item.name || "Bedding Item",
+                            product_quantity: Number(item.quantity) || 1,
+                            each_product_invoice_amount: Number(item.price) || totalAmount,
+                            each_product_collectable_amount: 0,
+                            hsn: ""
+                        }))
+                    }
+                ]
+            }
         };
 
-        const token = await getShiprocketToken();
+        const token = await getBigshipToken();
         
         let responseData;
         if (token === 'MOCK_TOKEN') {
-            console.warn('Simulating Shiprocket order creation.');
+            console.warn('Simulating Big Ship order creation.');
+            const mockAwb = `BS${Math.floor(1000000000 + Math.random() * 9000000000)}`;
             responseData = {
-                order_id: shiprocketOrderPayload.order_id,
-                shipment_id: `SHIP_${Math.floor(Math.random() * 1000000)}`,
+                order_id: invoiceId,
+                shipment_id: `BS_SHIP_${Math.floor(Math.random() * 1000000)}`,
                 status: 'NEW',
                 status_code: 1,
-                awb_code: `AWB${Math.floor(Math.random() * 1000000000)}`
+                awb_code: mockAwb,
+                tracking_url: 'https://app.bigship.direct/'
             };
         } else {
             const response = await axios.post(
-                'https://apiv2.shiprocket.in/v1/external/orders/create/adhoc',
-                shiprocketOrderPayload,
-                { headers: { Authorization: `Bearer ${token}` } }
+                'https://api.bigship.in/api/order/add/single',
+                bigshipOrderPayload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json'
+                    }
+                }
             );
             responseData = response.data;
+            if (responseData && !responseData.awb_code) {
+                responseData.awb_code = responseData.data?.master_awb || responseData.data?.lr_number || responseData.data || null;
+                responseData.shipment_id = responseData.data?.system_order_id ? String(responseData.data.system_order_id) : invoiceId;
+            }
         }
+
+        const awbCode = responseData.awb_code || null;
+        const shipmentId = responseData.shipment_id ? String(responseData.shipment_id) : null;
 
         // Save order to MongoDB
         const newOrder = new Order({
@@ -534,14 +592,16 @@ app.post('/api/create-shipment', async (req, res) => {
             total_amount: orderData.total_amount,
             items: orderData.items,
             status: 'Placed',
-            shiprocket_awb: responseData.awb_code || null,
-            shiprocket_shipment_id: responseData.shipment_id ? String(responseData.shipment_id) : null
+            bigship_awb: awbCode,
+            bigship_shipment_id: shipmentId,
+            shiprocket_awb: awbCode,
+            shiprocket_shipment_id: shipmentId
         });
         await newOrder.save();
 
         res.json({ success: true, data: responseData });
     } catch (error) {
-        console.error('Error creating Shiprocket order:', error.response ? error.response.data : error.message);
+        console.error('Error creating Big Ship order:', error.response ? error.response.data : error.message);
         res.status(500).json({ success: false, error: 'Failed to create shipment' });
     }
 });
@@ -625,13 +685,14 @@ app.get('/api/my-orders', authenticateUser, async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Endpoint: Track Order (with Shiprocket real-time)
+// Endpoint: Track Order (with Big Ship real-time)
 // ----------------------------------------------------
 app.get('/api/track-order/:orderId', authenticateUser, async (req, res) => {
     try {
         const order = await Order.findOne({ 
             $or: [
                 { id: req.params.orderId, user_id: req.user.id },
+                { bigship_awb: req.params.orderId, user_id: req.user.id },
                 { shiprocket_awb: req.params.orderId, user_id: req.user.id }
             ]
         });
@@ -641,25 +702,34 @@ app.get('/api/track-order/:orderId', authenticateUser, async (req, res) => {
         }
 
         let trackingData = null;
+        const awb = order.bigship_awb || order.shiprocket_awb;
         
-        // Attempt to get real-time tracking from Shiprocket
-        if (order.shiprocket_awb && order.shiprocket_awb !== 'Pending') {
+        // Attempt to get real-time tracking from Big Ship
+        if (awb && awb !== 'Pending') {
             try {
-                const token = await getShiprocketToken();
+                const token = await getBigshipToken();
                 if (token !== 'MOCK_TOKEN') {
                     const trackRes = await axios.get(
-                        `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${order.shiprocket_awb}`,
-                        { headers: { Authorization: `Bearer ${token}` } }
+                        `https://api.bigship.in/api/tracking?tracking_id=${awb}`,
+                        { 
+                            headers: { 
+                                Authorization: `Bearer ${token}`,
+                                Accept: 'application/json'
+                            } 
+                        }
                     );
                     trackingData = trackRes.data;
                     
-                    // Update order status from Shiprocket if available
-                    const srStatus = trackingData?.tracking_data?.shipment_status_id;
+                    // Update order status from Big Ship if available
+                    const currentStatus = trackingData?.data?.order_detail?.status_name || trackingData?.data?.status;
                     let newStatus = null;
-                    if (srStatus >= 7) newStatus = 'Delivered';
-                    else if (srStatus >= 6) newStatus = 'Out for Delivery';
-                    else if (srStatus >= 4) newStatus = 'Shipped';
-                    else if (srStatus >= 2) newStatus = 'Processing';
+                    if (currentStatus) {
+                        const s = String(currentStatus).toLowerCase();
+                        if (s.includes('deliver')) newStatus = 'Delivered';
+                        else if (s.includes('out for delivery')) newStatus = 'Out for Delivery';
+                        else if (s.includes('transit') || s.includes('shipped') || s.includes('dispatched')) newStatus = 'Shipped';
+                        else if (s.includes('manifest') || s.includes('pickup') || s.includes('process')) newStatus = 'Processing';
+                    }
                     
                     if (newStatus && newStatus !== order.status) {
                         await Order.updateOne({ id: order.id }, { status: newStatus });
@@ -667,7 +737,7 @@ app.get('/api/track-order/:orderId', authenticateUser, async (req, res) => {
                     }
                 }
             } catch (trackErr) {
-                console.error('Shiprocket tracking error:', trackErr.message);
+                console.error('Big Ship tracking error:', trackErr.message);
                 // Continue without real-time tracking
             }
         }

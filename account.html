@@ -1764,10 +1764,10 @@
         result.classList.add('visible');
         document.getElementById('track-display-id').textContent = `Order #${order.id.substring(0, 10)}`;
 
-        const awb = order.shiprocket_awb || order.shiprocketAwb;
+        const awb = order.bigship_awb || order.bigshipAwb || order.shiprocket_awb || order.shiprocketAwb;
         if (awb && awb !== 'Pending') {
             document.getElementById('track-display-awb').innerHTML =
-                `AWB: <a href="https://shiprocket.co/tracking/${awb}" target="_blank" rel="noopener">${awb} ↗</a>`;
+                `AWB: <a href="https://app.bigship.direct/" target="_blank" rel="noopener">${awb} ↗</a>`;
         } else {
             document.getElementById('track-display-awb').innerHTML = 'AWB: Awaiting shipment';
         }

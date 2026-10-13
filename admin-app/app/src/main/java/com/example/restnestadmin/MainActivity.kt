@@ -78,6 +78,7 @@ data class Order(
     val createdAt: Long,
     val paymentMethod: String = "Unknown",
     val paymentId: String = "N/A",
+    val bigshipAwb: String = "N/A",
     val shiprocketAwb: String = "N/A"
 )
 
@@ -256,7 +257,8 @@ fun AdminApp(
                             createdAt = apiOrder.createdAt ?: System.currentTimeMillis(),
                             paymentMethod = apiOrder.paymentMethod ?: "Unknown",
                             paymentId = apiOrder.paymentId ?: "N/A",
-                            shiprocketAwb = apiOrder.shiprocketAwb ?: "N/A"
+                            bigshipAwb = apiOrder.bigshipAwb.takeIf { it != "N/A" } ?: apiOrder.shiprocketAwb ?: "N/A",
+                            shiprocketAwb = apiOrder.bigshipAwb.takeIf { it != "N/A" } ?: apiOrder.shiprocketAwb ?: "N/A"
                         )
                     }
                     
@@ -1044,8 +1046,9 @@ fun OrderDetailScreen(
                     Icon(Icons.Filled.Send, contentDescription = null, tint = colors.accent, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("Shiprocket AWB", color = colors.textSecondary, fontSize = 12.sp)
-                        Text(order.shiprocketAwb, color = colors.textPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text("Big Ship AWB", color = colors.textSecondary, fontSize = 12.sp)
+                        val displayAwb = if (order.bigshipAwb != "N/A") order.bigshipAwb else order.shiprocketAwb
+                        Text(displayAwb, color = colors.textPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

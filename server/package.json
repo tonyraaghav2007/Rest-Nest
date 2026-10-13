@@ -1,7 +1,7 @@
 {
   "name": "restnest-backend",
   "version": "1.0.0",
-  "description": "Backend for RestNest Razorpay & Shiprocket integration",
+  "description": "Backend for RestNest Razorpay & Big Ship integration",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

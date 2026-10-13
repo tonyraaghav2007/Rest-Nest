@@ -1,5 +1,5 @@
 /**
- * RestNest - Custom Checkout Integration (Razorpay + Shiprocket)
+ * RestNest - Custom Checkout Integration (Razorpay + Big Ship)
  */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
@@ -402,7 +402,7 @@ function setPayButtonState(state, text = '') {
 }
 
 // ----------------------------------------------------
-// Checkout Flow (Razorpay -> Shiprocket)
+// Checkout Flow (Razorpay -> Big Ship)
 // ----------------------------------------------------
 async function processCheckout(cart, totalAmount, customerInfo, userId = null, isBuyNow = false) {
     setPayButtonState('loading', 'Connecting to Payment Gateway...');
@@ -507,7 +507,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
 
             showStatus('Payment verified. Creating shipping label...', 'loading');
 
-            // B. Create Shiprocket Shipment
+            // B. Create Big Ship Shipment
             const baseOrderData = {
                 order_id: 'ORD' + Date.now().toString().slice(-6),
                 user_id: userId,
@@ -530,10 +530,12 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
             const shipData = await shipRes.json();
 
             if (!shipData.success) {
-                console.warn('Shiprocket failed, but payment succeeded.');
+                console.warn('Big Ship failed, but payment succeeded.');
             }
 
             // C. Save Final Complete Order to Firebase (For Admin App)
+            const awbCode = shipData.data?.awb_code || 'Pending';
+            const shipmentId = shipData.data?.shipment_id || 'Pending';
             const finalOrder = {
                 id: baseOrderData.order_id,
                 user_id: userId,
@@ -547,8 +549,10 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 status: 'Processing',
                 paymentMethod: 'Pre-paid (Razorpay)',
                 paymentId: paymentResponse.razorpay_payment_id,
-                shiprocketAwb: shipData.data?.awb_code || 'Pending',
-                shiprocketShipmentId: shipData.data?.shipment_id || 'Pending'
+                bigshipAwb: awbCode,
+                bigshipShipmentId: shipmentId,
+                shiprocketAwb: awbCode,
+                shiprocketShipmentId: shipmentId
             };
 
             await addDoc(collection(db, "orders"), {
