@@ -1034,9 +1034,12 @@ document.addEventListener('DOMContentLoaded', initProductSort);
         // Prevent Buy Now buttons from triggering regular Add to Cart
         if (e.target.closest('.buy-now-btn')) return;
 
-        if (e.target.classList.contains('add-to-cart-btn') || e.target.classList.contains('btn--primary')) {
-            const btn = e.target;
-            const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
+        const btn = e.target.closest('.add-to-cart-btn') || e.target.closest('.btn--primary');
+        if (!btn) return;
+        // Double-check it's not a buy-now button (safety net)
+        if (btn.classList.contains('buy-now-btn')) return;
+
+        const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
 
             if (card) {
                 e.preventDefault();
@@ -1077,20 +1080,19 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                     }
 
                     // Show green "Added" feedback then restore original brown styling
-                    const origText = btn.textContent;
+                    const origHTML = btn.innerHTML;
                     btn.textContent = 'Added!';
                     btn.style.backgroundColor = '#4caf50';
                     btn.style.color = '#fff';
                     btn.style.borderColor = '#4caf50';
                     setTimeout(() => {
-                        btn.textContent = origText;
+                        btn.innerHTML = origHTML;
                         btn.style.backgroundColor = '#4B3621';
                         btn.style.color = '#FAF9F6';
                         btn.style.borderColor = '#4B3621';
                     }, 1500);
                 }
             }
-        }
     });
 
     const CATALOG_FALLBACK_PRICES = {
