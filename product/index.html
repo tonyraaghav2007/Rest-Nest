@@ -371,9 +371,9 @@
                 <div class="product-quantity">
                     <h4 class="product-options__label">Quantity</h4>
                     <div class="quantity-selector">
-                        <button id="qty-minus">&minus;</button>
-                        <input type="number" id="qty-input" value="1" min="1">
-                        <button id="qty-plus">&plus;</button>
+                        <button type="button" id="qty-minus" aria-label="Decrease quantity">&minus;</button>
+                        <input type="number" id="qty-input" value="1" min="1" max="10" aria-label="Product quantity">
+                        <button type="button" id="qty-plus" aria-label="Increase quantity">&plus;</button>
                     </div>
                 </div>
 
@@ -644,7 +644,8 @@
         </div>
     </div>
 
-        <script src="../script.js?v=25"></script>
+        <script src="../assets/products-data.js"></script>
+        <script src="../script.js?v=26"></script>
         <script>
             // Review Modal Logic
             const reviewModal = document.getElementById('review-modal');

@@ -26,7 +26,7 @@
 var basePath = window.basePath || (window.location.pathname.includes('/product/') || window.location.pathname.includes('/cushions/') || window.location.pathname.includes('/pillows/') || window.location.pathname.includes('/about/') || window.location.pathname.includes('/mobile/') || window.location.pathname.includes('/shipping/') || window.location.pathname.includes('/contact/') || window.location.pathname.includes('/terms/') || window.location.pathname.includes('/privacy/') || window.location.pathname.includes('/faqs/') || window.location.pathname.includes('/bulk/') ? '../' : './');
 var resolveImg = (url) => url ? (url.startsWith('http') ? url : (basePath + 'assets/' + url)) : '';
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAll() {
     initHeroSlider();
     initScrollReveal();
     initStickyNav();
@@ -46,7 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
             accountLink.innerHTML = accountLink.innerHTML.replace('ACCOUNT', 'YOU');
         }
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+} else {
+    initAll();
+}
 
 /* ==============================================
    PAGE TRAFFIC TRACKING
@@ -587,38 +593,114 @@ function initSearchModal() {
 }
 
 /* ==============================================
+   QUANTITY SELECTOR INITIALIZATION
+   ============================================== */
+function initQuantitySelector() {
+    const qtyMinus = document.getElementById('qty-minus');
+    const qtyPlus = document.getElementById('qty-plus');
+    const qtyInput = document.getElementById('qty-input');
+    
+    if (qtyMinus && qtyPlus && qtyInput) {
+        if (qtyInput.dataset.qtyBound === 'true') return;
+        qtyInput.dataset.qtyBound = 'true';
+
+        qtyMinus.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            let current = parseInt(qtyInput.value, 10) || 1;
+            const min = parseInt(qtyInput.min, 10) || 1;
+            if (current > min) {
+                qtyInput.value = current - 1;
+                qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        qtyPlus.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            let current = parseInt(qtyInput.value, 10) || 1;
+            const max = parseInt(qtyInput.max, 10) || 10;
+            if (current < max) {
+                qtyInput.value = current + 1;
+                qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        // Validate manual input
+        qtyInput.addEventListener('change', () => {
+            let val = parseInt(qtyInput.value, 10) || 1;
+            const min = parseInt(qtyInput.min, 10) || 1;
+            const max = parseInt(qtyInput.max, 10) || 10;
+            if (val < min) val = min;
+            if (val > max) val = max;
+            qtyInput.value = val;
+        });
+
+        // Prevent non-numeric keys
+        qtyInput.addEventListener('keydown', (e) => {
+            if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    }
+}
+
+/* ==============================================
    PRODUCT PAGE INITIALIZATION
    ============================================== */
 async function initProductPage() {
+    // Always initialize quantity selector on any product page
+    initQuantitySelector();
+
+    if (!document.querySelector('.product-page')) return;
+
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
+    let productId = urlParams.get('id');
 
-    if (!productId || !document.querySelector('.product-page')) return;
-
-    try {
-        const response = await fetch('../assets/products.json?v=' + new Date().getTime());
-        const products = await response.json();
-        window.productsData = products;
-        const product = products[productId];
-        if (!product) {
-            document.getElementById('product-title').innerText = "Product Not Found";
-            return;
+    let products = window.RESTNEST_PRODUCTS || window.productsData;
+    if (!products) {
+        try {
+            const response = await fetch('../assets/products.json?v=' + new Date().getTime());
+            products = await response.json();
+            window.RESTNEST_PRODUCTS = products;
+        } catch (error) {
+            console.warn("Failed to fetch products.json (likely file:// protocol):", error);
         }
-        window.currentProduct = product;
+    }
 
-        document.getElementById('product-title').innerText = product.title;
-        document.getElementById('product-desc').innerText = product.description;
-        document.getElementById('product-sale-price').innerText = product.salePrice;
-        document.getElementById('product-original-price').innerText = product.originalPrice;
-        document.getElementById('product-discount').innerText = product.discount;
-        
-        const images = product.images || [product.imgUrl];
-        document.getElementById('product-main-image').src = resolveImg(images[0]);
-        
-        const productInfo = document.querySelector('.product-details');
-        if (productInfo && product.variantId) {
-            productInfo.setAttribute('data-variant-id', product.variantId);
-        }
+    if (!products) {
+        console.warn("Product data unavailable.");
+        return;
+    }
+
+    window.productsData = products;
+
+    if (!productId) {
+        productId = Object.keys(products)[0];
+    }
+
+    const product = products[productId];
+    if (!product) {
+        document.getElementById('product-title').innerText = "Product Not Found";
+        return;
+    }
+    window.currentProduct = product;
+
+    document.getElementById('product-title').innerText = product.title;
+    document.getElementById('product-desc').innerText = product.description;
+    document.getElementById('product-sale-price').innerText = product.salePrice;
+    document.getElementById('product-original-price').innerText = product.originalPrice;
+    document.getElementById('product-discount').innerText = product.discount;
+    
+    const images = product.images || [product.imgUrl];
+    document.getElementById('product-main-image').src = resolveImg(images[0]);
+    
+    const productInfo = document.querySelector('.product-details');
+    if (productInfo && product.variantId) {
+        productInfo.setAttribute('data-variant-id', product.variantId);
+    }
 
         // Generate Thumbnails & Arrows
         const thumbnailsContainer = document.getElementById('product-thumbnails');
@@ -716,20 +798,6 @@ async function initProductPage() {
         }
 
         const addToCartBtn = document.querySelector('.product-actions .btn--primary');
-        const qtyMinus = document.getElementById('qty-minus');
-        const qtyPlus = document.getElementById('qty-plus');
-        const qtyInput = document.getElementById('qty-input');
-        
-        if (qtyMinus && qtyPlus && qtyInput) {
-            qtyMinus.addEventListener('click', () => {
-                let current = parseInt(qtyInput.value) || 1;
-                if (current > 1) qtyInput.value = current - 1;
-            });
-            qtyPlus.addEventListener('click', () => {
-                let current = parseInt(qtyInput.value) || 1;
-                qtyInput.value = current + 1;
-            });
-        }
 
         if (product.available === false) {
             if (addToCartBtn) {
@@ -744,12 +812,14 @@ async function initProductPage() {
             if (buyNowBtn) {
                 buyNowBtn.style.display = 'none';
             }
+            // Hide quantity selector for out-of-stock products
+            const qtySection = document.querySelector('.product-quantity');
+            if (qtySection) {
+                qtySection.style.display = 'none';
         }
-
-    } catch (error) {
-        console.error("Failed to load product data:", error);
     }
 }
+
 
 /* ==============================================
    PRODUCT SORTING LOGIC

@@ -2004,12 +2004,13 @@ button {
 }
 
 .quantity-selector {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(75, 54, 33, 0.2);
     border-radius: 8px;
     width: fit-content;
     overflow: hidden;
+    background: #FAF9F6;
 }
 
 .quantity-selector button {
@@ -2019,27 +2020,50 @@ button {
     height: 40px;
     cursor: pointer;
     font-size: 1.25rem;
-    color: var(--color-text);
-    transition: var(--transition);
+    font-weight: 500;
+    color: var(--color-text, #4B3621);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .quantity-selector button:hover {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(75, 54, 33, 0.08);
+}
+
+.quantity-selector button:active {
+    background-color: rgba(75, 54, 33, 0.15);
+    transform: scale(0.95);
 }
 
 .quantity-selector input {
-    width: 40px;
+    width: 44px;
     height: 40px;
     border: none;
+    border-left: 1px solid rgba(75, 54, 33, 0.1);
+    border-right: 1px solid rgba(75, 54, 33, 0.1);
     text-align: center;
     font-size: 1rem;
-    font-weight: 500;
-    color: var(--color-text);
+    font-weight: 600;
+    color: var(--color-text, #4B3621);
     background: transparent;
+    -moz-appearance: textfield;
+}
+
+.quantity-selector input::-webkit-outer-spin-button,
+.quantity-selector input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .quantity-selector input:focus {
     outline: none;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Actions */
