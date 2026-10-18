@@ -678,7 +678,7 @@ async function initProductPage() {
     window.productsData = products;
 
     if (!productId) {
-        productId = Object.keys(products)[0];
+        productId = Object.keys(products).find(key => products[key] && products[key].available !== false) || Object.keys(products)[0];
     }
 
     const product = products[productId];
@@ -816,8 +816,8 @@ async function initProductPage() {
             const qtySection = document.querySelector('.product-quantity');
             if (qtySection) {
                 qtySection.style.display = 'none';
+            }
         }
-    }
 }
 
 
@@ -1024,6 +1024,10 @@ document.addEventListener('DOMContentLoaded', initProductSort);
             e.preventDefault();
             if (cart.length === 0) return;
 
+            // Clear buy-now so cart checkout uses actual cart items
+            localStorage.removeItem('restnest_buy_now');
+            sessionStorage.removeItem('restnest_buy_now');
+
             window.location.href = basePath + 'checkout.html';
         });
     }
@@ -1034,10 +1038,9 @@ document.addEventListener('DOMContentLoaded', initProductSort);
         // Prevent Buy Now buttons from triggering regular Add to Cart
         if (e.target.closest('.buy-now-btn')) return;
 
-        const btn = e.target.closest('.add-to-cart-btn') || e.target.closest('.btn--primary');
-        if (!btn) return;
-        // Double-check it's not a buy-now button (safety net)
-        if (btn.classList.contains('buy-now-btn')) return;
+        // Strictly target .add-to-cart-btn (never unrelated .btn--primary like #writeReviewBtn or #submitReviewBtn)
+        const btn = e.target.closest('.add-to-cart-btn');
+        if (!btn || btn.disabled) return;
 
         const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
 

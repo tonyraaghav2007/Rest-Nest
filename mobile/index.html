@@ -2763,6 +2763,10 @@ function initScrollReveal() {
             e.preventDefault();
             if (cart.length === 0) return;
 
+            // Clear buy-now so cart checkout uses actual cart items
+            localStorage.removeItem('restnest_buy_now');
+            sessionStorage.removeItem('restnest_buy_now');
+
             window.location.href = '../checkout.html';
         });
     }
@@ -2770,8 +2774,62 @@ function initScrollReveal() {
     updateCartUI();
 
     document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('add-to-cart-btn') || e.target.classList.contains('btn--primary')) {
-            const btn = e.target;
+        // 1. Buy Now button handler
+        const buyBtn = e.target.closest('.buy-now-btn');
+        if (buyBtn && !buyBtn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const card = buyBtn.closest('.product-card') || buyBtn.closest('.products-slider__card') || document.querySelector('.product-details');
+            if (card) {
+                const titleEl = card.querySelector('.product-title') || card.querySelector('.products-slider__name') || document.getElementById('product-title');
+                const priceEl = card.querySelector('.sale-price') || card.querySelector('.products-slider__sale') || document.getElementById('product-sale-price');
+                const imgEl = card.querySelector('img') || document.getElementById('product-main-image');
+
+                let name = titleEl ? titleEl.textContent.trim() : 'Rest Nest Premium Pillow';
+                let price = priceEl ? parsePrice(priceEl.textContent) : 899.0;
+                let img = imgEl ? (imgEl.getAttribute('src') || '') : '';
+                let qty = 1;
+
+                const qtyInput = document.getElementById('qty-input');
+                if (qtyInput && card.classList.contains('product-details')) {
+                    qty = parseInt(qtyInput.value, 10) || 1;
+                }
+
+                if (!price || price <= 0 || isNaN(price)) price = 899.0;
+                if (qty < 1 || isNaN(qty)) qty = 1;
+
+                if (img) {
+                    img = img.replace(/^(\.\.\/)+/, '').replace(/^(\.\/)+/, '');
+                }
+                if (!img || img === 'sold_out.jpg') {
+                    img = 'assets/logo-nav.png';
+                } else if (!img.startsWith('assets/') && !img.startsWith('http') && !img.startsWith('/')) {
+                    img = 'assets/' + img;
+                }
+
+                const buyNowItem = [{ name, price, img, quantity: qty }];
+                localStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
+                sessionStorage.setItem('restnest_buy_now', JSON.stringify(buyNowItem));
+
+                // Meta Pixel: InitiateCheckout event
+                if (typeof fbq === 'function') {
+                    fbq('track', 'InitiateCheckout', {
+                        content_name: name,
+                        content_type: 'product',
+                        value: price * qty,
+                        currency: 'INR'
+                    });
+                }
+
+                window.location.href = '../checkout.html';
+            }
+            return;
+        }
+
+        // 2. Add to Cart button handler (strictly targeting .add-to-cart-btn)
+        const btn = e.target.closest('.add-to-cart-btn');
+        if (btn && !btn.disabled) {
             const card = btn.closest('.product-card') || btn.closest('.products-slider__card') || document.querySelector('.product-details');
 
             if (card) {
@@ -2784,7 +2842,6 @@ function initScrollReveal() {
                     const name = titleEl.textContent.trim();
                     const price = parsePrice(priceEl.textContent);
                     const img = imgEl.getAttribute('src');
-                    
                     
                     let qty = 1;
                     const qtyInput = document.getElementById('qty-input');
@@ -2812,8 +2869,6 @@ function initScrollReveal() {
                             currency: 'INR'
                         });
                     }
-
-                    
 
                     // Show green "Added" feedback then restore original brown styling
                     const origText = btn.textContent;

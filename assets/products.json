@@ -1,45 +1,31 @@
 {
-    "rest-nest-soft-pillow-pack-of-2-premium-recron-fiber-17x27-inch": {
-        "title": "Stripe Pillow",
-        "imgUrl": "sold_out.jpg",
+    "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2": {
+        "title": "Glace Cotton Pillow",
+        "imgUrl": "product-1/1.jpg",
+        "images": [
+            "product-1/1.jpg",
+            "product-1/2.jpg",
+            "product-1/3.jpg",
+            "product-1/4.jpg",
+            "product-1/5.jpg",
+            "product-1/6.jpg",
+            "product-1/7.jpg",
+            "product-1/8.jpg"
+        ],
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
         "discount": "-25%",
-        "id": "rest-nest-soft-pillow-pack-of-2-premium-recron-fiber-17x27-inch",
+        "id": "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2",
         "category": "Pillow",
-        "description": "A stripe-patterned sleeping pillow wrapped in soft and durable polycotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 650g and measures 17x27 inches, offering a lightweight yet supportive feel. White with blue stripe print for a classic look. Comes as a pack of 2 pillows with a total package weight of 1300g.",
+        "description": "Introducing the Super Soft (SS) sleeping pillow — wrapped in soft and durable polycotton outer fabric and filled with Premium Reliance Micro Fiber for a cloud-like feel. Each pillow weighs 1000g and measures 17x27 inches, delivering the ideal combination of plush comfort and dependable support. The white pillow with blue print piping adds a clean, elegant look to any bedroom. Comes as a set of 2 pillows, packaged at 2200g total weight in a 12x13x4 inch package.",
         "benefits": [
-            "Provides superior softness and plush comfort",
-            "Ensures excellent neck and head support for restful sleep",
-            "Lightweight yet durable — retains its shape for long-term use",
-            "Hypoallergenic fiber filling — safe for sensitive skin",
-            "Versatile for bedrooms, guest rooms, hotels, and lounges"
+            "Provides optimal head, neck, and shoulder support",
+            "Lightweight and easy to carry or adjust",
+            "Soft yet firm filling for restful sleep",
+            "Breathable fabric keeps you cool and comfortable",
+            "Durable construction with strong stitched edges"
         ],
-        "images": [
-            "sold_out.jpg"
-        ],
-        "available": false
-    },
-    "rest-nest-orthopedic-cervical-memory-foam-pillow-white-1-pc": {
-        "title": "Contour Memory Foam Pillow",
-        "imgUrl": "sold_out.jpg",
-        "salePrice": "Rs. 899.00",
-        "originalPrice": "Rs. 1,200.00",
-        "discount": "-25%",
-        "id": "rest-nest-orthopedic-cervical-memory-foam-pillow-white-1-pc",
-        "category": "Pillow",
-        "description": "An orthopedic cervical contour pillow made from premium memory foam with a soft and durable cotton outer fabric. Weighing 800g and measuring 16x24x3 inches, this contour-shaped pillow is designed to cradle your head and neck for proper spinal alignment. Ideal for those with spondylitis, cervical issues, or frequent neck pain.",
-        "benefits": [
-            "Promotes better sleep posture by aligning spine & neck",
-            "Reduces chances of snoring, stiffness, and cervical pain",
-            "Ideal for people with spondylitis, cervical issues, and frequent neck pain",
-            "Provides restorative deep sleep with pressure relief",
-            "Retains shape for long-term durability"
-        ],
-        "images": [
-            "sold_out.jpg"
-        ],
-        "available": false
+        "available": true
     },
     "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs": {
         "title": "Slim Pillow",
@@ -135,34 +121,6 @@
         "images": [
             "sold_out.jpg"
         ]
-    },
-    "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2": {
-        "title": "Glace Cotton Pillow",
-        "imgUrl": "product-1/1.jpg",
-        "images": [
-            "product-1/1.jpg",
-            "product-1/2.jpg",
-            "product-1/3.jpg",
-            "product-1/4.jpg",
-            "product-1/5.jpg",
-            "product-1/6.jpg",
-            "product-1/7.jpg",
-            "product-1/8.jpg"
-        ],
-        "salePrice": "Rs. 899.00",
-        "originalPrice": "Rs. 1,200.00",
-        "discount": "-25%",
-        "id": "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2",
-        "category": "Pillow",
-        "description": "Introducing the Super Soft (SS) sleeping pillow — wrapped in soft and durable polycotton outer fabric and filled with Premium Reliance Micro Fiber for a cloud-like feel. Each pillow weighs 1000g and measures 17x27 inches, delivering the ideal combination of plush comfort and dependable support. The white pillow with blue print piping adds a clean, elegant look to any bedroom. Comes as a set of 2 pillows, packaged at 2200g total weight in a 12x13x4 inch package.",
-        "benefits": [
-            "Provides optimal head, neck, and shoulder support",
-            "Lightweight and easy to carry or adjust",
-            "Soft yet firm filling for restful sleep",
-            "Breathable fabric keeps you cool and comfortable",
-            "Durable construction with strong stitched edges"
-        ],
-        "available": true
     },
     "rest-nest-blue-white-polycotton-pillow-pack-of-2-16x26-inch-light-weight-soft-supportive-filled-with-reliance-recron-fiber": {
         "title": "Rest Nest Blue & White Polycotton Pillow",
@@ -646,5 +604,47 @@
             "product-white-latex-pillow/infographic.jpg"
         ],
         "available": true
+    },
+    "rest-nest-soft-pillow-pack-of-2-premium-recron-fiber-17x27-inch": {
+        "title": "Stripe Pillow",
+        "imgUrl": "sold_out.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,200.00",
+        "discount": "-25%",
+        "id": "rest-nest-soft-pillow-pack-of-2-premium-recron-fiber-17x27-inch",
+        "category": "Pillow",
+        "description": "A stripe-patterned sleeping pillow wrapped in soft and durable polycotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 650g and measures 17x27 inches, offering a lightweight yet supportive feel. White with blue stripe print for a classic look. Comes as a pack of 2 pillows with a total package weight of 1300g.",
+        "benefits": [
+            "Provides superior softness and plush comfort",
+            "Ensures excellent neck and head support for restful sleep",
+            "Lightweight yet durable — retains its shape for long-term use",
+            "Hypoallergenic fiber filling — safe for sensitive skin",
+            "Versatile for bedrooms, guest rooms, hotels, and lounges"
+        ],
+        "images": [
+            "sold_out.jpg"
+        ],
+        "available": false
+    },
+    "rest-nest-orthopedic-cervical-memory-foam-pillow-white-1-pc": {
+        "title": "Contour Memory Foam Pillow",
+        "imgUrl": "sold_out.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,200.00",
+        "discount": "-25%",
+        "id": "rest-nest-orthopedic-cervical-memory-foam-pillow-white-1-pc",
+        "category": "Pillow",
+        "description": "An orthopedic cervical contour pillow made from premium memory foam with a soft and durable cotton outer fabric. Weighing 800g and measuring 16x24x3 inches, this contour-shaped pillow is designed to cradle your head and neck for proper spinal alignment. Ideal for those with spondylitis, cervical issues, or frequent neck pain.",
+        "benefits": [
+            "Promotes better sleep posture by aligning spine & neck",
+            "Reduces chances of snoring, stiffness, and cervical pain",
+            "Ideal for people with spondylitis, cervical issues, and frequent neck pain",
+            "Provides restorative deep sleep with pressure relief",
+            "Retains shape for long-term durability"
+        ],
+        "images": [
+            "sold_out.jpg"
+        ],
+        "available": false
     }
 }

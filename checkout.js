@@ -7,6 +7,7 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.g
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 let supabase = null;
+let cachedRazorpayKeyId = null;
 
 const firebaseConfig = {
   apiKey: "[HIDDEN_FIREBASE_KEY]",
@@ -299,6 +300,9 @@ function initCheckoutPage() {
     fetch(`${API_BASE}/public-config`)
         .then(res => res.json())
         .then(config => {
+            if (config && config.RAZORPAY_KEY_ID) {
+                cachedRazorpayKeyId = config.RAZORPAY_KEY_ID;
+            }
             if (config && config.SUPABASE_URL && config.SUPABASE_ANON_KEY) {
                 supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
                 // Attempt to fetch user profile and auto-fill
@@ -401,6 +405,30 @@ function setPayButtonState(state, text = '') {
     }
 }
 
+// Helper: Robust fetch with timeout & auto-retry for Render.com cold starts
+async function fetchWithTimeoutAndRetry(url, options = {}, retries = 2, timeoutMs = 25000) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timer);
+            if (!res.ok && attempt < retries && res.status >= 500) {
+                await new Promise(r => setTimeout(r, 1500));
+                continue;
+            }
+            return res;
+        } catch (err) {
+            clearTimeout(timer);
+            if (attempt < retries) {
+                await new Promise(r => setTimeout(r, 1500));
+                continue;
+            }
+            throw err;
+        }
+    }
+}
+
 // ----------------------------------------------------
 // Checkout Flow (Razorpay -> Big Ship)
 // ----------------------------------------------------
@@ -408,9 +436,26 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
     setPayButtonState('loading', 'Connecting to Payment Gateway...');
     showStatus('Connecting to secure payment gateway...', 'loading');
 
-    let gatewayTimer = setTimeout(() => {
+    // Progressive status updates for Render.com cold starts
+    const t1 = setTimeout(() => {
+        setPayButtonState('loading', 'Securing Payment Session...');
+        showStatus('Securing payment session, please hold on...', 'loading');
+    }, 3000);
+
+    const t2 = setTimeout(() => {
+        setPayButtonState('loading', 'Waking Payment Gateway...');
+        showStatus('Payment server is starting up, almost ready...', 'loading');
+    }, 7000);
+
+    const t3 = setTimeout(() => {
         setPayButtonState('loading', 'Opening Razorpay...');
-    }, 2500);
+    }, 15000);
+
+    const clearTimers = () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+    };
 
     // Use localhost for local testing, otherwise use the live Render backend
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
@@ -418,16 +463,21 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         : 'https://restienestie.onrender.com/api';
 
     try {
-        // 1. Get Config (Razorpay Key)
-        const configRes = await fetch(`${API_BASE}/config`);
-        const { razorpayKeyId } = await configRes.json();
+        // 1. Get Config (Use cached key if available, or fetch with retry)
+        let razorpayKeyId = cachedRazorpayKeyId;
+        if (!razorpayKeyId) {
+            const configRes = await fetchWithTimeoutAndRetry(`${API_BASE}/config`, {}, 2, 20000);
+            const cfg = await configRes.json();
+            razorpayKeyId = cfg.razorpayKeyId;
+            cachedRazorpayKeyId = razorpayKeyId;
+        }
 
-        // 2. Create Order on Backend
-        const orderRes = await fetch(`${API_BASE}/create-order`, {
+        // 2. Create Order on Backend (with cold-start retry)
+        const orderRes = await fetchWithTimeoutAndRetry(`${API_BASE}/create-order`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cart: cart, currency: 'INR' })
-        });
+        }, 2, 25000);
         const orderDataRes = await orderRes.json();
         
         if (!orderDataRes.success) throw new Error(orderDataRes.error || 'Failed to create order');
@@ -436,7 +486,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
 
         // 3. Handle Mock vs Real Payment
         if (order.id.startsWith('order_mock_')) {
-            clearTimeout(gatewayTimer);
+            clearTimers();
             showStatus('Mock Mode: Simulating Payment Success...', 'loading');
             setPayButtonState('loading', 'Simulating Payment...');
             setTimeout(() => handlePaymentSuccess({
@@ -448,7 +498,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         }
 
         // 4. Open Razorpay Widget for real/test credentials
-        clearTimeout(gatewayTimer);
+        clearTimers();
         setPayButtonState('awaiting', 'Awaiting Payment in Razorpay...');
 
         const options = {
@@ -484,9 +534,9 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         rzp.open();
 
     } catch (error) {
-        clearTimeout(gatewayTimer);
+        clearTimers();
         console.error('Checkout error:', error);
-        showStatus('Error preparing payment. Ensure backend is running.', 'error');
+        showStatus('Unable to reach payment gateway. Please check your connection and tap "Place Order" again.', 'error');
         setPayButtonState('default');
     }
 
