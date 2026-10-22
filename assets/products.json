@@ -1,6 +1,6 @@
 {
     "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2": {
-        "title": "Glace Cotton Pillow",
+        "title": "Loom Glace Cotton Pillow",
         "imgUrl": "product-1/1.jpg",
         "images": [
             "product-1/1.jpg",
@@ -28,7 +28,7 @@
         "available": true
     },
     "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs": {
-        "title": "Slim Pillow",
+        "title": "Form Slim Microfiber Pillow",
         "imgUrl": "product-3/1.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -55,21 +55,52 @@
         ],
         "available": true
     },
-    "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each": {
-        "title": "Black Fiber",
+    "classic-fiber-pillow": {
+        "title": "Classic Fiber Pillow",
         "imgUrl": "product-4/1.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
         "discount": "-25%",
-        "id": "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each",
+        "id": "classic-fiber-pillow",
         "category": "Pillow",
-        "description": "A premium Black Fiber wrapped in soft and durable glace cotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 1000g and measures 17x27 inches, offering a plush yet firm sleeping experience. White with blue print piping for a clean, elegant aesthetic. Comes as a pack of 2 pillows with a total package weight of 2 KG.",
+        "description": "Experience unmatched comfort and support with our premium Classic Fiber Pillow. Wrapped in soft and durable glace cotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 1000g and measures 17x27 inches, offering a plush yet firm sleeping experience. Available in Midnight (black) and Serene (white) variants.",
         "benefits": [
             "Peaceful Sleep — Supports your natural posture, reducing neck strain and stiffness",
             "Breathable & Cool — Glace cotton fabric prevents overheating during sleep",
             "Multi-Purpose Use — Perfect for sleeping, lounging, or enhancing bed aesthetics",
             "Durable & Long-Lasting — Strong stitching and premium materials extend pillow life",
-            "Ideal Gift — Comes as a pack of two, suitable for family and friends"
+            "Plush Comfort — Premium Recron Fiber for cloud-like softness"
+        ],
+        "variants": [
+            {
+                "label": "Midnight",
+                "variantId": "classic-fiber-pillow-midnight",
+                "color": "#1a1a2e",
+                "images": [
+                    "product-4/1.jpg",
+                    "product-4/2.jpg",
+                    "product-4/3.jpg",
+                    "product-4/4.jpg",
+                    "product-4/5.jpg",
+                    "product-4/6.jpg",
+                    "product-4/7.jpg"
+                ]
+            },
+            {
+                "label": "Serene",
+                "variantId": "classic-fiber-pillow-serene",
+                "color": "#f5f0eb",
+                "images": [
+                    "product-white-latex-pillow/1.jpg",
+                    "product-white-latex-pillow/2.jpg",
+                    "product-white-latex-pillow/3.jpg",
+                    "product-white-latex-pillow/4.jpg",
+                    "product-white-latex-pillow/5.jpg",
+                    "product-white-latex-pillow/6.png",
+                    "product-white-latex-pillow/7.jpg",
+                    "product-white-latex-pillow/infographic.jpg"
+                ]
+            }
         ],
         "images": [
             "product-4/1.jpg",
@@ -80,7 +111,25 @@
             "product-4/6.jpg",
             "product-4/7.jpg"
         ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            },
+            {
+                "label": "Queen",
+                "desc": "(28\" x 18\")"
+            }
+        ],
         "available": true
+    },
+    "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each": {
+        "aliasOf": "classic-fiber-pillow",
+        "defaultVariant": "Midnight"
+    },
+    "white-latex-pillow": {
+        "aliasOf": "classic-fiber-pillow",
+        "defaultVariant": "Serene"
     },
     "rest-nest-contourcare-memory-foam-pillow-orthopedic-support-for-perfect-sleep": {
         "title": "Rest Nest ContourCare™ Memory Foam Pillow",
@@ -428,14 +477,14 @@
         "available": true
     },
     "black-dotted-pillow": {
-        "title": "Black Dotted Pillow",
+        "title": "Dusk Signature Print Pillow",
         "imgUrl": "product-black-dotted-pillow/1.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
         "discount": "-25%",
         "id": "black-dotted-pillow",
         "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium Black Dotted Pillow. Filled with Recron fibres for lasting bounce and support, designed for deeper sleep and a refreshed you.",
+        "description": "Experience unmatched comfort and support with our premium Dusk Signature Print Pillow. Filled with Recron fibres for lasting bounce and support, designed for deeper sleep and a refreshed you.",
         "benefits": [
             "Premium recron fibre",
             "Plus cloud-like softness",
@@ -501,14 +550,14 @@
         "available": true
     },
     "honeycomb-pillow": {
-        "title": "Honeycomb Pillow",
+        "title": "Ridge Textured Comfort Pillow",
         "imgUrl": "product-honeycomb-pillow/1.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
         "discount": "-25%",
         "id": "honeycomb-pillow",
         "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium Honeycomb Pillow. Featuring an Advanced Sleep Technology design for shape retention and optimal neck support.",
+        "description": "Experience unmatched comfort and support with our premium Ridge Textured Comfort Pillow. Featuring an Advanced Sleep Technology design for shape retention and optimal neck support.",
         "benefits": [
             "Plush Comfort",
             "Neck Support",
@@ -567,41 +616,6 @@
             "product-honeycomb-cushion/1.jpg",
             "product-honeycomb-cushion/2.jpg",
             "product-honeycomb-cushion/3.jpg"
-        ],
-        "available": true
-    },
-    "white-latex-pillow": {
-        "title": "White Fiber Pillow",
-        "imgUrl": "product-white-latex-pillow/1.jpg",
-        "salePrice": "Rs. 899.00",
-        "originalPrice": "Rs. 1,200.00",
-        "discount": "-25%",
-        "id": "white-latex-pillow",
-        "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium White Fiber Pillow. Featuring an Advanced Sleep Technology design for shape retention and optimal neck support.",
-        "benefits": [
-            "Plush Comfort",
-            "Neck Support",
-            "Shape retention",
-            "Lightweight feel",
-            "Skin friendly",
-            "Premium Recron Fiber"
-        ],
-        "sizes": [
-            {
-                "label": "Standard",
-                "desc": "(24\" x 16\")"
-            }
-        ],
-        "images": [
-            "product-white-latex-pillow/1.jpg",
-            "product-white-latex-pillow/2.jpg",
-            "product-white-latex-pillow/3.jpg",
-            "product-white-latex-pillow/4.jpg",
-            "product-white-latex-pillow/5.jpg",
-            "product-white-latex-pillow/6.png",
-            "product-white-latex-pillow/7.jpg",
-            "product-white-latex-pillow/infographic.jpg"
         ],
         "available": true
     },

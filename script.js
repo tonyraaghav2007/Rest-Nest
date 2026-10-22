@@ -513,15 +513,19 @@ function initSearchModal() {
             setTimeout(() => searchInput.focus(), 100);
         }
         
-        // Fetch products lazily when search is opened
+        // Load products lazily when search is opened
         if (!productData) {
-            const basePath = window.location.pathname.includes('/product/') || window.location.pathname.includes('/cushions/') || window.location.pathname.includes('/pillows/') || window.location.pathname.includes('/about/') ? '../' : './';
-            fetch(basePath + 'assets/products.json?v=' + new Date().getTime())
-                .then(res => res.json())
-                .then(data => {
-                    productData = Object.values(data);
-                })
-                .catch(err => console.error("Error loading products for search", err));
+            if (window.RESTNEST_PRODUCTS) {
+                productData = Object.values(window.RESTNEST_PRODUCTS).filter(p => p && p.title);
+            } else {
+                const basePath = window.location.pathname.includes('/product/') || window.location.pathname.includes('/cushions/') || window.location.pathname.includes('/pillows/') || window.location.pathname.includes('/about/') ? '../' : './';
+                fetch(basePath + 'assets/products.json?v=' + new Date().getTime())
+                    .then(res => res.json())
+                    .then(data => {
+                        productData = Object.values(data).filter(p => p && p.title);
+                    })
+                    .catch(err => console.error("Error loading products for search", err));
+            }
         }
     }
 
@@ -551,7 +555,7 @@ function initSearchModal() {
             
             if (!query || !productData) return;
             
-            const matches = productData.filter(p => p.title.toLowerCase().includes(query));
+            const matches = productData.filter(p => p && p.title && p.title.toLowerCase().includes(query));
             matches.sort((a, b) => (a.available === false ? 1 : 0) - (b.available === false ? 1 : 0));
             
             if (matches.length === 0) {
@@ -574,7 +578,7 @@ function initSearchModal() {
                 item.style.borderRadius = '8px';
                 
                 item.innerHTML = `
-                    <img src="${p.imgUrl}" alt="${p.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                    <img src="${resolveImg(p.imgUrl)}" alt="${p.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
                     <div style="flex: 1;">
                         <h4 style="margin: 0; font-size: 0.95rem;">${p.title}</h4>
                         <span style="font-weight: bold; color: #4B3621;">${p.salePrice}</span>
@@ -681,7 +685,16 @@ async function initProductPage() {
         productId = Object.keys(products).find(key => products[key] && products[key].available !== false) || Object.keys(products)[0];
     }
 
-    const product = products[productId];
+    // --- Alias resolution: if this product is an alias, resolve to the real product ---
+    let defaultVariantLabel = null;
+    let entry = products[productId];
+    if (entry && entry.aliasOf) {
+        defaultVariantLabel = entry.defaultVariant || null;
+        productId = entry.aliasOf;
+        entry = products[productId];
+    }
+
+    const product = entry;
     if (!product) {
         document.getElementById('product-title').innerText = "Product Not Found";
         return;
@@ -694,7 +707,19 @@ async function initProductPage() {
     document.getElementById('product-original-price').innerText = product.originalPrice;
     document.getElementById('product-discount').innerText = product.discount;
     
-    const images = product.images || [product.imgUrl];
+    // Determine initial images based on variant
+    let activeVariant = null;
+    let images = product.images || [product.imgUrl];
+    if (product.variants && product.variants.length > 0) {
+        if (defaultVariantLabel) {
+            activeVariant = product.variants.find(v => v.label === defaultVariantLabel) || product.variants[0];
+        } else {
+            activeVariant = product.variants[0];
+        }
+        images = activeVariant.images || images;
+        window.currentVariantLabel = activeVariant.label;
+    }
+
     document.getElementById('product-main-image').src = resolveImg(images[0]);
     
     const productInfo = document.querySelector('.product-details');
@@ -706,6 +731,36 @@ async function initProductPage() {
         const thumbnailsContainer = document.getElementById('product-thumbnails');
         let currentImageIndex = 0;
         
+        const rebuildGallery = (newImages) => {
+            images = newImages;
+            currentImageIndex = 0;
+            document.getElementById('product-main-image').src = resolveImg(images[0]);
+            if (thumbnailsContainer) {
+                thumbnailsContainer.innerHTML = '';
+                images.forEach((img, index) => {
+                    const thumb = document.createElement('div');
+                    thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
+                    thumb.innerHTML = `<img src="${resolveImg(img)}" alt="Thumbnail ${index+1}">`;
+                    thumb.addEventListener('click', () => {
+                        updateMainImage(index);
+                    });
+                    thumbnailsContainer.appendChild(thumb);
+                });
+            }
+            // Update arrow visibility
+            const prevA = document.getElementById('gallery-prev');
+            const nextA = document.getElementById('gallery-next');
+            if (prevA && nextA) {
+                if (images.length <= 1) {
+                    prevA.style.setProperty('display', 'none', 'important');
+                    nextA.style.setProperty('display', 'none', 'important');
+                } else {
+                    prevA.style.removeProperty('display');
+                    nextA.style.removeProperty('display');
+                }
+            }
+        };
+
         const updateMainImage = (index) => {
             currentImageIndex = index;
             document.getElementById('product-main-image').src = resolveImg(images[currentImageIndex]);
@@ -753,6 +808,85 @@ async function initProductPage() {
                 
                 thumbnailsContainer.appendChild(thumb);
             });
+        }
+
+        // --- Variant Selector (color swatches) ---
+        if (product.variants && product.variants.length > 1) {
+            const variantSection = document.createElement('div');
+            variantSection.id = 'product-variant-section';
+            variantSection.style.cssText = 'margin-top: 1.25rem;';
+            variantSection.innerHTML = `<h4 class="product-options__label" style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #4B3621;">Color: <span id="selected-variant-label" style="font-weight: 600; color: #4B3621;">${activeVariant ? activeVariant.label : ''}</span></h4>`;
+            const variantWrap = document.createElement('div');
+            variantWrap.style.cssText = 'display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem;';
+
+            product.variants.forEach((variant) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                const isSelected = variant.label === (activeVariant && activeVariant.label);
+                btn.className = 'variant-swatch-btn' + (isSelected ? ' active' : '');
+                btn.setAttribute('data-variant', variant.label);
+                btn.style.cssText = `
+                    display: flex; align-items: center; gap: 0.6rem;
+                    padding: 0.55rem 1.15rem; border-radius: 8px; cursor: pointer;
+                    border: 2px solid ${isSelected ? '#4B3621' : '#d4c8bc'};
+                    background: ${isSelected ? '#F5EFE6' : '#FAF9F6'};
+                    transition: all 0.25s ease;
+                    font-family: var(--font-sans); font-size: 0.9rem; font-weight: 500; color: #4B3621;
+                    box-shadow: ${isSelected ? '0 2px 6px rgba(75, 54, 33, 0.12)' : 'none'};
+                `;
+                const swatch = document.createElement('span');
+                swatch.style.cssText = `
+                    width: 22px; height: 22px; border-radius: 50%;
+                    background: ${variant.color || '#ccc'};
+                    border: 2px solid rgba(0,0,0,0.12); flex-shrink: 0;
+                    ${variant.color === '#f5f0eb' ? 'box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);' : ''}
+                `;
+                btn.appendChild(swatch);
+                btn.appendChild(document.createTextNode(variant.label));
+
+                btn.addEventListener('mouseenter', () => {
+                    if (!btn.classList.contains('active')) {
+                        btn.style.borderColor = '#8B7355';
+                    }
+                });
+                btn.addEventListener('mouseleave', () => {
+                    if (!btn.classList.contains('active')) {
+                        btn.style.borderColor = '#d4c8bc';
+                    }
+                });
+
+                btn.addEventListener('click', () => {
+                    // Update active state
+                    variantWrap.querySelectorAll('.variant-swatch-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.style.borderColor = '#d4c8bc';
+                        b.style.background = '#FAF9F6';
+                        b.style.boxShadow = 'none';
+                    });
+                    btn.classList.add('active');
+                    btn.style.borderColor = '#4B3621';
+                    btn.style.background = '#F5EFE6';
+                    btn.style.boxShadow = '0 2px 6px rgba(75, 54, 33, 0.12)';
+                    // Update selected variant label display
+                    const labelSpan = document.getElementById('selected-variant-label');
+                    if (labelSpan) labelSpan.textContent = variant.label;
+                    // Swap gallery
+                    rebuildGallery(variant.images || product.images || [product.imgUrl]);
+                    // Update window variant tracking
+                    window.currentVariantLabel = variant.label;
+                });
+
+                variantWrap.appendChild(btn);
+            });
+            variantSection.appendChild(variantWrap);
+
+            // Insert before benefits or quantity
+            const benefitsSec = document.getElementById('product-benefits-section');
+            const quantitySec = document.querySelector('.product-quantity');
+            const insertBefore = benefitsSec || quantitySec;
+            if (insertBefore && insertBefore.parentNode) {
+                insertBefore.parentNode.insertBefore(variantSection, insertBefore);
+            }
         }
 
         // Generate Description & Benefits (for pillows) or Sizes (for cushions)
@@ -1051,7 +1185,10 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                 const imgEl = card.querySelector('img') || document.getElementById('product-main-image');
 
                 if (titleEl && priceEl && imgEl) {
-                    const name = titleEl.textContent.trim();
+                    let name = titleEl.textContent.trim();
+                    if (window.currentVariantLabel && (card.classList.contains('product-details') || document.querySelector('.product-page'))) {
+                        name = `${name} (${window.currentVariantLabel})`;
+                    }
                     const price = parsePrice(priceEl.textContent) || 899.0;
                     const img = imgEl.getAttribute('src');
                     
@@ -1100,14 +1237,25 @@ document.addEventListener('DOMContentLoaded', initProductSort);
 
     const CATALOG_FALLBACK_PRICES = {
         "White Fiber Pillow": 899.0,
+        "Serene Everyday Comfort Pillow": 899.0,
         "White Latex Pillow": 899.0,
         "Honeycomb Pillow": 899.0,
+        "Ridge Textured Comfort Pillow": 899.0,
         "Black Dotted Pillow": 899.0,
+        "Dusk Signature Print Pillow": 899.0,
         "Glace Cotton Pillow": 899.0,
+        "Loom Glace Cotton Pillow": 899.0,
         "Premium White Sleeping Pillow": 1063.0,
         "Slim Pillow": 899.0,
+        "Form Slim Microfiber Pillow": 899.0,
         "Slim Microfiber Pillow": 1014.0,
         "Black Fiber": 899.0,
+        "Classic Fiber Pillow": 899.0,
+        "Classic Fiber Pillow (Midnight)": 899.0,
+        "Classic Fiber Pillow (Serene)": 899.0,
+        "Classic Fiber Pillow - Midnight": 899.0,
+        "Classic Fiber Pillow - Serene": 899.0,
+        "Midnight Classic Fiber Pillow": 899.0,
         "Black Latex": 899.0,
         "Premium White Glace Cotton Pillows": 1140.0,
         "Contour Memory Foam Pillow": 899.0,
@@ -1164,14 +1312,20 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                 }
             }
 
+            if (window.currentVariantLabel && name && !name.includes(`(${window.currentVariantLabel})`)) {
+                name = `${name} (${window.currentVariantLabel})`;
+            }
+
             if (!price || price <= 0) {
                 const priceEl = document.getElementById('product-sale-price');
                 if (priceEl) price = parsePrice(priceEl.innerText);
             }
 
-            if (!img) {
-                const imgEl = document.getElementById('product-main-image');
-                if (imgEl) img = imgEl.getAttribute('src') || '';
+            const mainImgEl = document.getElementById('product-main-image');
+            if (mainImgEl && mainImgEl.getAttribute('src')) {
+                img = mainImgEl.getAttribute('src');
+            } else if (!img) {
+                img = '';
             }
 
             const qtyInput = document.getElementById('qty-input');
