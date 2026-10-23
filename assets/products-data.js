@@ -143,7 +143,7 @@ window.RESTNEST_PRODUCTS = {
         "aliasOf": "classic-fiber-pillow-serene"
     },
     "rest-nest-contourcare-memory-foam-pillow-orthopedic-support-for-perfect-sleep": {
-        "title": "Rest Nest ContourCare™ Memory Foam Pillow",
+        "title": "ContourCare™ Memory Foam Pillow",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -163,7 +163,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-white-gold-glace-cotton-sleeping-pillows-pack-of-2-lightweight-750g-each": {
-        "title": "Rest Nest White & Gold Glace Cotton Sleeping Pillows",
+        "title": "White & Gold Glace Cotton Sleeping Pillows",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -183,7 +183,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-blue-white-polycotton-pillow-pack-of-2-16x26-inch-light-weight-soft-supportive-filled-with-reliance-recron-fiber": {
-        "title": "Rest Nest Blue & White Polycotton Pillow",
+        "title": "Blue & White Polycotton Pillow",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -203,7 +203,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-premium-polycotton-pillow-with-recron-fiber-filling-black-white-16x26-inch-pack-of-2": {
-        "title": "Rest Nest Premium Polycotton Pillow With Recron Fiber Filling",
+        "title": "Premium Polycotton Pillow With Recron Fiber Filling",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -223,7 +223,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-16x16-white-stripe-soft-cushions-pack-of-5": {
-        "title": "Rest Nest 16x16 White Stripe Soft Cushions",
+        "title": "16x16 White Stripe Soft Cushions",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -246,7 +246,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-soft-cushion-pack-of-2-premium-recron-fiber-17x27-inch": {
-        "title": "Rest Nest Soft Cushion Pack Of 2",
+        "title": "Soft Cushion Pack Of 2",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -269,7 +269,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-orthopedic-cervical-memory-foam-cushion-white-1-pc": {
-        "title": "Rest Nest Orthopedic Cervical Memory Foam Cushion",
+        "title": "Orthopedic Cervical Memory Foam Cushion",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -292,7 +292,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-slim-microfiber-cushion-17x27-inch-white-1-pcs": {
-        "title": "Rest Nest Slim Microfiber Cushion",
+        "title": "Slim Microfiber Cushion",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -315,7 +315,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-premium-white-glace-cotton-cushions-pack-of-2-800g-each": {
-        "title": "Rest Nest Premium White Glace Cotton Cushions",
+        "title": "Premium White Glace Cotton Cushions",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -338,7 +338,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-contourcare-memory-foam-cushion-orthopedic-support-for-perfect-sleep": {
-        "title": "Rest Nest ContourCare™ Memory Foam Cushion",
+        "title": "ContourCare™ Memory Foam Cushion",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -361,7 +361,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-white-gold-glace-cotton-sleeping-cushions-pack-of-2-lightweight-750g-each": {
-        "title": "Rest Nest White & Gold Glace Cotton Sleeping Cushions",
+        "title": "White & Gold Glace Cotton Sleeping Cushions",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -384,7 +384,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-premium-white-sleeping-cushion-glace-cotton-fabric-lightweight-comfortable-pack-of-2": {
-        "title": "Rest Nest Premium White Sleeping Cushion",
+        "title": "Premium White Sleeping Cushion",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -407,7 +407,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-blue-white-polycotton-cushion-pack-of-2-16x26-inch-light-weight-soft-supportive-filled-with-reliance-recron-fiber": {
-        "title": "Rest Nest Blue & White Polycotton Cushion",
+        "title": "Blue & White Polycotton Cushion",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
@@ -430,7 +430,7 @@ window.RESTNEST_PRODUCTS = {
         ]
     },
     "rest-nest-premium-polycotton-cushion-with-recron-fiber-filling-black-white-16x26-inch-pack-of-2": {
-        "title": "Rest Nest Premium Polycotton Cushion With Recron Fiber Filling",
+        "title": "Premium Polycotton Cushion With Recron Fiber Filling",
         "imgUrl": "sold_out.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",

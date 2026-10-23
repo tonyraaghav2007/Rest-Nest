@@ -93,6 +93,7 @@ const PRODUCT_PRICES = {
     "Rest Nest Premium White Sleeping Cushion": 1386.0,
     "Blue & White Polycotton Cushion": 1175.0,
     "Rest Nest Blue & White Polycotton Cushion": 1175.0,
+    "Premium Polycotton Cushion With Recron Fiber Filling": 1386.0,
     "Premium Polycotton Cushion With Recron Fiber Filling Cushion": 1386.0,
     "16x16 White Stripe Soft Cushions": 1110.0,
     "Rest Nest 16x16 White Stripe Soft Cushions": 1110.0

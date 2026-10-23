@@ -17,6 +17,7 @@ function cleanTitle(title) {
     if (decoded.includes(' | ')) decoded = decoded.split(' | ')[0];
     if (decoded.includes(' – ')) decoded = decoded.split(' – ')[0];
     if (decoded.includes(' - ')) decoded = decoded.split(' - ')[0];
+    decoded = decoded.replace(/^Rest\s*Nest\s+/i, '');
     return decoded.trim();
 }
 
