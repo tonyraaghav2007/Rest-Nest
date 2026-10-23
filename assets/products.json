@@ -17,13 +17,14 @@
         "discount": "-15%",
         "id": "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2",
         "category": "Pillow",
-        "description": "Introducing the Super Soft (SS) sleeping pillow — wrapped in soft and durable polycotton outer fabric and filled with Premium Reliance Micro Fiber for a cloud-like feel. Each pillow weighs 1000g and measures 17x27 inches, delivering the ideal combination of plush comfort and dependable support. The white pillow with blue print piping adds a clean, elegant look to any bedroom. Comes as a set of 2 pillows, packaged at 2200g total weight in a 12x13x4 inch package.",
+        "description": "Feel the difference the moment you lie down. The Rest Nest Premium White Pillow has a cover made of glace cotton, a smooth fabric with a gentle sheen. It feels silky against your face and hair and stays cool and breathable through the night. Inside, a soft fiber filling keeps the pillow light and comfortable while still supporting your head and neck.\n\nThe clean, bright white finish gives your bed a fresh, hotel-style look. Plus, you get two in every pack, so it’s perfect for a bedroom upgrade or a thoughtful gift.",
         "benefits": [
-            "Provides optimal head, neck, and shoulder support",
-            "Lightweight and easy to carry or adjust",
-            "Soft yet firm filling for restful sleep",
-            "Breathable fabric keeps you cool and comfortable",
-            "Durable construction with strong stitched edges"
+            "Silky Glace Cotton Cover — Smooth, soft and gentle on your skin and hair",
+            "Cool & Breathable — Cotton fabric lets air flow so you stay comfortable all night",
+            "Lightweight Comfort — Soft and airy without feeling heavy or bulky",
+            "Supportive Filling — Cushions your head and keeps your neck comfortably aligned",
+            "Pack of 2 Value — Set of 2 pillows, perfect for your bedroom or guest room",
+            "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "available": true
     },
@@ -35,13 +36,13 @@
         "discount": "-15%",
         "id": "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs",
         "category": "Pillow",
-        "description": "A slim-profile sleeping pillow wrapped in soft and durable glace cotton and filled with Premium Reliance Micro Fiber. Weighing 1200g and measuring 17x27x2 inches, this rectangle-shaped pillow delivers soft comfort with a low-profile design — perfect for back and stomach sleepers who prefer minimal loft. White with blue print piping for a premium look.",
+        "description": "Not everyone sleeps well on a big, fluffy pillow. If you sleep on your stomach or back, or a thick pillow leaves your neck sore, the Rest Nest Slim Microfiber Pillow is made for you. Its low profile keeps your head close to the mattress so your neck stays in a natural, relaxed line. Inside, fine microfiber filling gives a silky, cloud-like softness that molds gently to you.\n\nIt’s also great for kids, for adding to your pillow stack, and for travel. It’s light and easy to carry and fits wherever you need a little extra comfort.",
         "benefits": [
-            "Provides soft comfort with light neck support",
-            "Slim design reduces strain for back and stomach sleepers",
-            "Retains shape and softness for long-term use",
-            "Enhances bedroom aesthetics with premium white & black contrast look",
-            "Lightweight yet durable for everyday use"
+            "Slim, Low-Profile Design — Ideal for stomach and back sleepers and anyone who finds regular pillows too high",
+            "Gentle on Your Neck — Keeps your head and neck naturally aligned for a more relaxed sleep",
+            "Silky Microfiber Filling — Fine fiber feels soft and smooth and adjusts to your shape",
+            "Light & Versatile — Great for sleeping, reading, travel, or kids' beds",
+            "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "images": [
             "product-3/1.jpg",
@@ -63,13 +64,14 @@
         "discount": "-25%",
         "id": "classic-fiber-pillow",
         "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium Classic Fiber Pillow. Wrapped in soft and durable glace cotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 1000g and measures 17x27 inches, offering a plush yet firm sleeping experience. Available in Midnight (black) and Serene (white) variants.",
+        "description": "Good sleep starts with the right pillow. The Rest Nest Classic Fiber Pillow is filled with 100% virgin Recron fiber, which is soft and springy and holds its shape night after night. The cover is a soft 180 GSM fabric that feels gentle on your skin. Together they support your head and neck without going flat by morning. That makes it a good fit for back sleepers, side sleepers and everyone in between.\n\nYou get two in every pack, available in Midnight (black) and Serene (white) variants.",
         "benefits": [
-            "Peaceful Sleep — Supports your natural posture, reducing neck strain and stiffness",
-            "Breathable & Cool — Glace cotton fabric prevents overheating during sleep",
-            "Multi-Purpose Use — Perfect for sleeping, lounging, or enhancing bed aesthetics",
-            "Durable & Long-Lasting — Strong stitching and premium materials extend pillow life",
-            "Plush Comfort — Premium Recron Fiber for cloud-like softness"
+            "100% Virgin Recron Fiber — Made only from fresh fiber, never recycled, so the pillow stays clean, soft and fluffy",
+            "Keeps Its Shape — The fiber springs back after every use, so you get no flat spots or lumps",
+            "Soft 180 GSM Fabric — Dense cover that is smooth to the touch and built to last",
+            "Even Support — Soft fiber spreads evenly to cradle your head and neck and ease morning stiffness",
+            "Pack of 2 Value — Set of 2 pillows, perfect for refreshing your bed or setting up a guest room",
+            "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "variants": [
             {
@@ -122,6 +124,14 @@
             }
         ],
         "available": true
+    },
+    "classic-fiber-pillow-midnight": {
+        "aliasOf": "classic-fiber-pillow",
+        "defaultVariant": "Midnight"
+    },
+    "classic-fiber-pillow-serene": {
+        "aliasOf": "classic-fiber-pillow",
+        "defaultVariant": "Serene"
     },
     "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each": {
         "aliasOf": "classic-fiber-pillow",
@@ -484,15 +494,14 @@
         "discount": "-15%",
         "id": "black-dotted-pillow",
         "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium Dusk Signature Print Pillow. Filled with Recron fibres for lasting bounce and support, designed for deeper sleep and a refreshed you.",
+        "description": "Who said pillows have to be plain? The Rest Nest Black Dotted Pillow brings a bold, modern touch to your bed with its stylish dotted design. The darker print also looks fresh for longer, because everyday marks and stains don’t show the way they do on all-white pillows. Inside, a soft fiber filling cushions your head and supports your neck. You get comfort that looks as good as it feels.\n\nIt’s a great choice for modern bedrooms, kids’ rooms, guest rooms and anyone who wants low-maintenance pillows. Plus, you get two in every pack, so it’s an easy refresh or a stylish gift.",
         "benefits": [
-            "Premium recron fibre",
-            "Plus cloud-like softness",
-            "Better neck support",
-            "Retains it's shape",
-            "Lightweight & comfortable",
-            "Made for restfull sleep",
-            "Skin Friendly"
+            "Stylish Dotted Design — Bold, modern print makes your bed stand out",
+            "Stays Looking Fresh — Darker tone hides everyday marks better than plain white pillows",
+            "Soft, Supportive Filling — Cradles your head and keeps your neck comfortably aligned",
+            "Holds Its Shape — Stays plump and even night after night",
+            "Pack of 2 Value — Set of 2 pillows, great for kids' rooms, guest rooms, or modern master beds",
+            "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "sizes": [
             {
@@ -557,14 +566,14 @@
         "discount": "-15%",
         "id": "honeycomb-pillow",
         "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium Ridge Textured Comfort Pillow. Featuring an Advanced Sleep Technology design for shape retention and optimal neck support.",
+        "description": "Comfort you can see and feel. The Rest Nest Honeycomb Pillow has a cover woven in an elegant honeycomb pattern. The textured weave looks premium on your bed and feels soft and airy against your skin. Inside, a plush fiber filling cushions your head and keeps your neck supported, so you wake up rested instead of stiff.\n\nIt’s stylish enough to show off and comfortable enough to sleep on every night. Plus, you get two in every pack, so it’s a smart upgrade for your bedroom or a ready-made gift.",
         "benefits": [
-            "Plush Comfort",
-            "Neck Support",
-            "Shape retention",
-            "Lightweight feel",
-            "Skin friendly",
-            "Premium Recron Fiber"
+            "Signature Honeycomb Design — Textured weave adds a premium, hotel-style touch to any bed",
+            "Soft & Airy Feel — Honeycomb texture is gentle on your skin and lets air move freely",
+            "Plush, Supportive Filling — Cradles your head and neck in a comfortable, natural position",
+            "Holds Its Shape — Stays full and even night after night",
+            "Pack of 2 Value — Set of 2 pillows, perfect for your master bed or a ready-made gift",
+            "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "sizes": [
             {
