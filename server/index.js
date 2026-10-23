@@ -250,10 +250,11 @@ const PRODUCT_REGISTRY = {
     "Rest Nest White Latex Pillow": 899.0,
     "white-latex-pillow": 899.0,
 
-    "Honeycomb Pillow": 899.0,
-    "Rest Nest Honeycomb Pillow": 899.0,
-    "Ridge Textured Comfort Pillow": 899.0,
-    "honeycomb-pillow": 899.0,
+    "Honeycomb Pillow": 1299.0,
+    "Rest Nest Honeycomb Pillow": 1299.0,
+    "Ridge Textured Comfort Pillow": 1299.0,
+    "Rest Nest Ridge Textured Comfort Pillow": 1299.0,
+    "honeycomb-pillow": 1299.0,
 
     "Black Dotted Pillow": 999.0,
     "Rest Nest Black Dotted Pillow": 999.0,
@@ -268,11 +269,12 @@ const PRODUCT_REGISTRY = {
     "Rest Nest Premium White Sleeping Pillow": 1063.0,
     "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2": 1199.0,
 
-    "Slim Pillow": 899.0,
-    "Form Slim Microfiber Pillow": 899.0,
-    "Slim Microfiber Pillow": 1014.0,
-    "Rest Nest Slim Microfiber Pillow": 1014.0,
-    "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs": 899.0,
+    "Slim Pillow": 1299.0,
+    "Form Slim Microfiber Pillow": 1299.0,
+    "Rest Nest Form Slim Microfiber Pillow": 1299.0,
+    "Slim Microfiber Pillow": 1299.0,
+    "Rest Nest Slim Microfiber Pillow": 1299.0,
+    "rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs": 1299.0,
 
     "Black Fiber": 899.0,
     "Rest Nest Black Fiber": 899.0,
