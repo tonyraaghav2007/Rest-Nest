@@ -55,52 +55,21 @@ window.RESTNEST_PRODUCTS = {
         ],
         "available": true
     },
-    "classic-fiber-pillow": {
-        "title": "Classic Fiber Pillow",
+    "classic-fiber-pillow-midnight": {
+        "title": "Classic Fiber Pillow — Midnight",
         "imgUrl": "product-4/1.jpg",
         "salePrice": "Rs. 899.00",
         "originalPrice": "Rs. 1,200.00",
         "discount": "-25%",
-        "id": "classic-fiber-pillow",
+        "id": "classic-fiber-pillow-midnight",
         "category": "Pillow",
-        "description": "Experience unmatched comfort and support with our premium Classic Fiber Pillow. Wrapped in soft and durable glace cotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 1000g and measures 17x27 inches, offering a plush yet firm sleeping experience. Available in Midnight (black) and Serene (white) variants.",
+        "description": "Experience unmatched comfort and support with our premium Classic Fiber Pillow in Midnight. Wrapped in soft and durable glace cotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 1000g and measures 17x27 inches, offering a plush yet firm sleeping experience in an elegant black colourway.",
         "benefits": [
             "Peaceful Sleep — Supports your natural posture, reducing neck strain and stiffness",
             "Breathable & Cool — Glace cotton fabric prevents overheating during sleep",
             "Multi-Purpose Use — Perfect for sleeping, lounging, or enhancing bed aesthetics",
             "Durable & Long-Lasting — Strong stitching and premium materials extend pillow life",
             "Plush Comfort — Premium Recron Fiber for cloud-like softness"
-        ],
-        "variants": [
-            {
-                "label": "Midnight",
-                "variantId": "classic-fiber-pillow-midnight",
-                "color": "#1a1a2e",
-                "images": [
-                    "product-4/1.jpg",
-                    "product-4/2.jpg",
-                    "product-4/3.jpg",
-                    "product-4/4.jpg",
-                    "product-4/5.jpg",
-                    "product-4/6.jpg",
-                    "product-4/7.jpg"
-                ]
-            },
-            {
-                "label": "Serene",
-                "variantId": "classic-fiber-pillow-serene",
-                "color": "#f5f0eb",
-                "images": [
-                    "product-white-latex-pillow/1.jpg",
-                    "product-white-latex-pillow/2.jpg",
-                    "product-white-latex-pillow/3.jpg",
-                    "product-white-latex-pillow/4.jpg",
-                    "product-white-latex-pillow/5.jpg",
-                    "product-white-latex-pillow/6.png",
-                    "product-white-latex-pillow/7.jpg",
-                    "product-white-latex-pillow/infographic.jpg"
-                ]
-            }
         ],
         "images": [
             "product-4/1.jpg",
@@ -123,13 +92,52 @@ window.RESTNEST_PRODUCTS = {
         ],
         "available": true
     },
+    "classic-fiber-pillow-serene": {
+        "title": "Classic Fiber Pillow — Serene",
+        "imgUrl": "product-white-latex-pillow/1.jpg",
+        "salePrice": "Rs. 899.00",
+        "originalPrice": "Rs. 1,200.00",
+        "discount": "-25%",
+        "id": "classic-fiber-pillow-serene",
+        "category": "Pillow",
+        "description": "Experience unmatched comfort and support with our premium Classic Fiber Pillow in Serene. Wrapped in soft and durable glace cotton and filled with Premium Reliance Recron Fiber. Each pillow weighs 1000g and measures 17x27 inches, offering a plush yet firm sleeping experience in a clean white colourway.",
+        "benefits": [
+            "Peaceful Sleep — Supports your natural posture, reducing neck strain and stiffness",
+            "Breathable & Cool — Glace cotton fabric prevents overheating during sleep",
+            "Multi-Purpose Use — Perfect for sleeping, lounging, or enhancing bed aesthetics",
+            "Durable & Long-Lasting — Strong stitching and premium materials extend pillow life",
+            "Plush Comfort — Premium Recron Fiber for cloud-like softness"
+        ],
+        "images": [
+            "product-white-latex-pillow/1.jpg",
+            "product-white-latex-pillow/2.jpg",
+            "product-white-latex-pillow/3.jpg",
+            "product-white-latex-pillow/4.jpg",
+            "product-white-latex-pillow/5.jpg",
+            "product-white-latex-pillow/6.png",
+            "product-white-latex-pillow/7.jpg",
+            "product-white-latex-pillow/infographic.jpg"
+        ],
+        "sizes": [
+            {
+                "label": "Standard",
+                "desc": "(24\" x 16\")"
+            },
+            {
+                "label": "Queen",
+                "desc": "(28\" x 18\")"
+            }
+        ],
+        "available": true
+    },
+    "classic-fiber-pillow": {
+        "aliasOf": "classic-fiber-pillow-midnight"
+    },
     "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each": {
-        "aliasOf": "classic-fiber-pillow",
-        "defaultVariant": "Midnight"
+        "aliasOf": "classic-fiber-pillow-midnight"
     },
     "white-latex-pillow": {
-        "aliasOf": "classic-fiber-pillow",
-        "defaultVariant": "Serene"
+        "aliasOf": "classic-fiber-pillow-serene"
     },
     "rest-nest-contourcare-memory-foam-pillow-orthopedic-support-for-perfect-sleep": {
         "title": "Rest Nest ContourCare™ Memory Foam Pillow",
@@ -619,7 +627,7 @@ window.RESTNEST_PRODUCTS = {
         ],
         "available": true
     },
-    /* white-latex-pillow is now an alias defined above, pointing to classic-fiber-pillow with defaultVariant "Serene" */
+    
     "rest-nest-soft-pillow-pack-of-2-premium-recron-fiber-17x27-inch": {
         "title": "Stripe Pillow",
         "imgUrl": "sold_out.jpg",
