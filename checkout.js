@@ -10,7 +10,7 @@ let supabase = null;
 let cachedRazorpayKeyId = null;
 
 const firebaseConfig = {
-  apiKey: "[HIDDEN_FIREBASE_KEY]",
+  apiKey: "AIzaSyAkIbq6sF7awGkuct1a1q-maFclLbGTAbA",
   authDomain: "restnest-355b3.firebaseapp.com",
   projectId: "restnest-355b3",
   storageBucket: "restnest-355b3.firebasestorage.app",
@@ -586,10 +586,17 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 shiprocketShipmentId: shipmentId
             };
 
-            await addDoc(collection(db, "orders"), {
-                ...finalOrder,
-                createdAt: serverTimestamp()
-            });
+            // Optional Firestore sync (non-blocking if security rules or network restrict client writes)
+            try {
+                if (db) {
+                    await addDoc(collection(db, "orders"), {
+                        ...finalOrder,
+                        createdAt: serverTimestamp()
+                    });
+                }
+            } catch (firebaseErr) {
+                console.warn('Optional Firebase Firestore sync skipped:', firebaseErr);
+            }
 
             // LocalStorage backup
             const existingOrders = JSON.parse(localStorage.getItem('restnest_orders') || '[]');
@@ -799,10 +806,17 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 shiprocketShipmentId: shipmentId
             };
 
-            await addDoc(collection(db, "orders"), {
-                ...finalOrder,
-                createdAt: serverTimestamp()
-            });
+            // Optional Firestore sync (non-blocking if security rules or network restrict client writes)
+            try {
+                if (db) {
+                    await addDoc(collection(db, "orders"), {
+                        ...finalOrder,
+                        createdAt: serverTimestamp()
+                    });
+                }
+            } catch (firebaseErr) {
+                console.warn('Optional Firebase Firestore sync skipped:', firebaseErr);
+            }
 
             // Save to localStorage for fallback UI if needed
             const existingOrders = JSON.parse(localStorage.getItem('restnest_orders') || '[]');
