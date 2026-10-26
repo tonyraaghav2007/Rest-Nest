@@ -745,6 +745,175 @@
                 font-size: 1.4rem;
             }
         }
+
+        /* ----- Payment Method Selection (Prepaid vs COD) ----- */
+        .payment-method-block {
+            margin-top: 1.75rem;
+            padding-top: 1.5rem;
+            border-top: 1.5px dashed rgba(75, 54, 33, 0.12);
+        }
+
+        .payment-method-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #4B3621;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .payment-method-legend svg {
+            width: 16px;
+            height: 16px;
+            color: #8B7355;
+        }
+
+        .payment-options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .payment-choice-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.95rem;
+            padding: 1rem 1.15rem;
+            background: rgba(255, 255, 255, 0.65);
+            border: 1.5px solid #E8E2DA;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            user-select: none;
+        }
+
+        .payment-choice-card:hover {
+            border-color: #c4a173;
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(75, 54, 33, 0.06);
+        }
+
+        .payment-choice-card.is-selected {
+            border-color: #4B3621;
+            background: rgba(75, 54, 33, 0.04);
+            box-shadow: 0 0 0 2px rgba(75, 54, 33, 0.12),
+                        0 4px 16px rgba(75, 54, 33, 0.08);
+        }
+
+        .payment-choice-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .choice-radio-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #b5a99a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            flex-shrink: 0;
+            transition: all 0.25s ease;
+            background: #fff;
+        }
+
+        .payment-choice-card.is-selected .choice-radio-indicator {
+            border-color: #4B3621;
+            background: #4B3621;
+        }
+
+        .choice-radio-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FAF9F6;
+            opacity: 0;
+            transform: scale(0.4);
+            transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .payment-choice-card.is-selected .choice-radio-dot {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .choice-card-body {
+            flex: 1;
+        }
+
+        .choice-card-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .choice-card-title {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #4B3621;
+        }
+
+        .choice-badge-recommended {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #2e7d32;
+            background: rgba(46, 125, 50, 0.1);
+            padding: 0.2rem 0.55rem;
+            border-radius: 20px;
+            letter-spacing: 0.02em;
+        }
+
+        .choice-badge-cod {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #8B7355;
+            background: rgba(139, 115, 85, 0.12);
+            padding: 0.2rem 0.55rem;
+            border-radius: 20px;
+            letter-spacing: 0.02em;
+        }
+
+        .choice-card-sub {
+            font-size: 0.82rem;
+            color: #7a6a5d;
+            line-height: 1.35;
+        }
+
+        .totals-row.cod-fee {
+            color: #8B7355;
+            font-size: 0.92rem;
+        }
+        .totals-row.cod-fee span:last-child {
+            font-weight: 600;
+            color: #4B3621;
+        }
+
+        .cod-notice-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.75rem 0.9rem;
+            background: rgba(196, 161, 115, 0.12);
+            border: 1px dashed rgba(196, 161, 115, 0.4);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #6B5B4F;
+            line-height: 1.4;
+            text-align: center;
+        }
     </style>
 
     <!-- Microsoft Clarity -->
@@ -1030,6 +1199,50 @@
                             <span class="input-highlight"></span>
                         </div>
                     </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="payment-method-block">
+                        <div class="payment-method-legend">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                            Payment Method
+                        </div>
+                        <div class="payment-options-group" role="radiogroup" aria-label="Payment Method">
+                            
+                            <!-- Option 1: Prepaid -->
+                            <label class="payment-choice-card is-selected" id="choice-card-prepaid" for="pay-opt-prepaid">
+                                <input type="radio" name="payment_method" id="pay-opt-prepaid" value="prepaid" checked>
+                                <div class="choice-radio-indicator">
+                                    <span class="choice-radio-dot"></span>
+                                </div>
+                                <div class="choice-card-body">
+                                    <div class="choice-card-title-row">
+                                        <span class="choice-card-title">Online Payment</span>
+                                        <span class="choice-badge-recommended">Recommended · Free Delivery</span>
+                                    </div>
+                                    <div class="choice-card-sub">UPI (Google Pay, PhonePe, Paytm), Cards, Net Banking via Razorpay</div>
+                                </div>
+                            </label>
+
+                            <!-- Option 2: Cash on Delivery -->
+                            <label class="payment-choice-card" id="choice-card-cod" for="pay-opt-cod">
+                                <input type="radio" name="payment_method" id="pay-opt-cod" value="cod">
+                                <div class="choice-radio-indicator">
+                                    <span class="choice-radio-dot"></span>
+                                </div>
+                                <div class="choice-card-body">
+                                    <div class="choice-card-title-row">
+                                        <span class="choice-card-title">Cash on Delivery (COD)</span>
+                                        <span class="choice-badge-cod">+Rs. 10 handling fee</span>
+                                    </div>
+                                    <div class="choice-card-sub">Pay via Cash or UPI at your doorstep upon delivery via BigShip</div>
+                                </div>
+                            </label>
+
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -1061,6 +1274,10 @@
                             <span>Shipping</span>
                             <span>Free</span>
                         </div>
+                        <div class="totals-row cod-fee" id="summary-cod-fee-row" style="display: none;">
+                            <span>COD Handling Fee</span>
+                            <span id="summary-cod-fee">Rs. 10.00</span>
+                        </div>
                         <div class="totals-row grand-total">
                             <span>Total</span>
                             <span id="summary-total">Rs. 0.00</span>
@@ -1072,13 +1289,22 @@
                         <span class="btn-icon">→</span>
                     </button>
 
-                    <div class="payment-methods">
+                    <div class="payment-methods" id="prepaid-icons-box">
                         <div class="payment-icons">
                             <span class="payment-icon">UPI</span>
                             <span class="payment-icon">Cards</span>
                             <span class="payment-icon">NetBanking</span>
                             <span class="payment-icon">Wallets</span>
                         </div>
+                    </div>
+
+                    <div class="cod-notice-badge" id="cod-notice-badge" style="display: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        <span>Cash / Doorstep UPI collected upon delivery. You'll receive live BigShip tracking.</span>
                     </div>
 
                     <div class="secure-badge">
@@ -1150,7 +1376,7 @@
 
     <!-- Razorpay SDK -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script type="module" src="checkout.js?v=25"></script>
+    <script type="module" src="checkout.js?v=26"></script>
 
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">

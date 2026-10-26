@@ -91,6 +91,11 @@ if (mongoose) {
         total_amount: Number,
         items: mongoose.Schema.Types.Mixed,
         status: String,
+        payment_method: String,
+        payment_id: String,
+        paymentMethod: String,
+        paymentId: String,
+        cod_fee: Number,
         bigship_awb: String,
         bigship_shipment_id: String,
         shiprocket_awb: String,
@@ -516,6 +521,12 @@ app.post('/api/create-shipment', async (req, res) => {
         const totalAmount = Number(orderData.total_amount) || 0;
         const invoiceId = orderData.order_id || `ORDER_${Date.now()}`;
 
+        // Detect Cash on Delivery (COD) vs Prepaid
+        const paymentTypeRaw = String(orderData.payment_type || orderData.paymentMethod || 'Prepaid').toUpperCase();
+        const isCod = paymentTypeRaw.includes('COD');
+        const paymentType = isCod ? 'COD' : 'Prepaid';
+        const collectableAmount = isCod ? totalAmount : 0;
+
         const bigshipOrderPayload = {
             shipment_category: "b2c",
             warehouse_detail: {
@@ -539,9 +550,9 @@ app.post('/api/create-shipment', async (req, res) => {
             order_detail: {
                 invoice_date: new Date().toISOString(),
                 invoice_id: invoiceId,
-                payment_type: "Prepaid",
+                payment_type: paymentType,
                 shipment_invoice_amount: totalAmount,
-                total_collectable_amount: 0,
+                total_collectable_amount: collectableAmount,
                 box_details: [
                     {
                         each_box_dead_weight: 1.0,
@@ -549,7 +560,7 @@ app.post('/api/create-shipment', async (req, res) => {
                         each_box_width: 10,
                         each_box_height: 10,
                         each_box_invoice_amount: totalAmount,
-                        each_box_collectable_amount: 0,
+                        each_box_collectable_amount: collectableAmount,
                         box_count: 1,
                         product_details: orderItems.map(item => ({
                             product_category: "Others",
@@ -557,7 +568,7 @@ app.post('/api/create-shipment', async (req, res) => {
                             product_name: item.name || "Bedding Item",
                             product_quantity: Number(item.quantity) || 1,
                             each_product_invoice_amount: Number(item.price) || totalAmount,
-                            each_product_collectable_amount: 0,
+                            each_product_collectable_amount: isCod ? (Number(item.price) || totalAmount) : 0,
                             hsn: ""
                         }))
                     }
@@ -601,7 +612,11 @@ app.post('/api/create-shipment', async (req, res) => {
         const awbCode = responseData.awb_code || null;
         const shipmentId = responseData.shipment_id ? String(responseData.shipment_id) : null;
 
-        // Save order to MongoDB
+        // Save order to MongoDB with explicit payment info
+        const paymentLabel = isCod ? 'Cash on Delivery (COD)' : 'Pre-paid (Razorpay)';
+        const paymentIdentifier = orderData.payment_id || (isCod ? `COD_${invoiceId}` : null);
+        const codFee = isCod ? (Number(orderData.cod_fee) || 10) : 0;
+
         const newOrder = new Order({
             id: orderData.order_id,
             user_id: orderData.user_id || null,
@@ -612,6 +627,11 @@ app.post('/api/create-shipment', async (req, res) => {
             total_amount: orderData.total_amount,
             items: orderData.items,
             status: 'Placed',
+            payment_method: paymentLabel,
+            paymentMethod: paymentLabel,
+            payment_id: paymentIdentifier,
+            paymentId: paymentIdentifier,
+            cod_fee: codFee,
             bigship_awb: awbCode,
             bigship_shipment_id: shipmentId,
             shiprocket_awb: awbCode,

@@ -201,6 +201,59 @@ function initCheckoutPage() {
     const totalEl = document.getElementById('summary-total');
     
     let totalAmount = 0;
+    let currentPaymentMethod = 'prepaid';
+    const COD_FEE = 10.0;
+
+    function updatePaymentMethod(method) {
+        currentPaymentMethod = method;
+        const prepaidCard = document.getElementById('choice-card-prepaid');
+        const codCard = document.getElementById('choice-card-cod');
+        const codFeeRow = document.getElementById('summary-cod-fee-row');
+        const prepaidIconsBox = document.getElementById('prepaid-icons-box');
+        const codNoticeBadge = document.getElementById('cod-notice-badge');
+
+        if (method === 'cod') {
+            if (prepaidCard) prepaidCard.classList.remove('is-selected');
+            if (codCard) codCard.classList.add('is-selected');
+            if (codFeeRow) codFeeRow.style.display = 'flex';
+            if (prepaidIconsBox) prepaidIconsBox.style.display = 'none';
+            if (codNoticeBadge) codNoticeBadge.style.display = 'flex';
+        } else {
+            if (prepaidCard) prepaidCard.classList.add('is-selected');
+            if (codCard) codCard.classList.remove('is-selected');
+            if (codFeeRow) codFeeRow.style.display = 'none';
+            if (prepaidIconsBox) prepaidIconsBox.style.display = 'block';
+            if (codNoticeBadge) codNoticeBadge.style.display = 'none';
+        }
+        updateSummaryTotals();
+        setPayButtonState('default', '', currentPaymentMethod);
+    }
+
+    function updateSummaryTotals() {
+        const isCod = (currentPaymentMethod === 'cod');
+        const codFee = isCod ? COD_FEE : 0;
+        const finalTotal = totalAmount + codFee;
+
+        if (subtotalEl) subtotalEl.textContent = formatPrice(totalAmount);
+        if (totalEl) totalEl.textContent = formatPrice(finalTotal);
+    }
+
+    // Attach listeners for payment method radio selection & card clicks
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            updatePaymentMethod(e.target.value);
+        });
+    });
+
+    document.querySelectorAll('.payment-choice-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio && radio.value !== currentPaymentMethod) {
+                radio.checked = true;
+                updatePaymentMethod(radio.value);
+            }
+        });
+    });
 
     function saveCheckoutState() {
         if (isBuyNow) {
@@ -261,8 +314,8 @@ function initCheckoutPage() {
             itemsContainer.appendChild(div);
         });
 
-        if (subtotalEl) subtotalEl.textContent = formatPrice(totalAmount);
-        if (totalEl) totalEl.textContent = formatPrice(totalAmount);
+        updateSummaryTotals();
+        setPayButtonState('default', '', currentPaymentMethod);
     }
 
     // Interactive quantity controls in checkout items
@@ -389,7 +442,8 @@ function initCheckoutPage() {
                 } catch (err) {}
             }
 
-            await processCheckout(cart, totalAmount, customerInfo, userId, isBuyNow);
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'prepaid';
+            await processCheckout(cart, totalAmount, customerInfo, userId, isBuyNow, selectedMethod);
         });
     }
 }
@@ -403,7 +457,7 @@ function showStatus(message, type) {
     statusEl.style.display = 'block';
 }
 
-function setPayButtonState(state, text = '') {
+function setPayButtonState(state, text = '', method = 'prepaid') {
     const payBtn = document.getElementById('pay-btn');
     if (!payBtn) return;
 
@@ -424,7 +478,11 @@ function setPayButtonState(state, text = '') {
     } else {
         payBtn.disabled = false;
         payBtn.classList.remove('is-loading');
-        payBtn.innerHTML = `Place Order <span class="btn-icon">→</span>`;
+        if (method === 'cod') {
+            payBtn.innerHTML = `Place COD Order <span class="btn-icon">→</span>`;
+        } else {
+            payBtn.innerHTML = `Pay & Place Order <span class="btn-icon">→</span>`;
+        }
     }
 }
 
@@ -453,25 +511,138 @@ async function fetchWithTimeoutAndRetry(url, options = {}, retries = 2, timeoutM
 }
 
 // ----------------------------------------------------
-// Checkout Flow (Razorpay -> Big Ship)
+// Checkout Flow (Razorpay / COD -> Big Ship)
 // ----------------------------------------------------
-async function processCheckout(cart, totalAmount, customerInfo, userId = null, isBuyNow = false) {
-    setPayButtonState('loading', 'Connecting to Payment Gateway...');
+async function processCheckout(cart, totalAmount, customerInfo, userId = null, isBuyNow = false, paymentMethod = 'prepaid') {
+    const isCod = (paymentMethod === 'cod');
+    const codFee = isCod ? 10.0 : 0.0;
+    const finalTotalAmount = totalAmount + codFee;
+
+    // Use localhost for local testing, otherwise use the live Render backend
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000/api' 
+        : 'https://restienestie.onrender.com/api';
+
+    // ─────────────────────────────────────────────
+    // Flow 1: Cash on Delivery (COD) Flow
+    // ─────────────────────────────────────────────
+    if (isCod) {
+        setPayButtonState('loading', 'Booking BigShip COD Order...', 'cod');
+        showStatus('Placing your Cash on Delivery order...', 'loading');
+
+        try {
+            const orderId = 'ORD' + Date.now().toString().slice(-6);
+            const baseOrderData = {
+                order_id: orderId,
+                user_id: userId,
+                name: customerInfo.name,
+                email: customerInfo.email,
+                phone: customerInfo.phone,
+                address: customerInfo.address,
+                city: customerInfo.city,
+                state: customerInfo.state,
+                pincode: customerInfo.pincode,
+                total_amount: finalTotalAmount,
+                items: cart,
+                payment_type: "COD",
+                paymentMethod: "Cash on Delivery (COD)",
+                payment_id: "COD_" + orderId,
+                cod_fee: 10
+            };
+
+            const shipRes = await fetchWithTimeoutAndRetry(`${API_BASE}/create-shipment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderData: baseOrderData })
+            }, 2, 25000);
+            const shipData = await shipRes.json();
+
+            if (!shipData.success) {
+                console.warn('Big Ship notice:', shipData.error);
+            }
+
+            const awbCode = shipData.data?.awb_code || 'Pending';
+            const shipmentId = shipData.data?.shipment_id || 'Pending';
+
+            const finalOrder = {
+                id: baseOrderData.order_id,
+                user_id: userId,
+                customer_name: customerInfo.name,
+                email: customerInfo.email,
+                phone: customerInfo.phone,
+                address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}`,
+                total_amount: finalTotalAmount,
+                items: cart.map(i => `${i.name} (x${i.quantity})`).join(', '),
+                raw_items: JSON.stringify(cart),
+                status: 'Placed',
+                paymentMethod: 'Cash on Delivery (COD)',
+                payment_method: 'Cash on Delivery (COD)',
+                paymentId: 'COD_' + baseOrderData.order_id,
+                payment_id: 'COD_' + baseOrderData.order_id,
+                codFee: 10,
+                bigshipAwb: awbCode,
+                bigshipShipmentId: shipmentId,
+                shiprocketAwb: awbCode,
+                shiprocketShipmentId: shipmentId
+            };
+
+            await addDoc(collection(db, "orders"), {
+                ...finalOrder,
+                createdAt: serverTimestamp()
+            });
+
+            // LocalStorage backup
+            const existingOrders = JSON.parse(localStorage.getItem('restnest_orders') || '[]');
+            existingOrders.push(finalOrder);
+            localStorage.setItem('restnest_orders', JSON.stringify(existingOrders));
+
+            showStatus(`Order placed successfully! Amount to pay at delivery: ${formatPrice(finalTotalAmount)}. Redirecting...`, 'success');
+
+            if (typeof fbq === 'function') {
+                fbq('track', 'Purchase', {
+                    content_type: 'product',
+                    num_items: cart.reduce((sum, item) => sum + item.quantity, 0),
+                    value: finalTotalAmount,
+                    currency: 'INR'
+                });
+            }
+
+            if (isBuyNow) {
+                localStorage.removeItem('restnest_buy_now');
+                sessionStorage.removeItem('restnest_buy_now');
+            } else {
+                localStorage.removeItem('restnest_cart');
+            }
+
+            setTimeout(() => window.location.href = 'index.html', 2200);
+
+        } catch (error) {
+            console.error('COD placement error:', error);
+            showStatus('Could not place COD order. Please check your connection and tap "Place COD Order" again.', 'error');
+            setPayButtonState('default', '', 'cod');
+        }
+        return;
+    }
+
+    // ─────────────────────────────────────────────
+    // Flow 2: Prepaid Flow (Razorpay)
+    // ─────────────────────────────────────────────
+    setPayButtonState('loading', 'Connecting to Payment Gateway...', 'prepaid');
     showStatus('Connecting to secure payment gateway...', 'loading');
 
     // Progressive status updates for Render.com cold starts
     const t1 = setTimeout(() => {
-        setPayButtonState('loading', 'Securing Payment Session...');
+        setPayButtonState('loading', 'Securing Payment Session...', 'prepaid');
         showStatus('Securing payment session, please hold on...', 'loading');
     }, 3000);
 
     const t2 = setTimeout(() => {
-        setPayButtonState('loading', 'Waking Payment Gateway...');
+        setPayButtonState('loading', 'Waking Payment Gateway...', 'prepaid');
         showStatus('Payment server is starting up, almost ready...', 'loading');
     }, 7000);
 
     const t3 = setTimeout(() => {
-        setPayButtonState('loading', 'Opening Razorpay...');
+        setPayButtonState('loading', 'Opening Razorpay...', 'prepaid');
     }, 15000);
 
     const clearTimers = () => {
@@ -479,11 +650,6 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         clearTimeout(t2);
         clearTimeout(t3);
     };
-
-    // Use localhost for local testing, otherwise use the live Render backend
-    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'http://localhost:3000/api' 
-        : 'https://restienestie.onrender.com/api';
 
     try {
         // 1. Get Config (Use cached key if available, or fetch with retry)
@@ -511,7 +677,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         if (order.id.startsWith('order_mock_')) {
             clearTimers();
             showStatus('Mock Mode: Simulating Payment Success...', 'loading');
-            setPayButtonState('loading', 'Simulating Payment...');
+            setPayButtonState('loading', 'Simulating Payment...', 'prepaid');
             setTimeout(() => handlePaymentSuccess({
                 razorpay_payment_id: 'pay_mock_' + Date.now(),
                 razorpay_order_id: order.id,
@@ -522,7 +688,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
 
         // 4. Open Razorpay Widget for real/test credentials
         clearTimers();
-        setPayButtonState('awaiting', 'Awaiting Payment in Razorpay...');
+        setPayButtonState('awaiting', 'Awaiting Payment in Razorpay...', 'prepaid');
 
         const options = {
             key: razorpayKeyId,
@@ -544,7 +710,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
             modal: {
                 ondismiss: function() {
                     showStatus('Payment cancelled.', 'error');
-                    setPayButtonState('default');
+                    setPayButtonState('default', '', 'prepaid');
                 }
             }
         };
@@ -552,20 +718,20 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', function (response) {
             showStatus('Payment failed: ' + (response.error?.description || 'Transaction declined'), 'error');
-            setPayButtonState('default');
+            setPayButtonState('default', '', 'prepaid');
         });
         rzp.open();
 
     } catch (error) {
         clearTimers();
         console.error('Checkout error:', error);
-        showStatus('Unable to reach payment gateway. Please check your connection and tap "Place Order" again.', 'error');
-        setPayButtonState('default');
+        showStatus('Unable to reach payment gateway. Please check your connection and tap "Pay & Place Order" again.', 'error');
+        setPayButtonState('default', '', 'prepaid');
     }
 
     async function handlePaymentSuccess(paymentResponse, isMock = false) {
         showStatus('Payment successful! Verifying...', 'loading');
-        setPayButtonState('loading', 'Finalizing Order...');
+        setPayButtonState('loading', 'Finalizing Order...', 'prepaid');
 
         try {
             // A. Verify Payment
@@ -592,7 +758,10 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 state: customerInfo.state,
                 pincode: customerInfo.pincode,
                 total_amount: totalAmount,
-                items: cart
+                items: cart,
+                payment_type: "Prepaid",
+                paymentMethod: 'Pre-paid (Razorpay)',
+                payment_id: paymentResponse.razorpay_payment_id
             };
 
             const shipRes = await fetch(`${API_BASE}/create-shipment`, {
@@ -621,7 +790,9 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 raw_items: JSON.stringify(cart),
                 status: 'Processing',
                 paymentMethod: 'Pre-paid (Razorpay)',
+                payment_method: 'Pre-paid (Razorpay)',
                 paymentId: paymentResponse.razorpay_payment_id,
+                payment_id: paymentResponse.razorpay_payment_id,
                 bigshipAwb: awbCode,
                 bigshipShipmentId: shipmentId,
                 shiprocketAwb: awbCode,
@@ -662,7 +833,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         } catch (error) {
             console.error('Post-payment error:', error);
             showStatus('Payment succeeded, but error finalizing order. Please contact support.', 'error');
-            setPayButtonState('default');
+            setPayButtonState('default', '', 'prepaid');
         }
     }
 }
