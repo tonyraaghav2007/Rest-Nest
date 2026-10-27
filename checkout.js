@@ -202,7 +202,11 @@ function initCheckoutPage() {
     
     let totalAmount = 0;
     let currentPaymentMethod = 'prepaid';
-    const COD_FEE = 10.0;
+
+    function calculateCodFee(subtotal) {
+        // 2% of total, rounded to nearest rupee for clean courier cash handling
+        return Math.round(Number(subtotal || 0) * 0.02);
+    }
 
     function updatePaymentMethod(method) {
         currentPaymentMethod = method;
@@ -231,11 +235,19 @@ function initCheckoutPage() {
 
     function updateSummaryTotals() {
         const isCod = (currentPaymentMethod === 'cod');
-        const codFee = isCod ? COD_FEE : 0;
+        const codFee = isCod ? calculateCodFee(totalAmount) : 0;
         const finalTotal = totalAmount + codFee;
 
+        const codFeeEl = document.getElementById('summary-cod-fee');
+        if (codFeeEl) codFeeEl.textContent = formatPrice(codFee);
         if (subtotalEl) subtotalEl.textContent = formatPrice(totalAmount);
         if (totalEl) totalEl.textContent = formatPrice(finalTotal);
+
+        const codBadge = document.getElementById('cod-badge-fee');
+        if (codBadge) {
+            const calculatedFee = calculateCodFee(totalAmount);
+            codBadge.textContent = calculatedFee > 0 ? `+${formatPrice(calculatedFee)} (2% fee)` : `+2% COD fee`;
+        }
     }
 
     // Attach listeners for payment method radio selection & card clicks
@@ -515,7 +527,7 @@ async function fetchWithTimeoutAndRetry(url, options = {}, retries = 2, timeoutM
 // ----------------------------------------------------
 async function processCheckout(cart, totalAmount, customerInfo, userId = null, isBuyNow = false, paymentMethod = 'prepaid') {
     const isCod = (paymentMethod === 'cod');
-    const codFee = isCod ? 10.0 : 0.0;
+    const codFee = isCod ? Math.round(Number(totalAmount || 0) * 0.02) : 0.0;
     const finalTotalAmount = totalAmount + codFee;
 
     // Use localhost for local testing, otherwise use the live Render backend
@@ -547,7 +559,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 payment_type: "COD",
                 paymentMethod: "Cash on Delivery (COD)",
                 payment_id: "COD_" + orderId,
-                cod_fee: 10
+                cod_fee: codFee
             };
 
             const shipRes = await fetchWithTimeoutAndRetry(`${API_BASE}/create-shipment`, {
@@ -584,8 +596,8 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 payment_type: 'COD',
                 paymentId: 'COD_' + baseOrderData.order_id,
                 payment_id: 'COD_' + baseOrderData.order_id,
-                codFee: 10,
-                cod_fee: 10,
+                codFee: codFee,
+                cod_fee: codFee,
                 bigshipAwb: awbCode,
                 bigshipShipmentId: shipmentId,
                 shiprocketAwb: awbCode,

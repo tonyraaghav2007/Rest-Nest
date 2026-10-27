@@ -1261,8 +1261,8 @@
                                 </div>
 
                                 <div class="summary-row" id="summary-cod-fee-row" style="display: none;">
-                                    <span>COD Convenience Fee</span>
-                                    <span class="val" id="summary-cod-fee">Rs. 10.00</span>
+                                    <span>COD Convenience Fee (2%)</span>
+                                    <span class="val" id="summary-cod-fee">Rs. 0.00</span>
                                 </div>
 
                                 <div class="summary-divider"></div>
@@ -1560,7 +1560,7 @@
             const fullAddress = order.address || (order.customer_info ? `${order.customer_info.address}, ${order.customer_info.city}, ${order.customer_info.state} - ${order.customer_info.pincode}` : 'Delivery Address Provided');
             const awbCode = order.bigshipAwb || order.bigship_awb || order.shiprocketAwb || 'Generating AWB...';
             const totalAmount = Number(order.total_amount) || 0;
-            const codFee = isCod ? (Number(order.codFee || order.cod_fee) || 10) : 0;
+            const codFee = isCod ? (order.codFee !== undefined ? Number(order.codFee) : (order.cod_fee !== undefined ? Number(order.cod_fee) : Math.round(totalAmount * 0.02))) : 0;
             const subtotal = Number(order.subtotal) || (isCod ? Math.max(0, totalAmount - codFee) : totalAmount);
 
             // 1. Hero text & titles
@@ -1597,7 +1597,7 @@
                     paymentBadgeContainer.className = 'order-meta-pill pill-payment-cod';
                     paymentBadgeContainer.innerHTML = `
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
-                        Cash on Delivery (₹10 COD Fee)
+                        Cash on Delivery (${codFee > 0 ? '₹' + Math.round(codFee) + ' Fee' : '2% Fee'})
                     `;
                 } else {
                     paymentBadgeContainer.className = 'order-meta-pill pill-payment-prepaid';

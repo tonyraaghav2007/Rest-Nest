@@ -615,7 +615,7 @@ app.post('/api/create-shipment', async (req, res) => {
         // Save order to MongoDB with explicit payment info
         const paymentLabel = isCod ? 'Cash on Delivery (COD)' : 'Pre-paid (Razorpay)';
         const paymentIdentifier = orderData.payment_id || (isCod ? `COD_${invoiceId}` : null);
-        const codFee = isCod ? (Number(orderData.cod_fee) || 10) : 0;
+        const codFee = isCod ? (orderData.cod_fee !== undefined && !isNaN(Number(orderData.cod_fee)) ? Number(orderData.cod_fee) : Math.round(totalAmount * 0.02)) : 0;
 
         const newOrder = new Order({
             id: orderData.order_id,
