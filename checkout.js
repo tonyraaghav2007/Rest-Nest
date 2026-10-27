@@ -568,22 +568,29 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 id: baseOrderData.order_id,
                 user_id: userId,
                 customer_name: customerInfo.name,
+                customer_info: customerInfo,
                 email: customerInfo.email,
                 phone: customerInfo.phone,
                 address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}`,
+                subtotal: totalAmount,
                 total_amount: finalTotalAmount,
                 items: cart.map(i => `${i.name} (x${i.quantity})`).join(', '),
+                items_list: cart,
                 raw_items: JSON.stringify(cart),
                 status: 'Placed',
                 paymentMethod: 'Cash on Delivery (COD)',
                 payment_method: 'Cash on Delivery (COD)',
+                paymentType: 'COD',
+                payment_type: 'COD',
                 paymentId: 'COD_' + baseOrderData.order_id,
                 payment_id: 'COD_' + baseOrderData.order_id,
                 codFee: 10,
+                cod_fee: 10,
                 bigshipAwb: awbCode,
                 bigshipShipmentId: shipmentId,
                 shiprocketAwb: awbCode,
-                shiprocketShipmentId: shipmentId
+                shiprocketShipmentId: shipmentId,
+                created_at: new Date().toISOString()
             };
 
             // Optional Firestore sync (non-blocking if security rules or network restrict client writes)
@@ -598,12 +605,16 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 console.warn('Optional Firebase Firestore sync skipped:', firebaseErr);
             }
 
+            // Save order to sessionStorage & localStorage for Thank You page
+            sessionStorage.setItem('restnest_last_order', JSON.stringify(finalOrder));
+            localStorage.setItem('restnest_last_order', JSON.stringify(finalOrder));
+
             // LocalStorage backup
             const existingOrders = JSON.parse(localStorage.getItem('restnest_orders') || '[]');
             existingOrders.push(finalOrder);
             localStorage.setItem('restnest_orders', JSON.stringify(existingOrders));
 
-            showStatus(`Order placed successfully! Amount to pay at delivery: ${formatPrice(finalTotalAmount)}. Redirecting...`, 'success');
+            showStatus(`Order placed successfully! Amount to pay at delivery: ${formatPrice(finalTotalAmount)}. Redirecting to confirmation...`, 'success');
 
             if (typeof fbq === 'function') {
                 fbq('track', 'Purchase', {
@@ -621,7 +632,11 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 localStorage.removeItem('restnest_cart');
             }
 
-            setTimeout(() => window.location.href = 'index.html', 2200);
+            setTimeout(() => {
+                const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const targetPage = isMobile ? 'mobile/thank-you.html' : 'thank-you.html';
+                window.location.href = `${targetPage}?order_id=${encodeURIComponent(finalOrder.id)}&method=cod`;
+            }, 1500);
 
         } catch (error) {
             console.error('COD placement error:', error);
@@ -789,21 +804,29 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 id: baseOrderData.order_id,
                 user_id: userId,
                 customer_name: customerInfo.name,
+                customer_info: customerInfo,
                 email: customerInfo.email,
                 phone: customerInfo.phone,
                 address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}`,
+                subtotal: totalAmount,
                 total_amount: totalAmount,
                 items: cart.map(i => `${i.name} (x${i.quantity})`).join(', '),
+                items_list: cart,
                 raw_items: JSON.stringify(cart),
                 status: 'Processing',
                 paymentMethod: 'Pre-paid (Razorpay)',
                 payment_method: 'Pre-paid (Razorpay)',
+                paymentType: 'Prepaid',
+                payment_type: 'Prepaid',
                 paymentId: paymentResponse.razorpay_payment_id,
                 payment_id: paymentResponse.razorpay_payment_id,
+                codFee: 0,
+                cod_fee: 0,
                 bigshipAwb: awbCode,
                 bigshipShipmentId: shipmentId,
                 shiprocketAwb: awbCode,
-                shiprocketShipmentId: shipmentId
+                shiprocketShipmentId: shipmentId,
+                created_at: new Date().toISOString()
             };
 
             // Optional Firestore sync (non-blocking if security rules or network restrict client writes)
@@ -818,12 +841,16 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 console.warn('Optional Firebase Firestore sync skipped:', firebaseErr);
             }
 
+            // Save order to sessionStorage & localStorage for Thank You page
+            sessionStorage.setItem('restnest_last_order', JSON.stringify(finalOrder));
+            localStorage.setItem('restnest_last_order', JSON.stringify(finalOrder));
+
             // Save to localStorage for fallback UI if needed
             const existingOrders = JSON.parse(localStorage.getItem('restnest_orders') || '[]');
             existingOrders.push(finalOrder);
             localStorage.setItem('restnest_orders', JSON.stringify(existingOrders));
 
-            showStatus('Order placed successfully! Redirecting...', 'success');
+            showStatus('Order placed successfully! Redirecting to confirmation...', 'success');
 
             // Meta Pixel: Purchase event
             if (typeof fbq === 'function') {
@@ -842,7 +869,11 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 localStorage.removeItem('restnest_cart');
             }
             
-            setTimeout(() => window.location.href = 'index.html', 2000);
+            setTimeout(() => {
+                const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const targetPage = isMobile ? 'mobile/thank-you.html' : 'thank-you.html';
+                window.location.href = `${targetPage}?order_id=${encodeURIComponent(finalOrder.id)}&method=prepaid`;
+            }, 1500);
 
         } catch (error) {
             console.error('Post-payment error:', error);

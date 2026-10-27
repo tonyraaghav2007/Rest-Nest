@@ -66,6 +66,7 @@ function trackPageView() {
     else if (page.includes('cushions')) page = 'Cushions';
     else if (page.includes('bulk')) page = 'Bulk Requests';
     else if (page.includes('checkout')) page = 'Checkout';
+    else if (page.includes('thank-you')) page = 'Thank You (Order Confirmed)';
     else if (page.includes('about')) page = 'About';
     else if (page.includes('terms')) page = 'Terms';
     else if (page.includes('product')) page = 'Product Detail';
