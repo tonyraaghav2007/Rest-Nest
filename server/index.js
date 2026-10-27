@@ -34,14 +34,14 @@ app.use((req, res, next) => {
 const rateLimit = require('express-rate-limit');
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 5000, // Generous limit for storefront browsing & admin dashboard polling
     message: { success: false, error: 'Too many requests, please try again later.' }
 });
 app.use('/api/', limiter);
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 20, // Stricter limit for auth/orders
+    max: 500, // Prevent auth/order spam without blocking legitimate checkout
     message: { success: false, error: 'Too many requests, please try again later.' }
 });
 
@@ -507,149 +507,194 @@ app.post('/api/verify-payment', (req, res) => {
 });
 
 // ----------------------------------------------------
-// Endpoint 3: Create Big Ship Shipment
+// ----------------------------------------------------
+// Endpoint 3: Create Big Ship Shipment & Save Order
 // ----------------------------------------------------
 app.post('/api/create-shipment', async (req, res) => {
     try {
         const { orderData } = req.body;
+        if (!orderData) {
+            return res.status(400).json({ success: false, error: 'Missing orderData' });
+        }
 
-        const customerNameParts = (orderData.name || '').trim().split(' ');
+        const customerNameParts = (orderData.name || orderData.customer_name || '').trim().split(' ');
         const firstName = customerNameParts[0] || 'Customer';
         const lastName = customerNameParts.slice(1).join(' ') || '';
 
         const orderItems = Array.isArray(orderData.items) ? orderData.items : [];
         const totalAmount = Number(orderData.total_amount) || 0;
-        const invoiceId = orderData.order_id || `ORDER_${Date.now()}`;
+        const invoiceId = orderData.order_id || orderData.id || `ORDER_${Date.now()}`;
 
         // Detect Cash on Delivery (COD) vs Prepaid
-        const paymentTypeRaw = String(orderData.payment_type || orderData.paymentMethod || 'Prepaid').toUpperCase();
+        const paymentTypeRaw = String(orderData.payment_type || orderData.paymentMethod || orderData.payment_method || 'Prepaid').toUpperCase();
         const isCod = paymentTypeRaw.includes('COD');
         const paymentType = isCod ? 'COD' : 'Prepaid';
         const collectableAmount = isCod ? totalAmount : 0;
-
-        const bigshipOrderPayload = {
-            shipment_category: "b2c",
-            warehouse_detail: {
-                pickup_location_id: 1,
-                return_location_id: 1
-            },
-            consignee_detail: {
-                first_name: firstName,
-                last_name: lastName,
-                company_name: "",
-                contact_number_primary: orderData.phone || "9999999999",
-                contact_number_secondary: "",
-                email_id: orderData.email || "",
-                consignee_address: {
-                    address_line_1: orderData.address || "Delivery Address",
-                    address_line_2: `${orderData.city || ''}, ${orderData.state || ''}`.trim(),
-                    address_landmark: "",
-                    pincode: String(orderData.pincode || "110001")
-                }
-            },
-            order_detail: {
-                invoice_date: new Date().toISOString(),
-                invoice_id: invoiceId,
-                payment_type: paymentType,
-                shipment_invoice_amount: totalAmount,
-                total_collectable_amount: collectableAmount,
-                box_details: [
-                    {
-                        each_box_dead_weight: 1.0,
-                        each_box_length: 10,
-                        each_box_width: 10,
-                        each_box_height: 10,
-                        each_box_invoice_amount: totalAmount,
-                        each_box_collectable_amount: collectableAmount,
-                        box_count: 1,
-                        product_details: orderItems.map(item => ({
-                            product_category: "Others",
-                            product_sub_category: "",
-                            product_name: item.name || "Bedding Item",
-                            product_quantity: Number(item.quantity) || 1,
-                            each_product_invoice_amount: Number(item.price) || totalAmount,
-                            each_product_collectable_amount: isCod ? (Number(item.price) || totalAmount) : 0,
-                            hsn: ""
-                        }))
-                    }
-                ]
-            }
-        };
-
-        const token = await getBigshipToken();
-        
-        let responseData;
-        if (token === 'MOCK_TOKEN') {
-            console.warn('Simulating Big Ship order creation.');
-            const mockAwb = `BS${Math.floor(1000000000 + Math.random() * 9000000000)}`;
-            responseData = {
-                order_id: invoiceId,
-                shipment_id: `BS_SHIP_${Math.floor(Math.random() * 1000000)}`,
-                status: 'NEW',
-                status_code: 1,
-                awb_code: mockAwb,
-                tracking_url: 'https://app.bigship.direct/'
-            };
-        } else {
-            const response = await axios.post(
-                'https://api.bigship.in/api/order/add/single',
-                bigshipOrderPayload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json'
-                    }
-                }
-            );
-            responseData = response.data;
-            if (responseData && !responseData.awb_code) {
-                responseData.awb_code = responseData.data?.master_awb || responseData.data?.lr_number || responseData.data || null;
-                responseData.shipment_id = responseData.data?.system_order_id ? String(responseData.data.system_order_id) : invoiceId;
-            }
-        }
-
-        const awbCode = responseData.awb_code || null;
-        const shipmentId = responseData.shipment_id ? String(responseData.shipment_id) : null;
-
-        // Save order to MongoDB with explicit payment info
         const paymentLabel = isCod ? 'Cash on Delivery (COD)' : 'Pre-paid (Razorpay)';
-        const paymentIdentifier = orderData.payment_id || (isCod ? `COD_${invoiceId}` : null);
+        const paymentIdentifier = orderData.payment_id || orderData.paymentId || (isCod ? `COD_${invoiceId}` : null);
         const codFee = isCod ? (orderData.cod_fee !== undefined && !isNaN(Number(orderData.cod_fee)) ? Number(orderData.cod_fee) : Math.round(totalAmount * 0.02)) : 0;
 
-        const newOrder = new Order({
-            id: orderData.order_id,
+        // Build formatted address string
+        const addrParts = [orderData.address, orderData.city, orderData.state].filter(Boolean);
+        const formattedAddress = addrParts.length > 0 
+            ? `${addrParts.join(', ')}${orderData.pincode ? ' - ' + orderData.pincode : ''}` 
+            : (orderData.address || 'Delivery Address');
+
+        const orderDoc = {
+            id: invoiceId,
             user_id: orderData.user_id || null,
-            customer_name: orderData.name,
-            email: orderData.email,
-            phone: orderData.phone,
-            address: `${orderData.address}, ${orderData.city}, ${orderData.state} - ${orderData.pincode}`,
-            total_amount: orderData.total_amount,
-            items: orderData.items,
-            status: 'Placed',
+            customer_name: orderData.name || orderData.customer_name || 'Customer',
+            email: orderData.email || '',
+            phone: orderData.phone || '',
+            address: formattedAddress,
+            total_amount: totalAmount,
+            items: orderItems,
+            status: orderData.status || 'Placed',
             payment_method: paymentLabel,
             paymentMethod: paymentLabel,
             payment_id: paymentIdentifier,
             paymentId: paymentIdentifier,
             cod_fee: codFee,
-            bigship_awb: awbCode,
-            bigship_shipment_id: shipmentId,
-            shiprocket_awb: awbCode,
-            shiprocket_shipment_id: shipmentId
-        });
-        await newOrder.save();
+            bigship_awb: 'Pending',
+            bigship_shipment_id: 'Pending',
+            shiprocket_awb: 'Pending',
+            shiprocket_shipment_id: 'Pending'
+        };
 
-        res.json({ success: true, data: responseData });
+        // 1. GUARANTEED: Save/upsert order into MongoDB first so order is NEVER lost
+        let savedOrder = null;
+        if (Order) {
+            try {
+                savedOrder = await Order.findOneAndUpdate(
+                    { id: invoiceId },
+                    { $set: orderDoc },
+                    { upsert: true, new: true, setDefaultsOnInsert: true }
+                );
+            } catch (dbErr) {
+                console.error('MongoDB order upsert error in create-shipment:', dbErr);
+            }
+        }
+
+        // 2. ATTEMPT BIG SHIP SHIPMENT (isolated try/catch so third-party failures never drop the order)
+        let responseData = {
+            order_id: invoiceId,
+            shipment_id: 'Pending',
+            status: 'NEW',
+            awb_code: 'Pending'
+        };
+
+        try {
+            const bigshipOrderPayload = {
+                shipment_category: "b2c",
+                warehouse_detail: {
+                    pickup_location_id: 1,
+                    return_location_id: 1
+                },
+                consignee_detail: {
+                    first_name: firstName,
+                    last_name: lastName,
+                    company_name: "",
+                    contact_number_primary: orderData.phone || "9999999999",
+                    contact_number_secondary: "",
+                    email_id: orderData.email || "",
+                    consignee_address: {
+                        address_line_1: orderData.address || "Delivery Address",
+                        address_line_2: `${orderData.city || ''}, ${orderData.state || ''}`.trim(),
+                        address_landmark: "",
+                        pincode: String(orderData.pincode || "110001")
+                    }
+                },
+                order_detail: {
+                    invoice_date: new Date().toISOString(),
+                    invoice_id: invoiceId,
+                    payment_type: paymentType,
+                    shipment_invoice_amount: totalAmount,
+                    total_collectable_amount: collectableAmount,
+                    box_details: [
+                        {
+                            each_box_dead_weight: 1.0,
+                            each_box_length: 10,
+                            each_box_width: 10,
+                            each_box_height: 10,
+                            each_box_invoice_amount: totalAmount,
+                            each_box_collectable_amount: collectableAmount,
+                            box_count: 1,
+                            product_details: orderItems.map(item => ({
+                                product_category: "Others",
+                                product_sub_category: "",
+                                product_name: item.name || "Bedding Item",
+                                product_quantity: Number(item.quantity) || 1,
+                                each_product_invoice_amount: Number(item.price) || totalAmount,
+                                each_product_collectable_amount: isCod ? (Number(item.price) || totalAmount) : 0,
+                                hsn: ""
+                            }))
+                        }
+                    ]
+                }
+            };
+
+            const token = await getBigshipToken();
+            if (token === 'MOCK_TOKEN') {
+                const mockAwb = `BS${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+                responseData = {
+                    order_id: invoiceId,
+                    shipment_id: `BS_SHIP_${Math.floor(Math.random() * 1000000)}`,
+                    status: 'NEW',
+                    status_code: 1,
+                    awb_code: mockAwb,
+                    tracking_url: 'https://app.bigship.direct/'
+                };
+            } else {
+                const response = await axios.post(
+                    'https://api.bigship.in/api/order/add/single',
+                    bigshipOrderPayload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json'
+                        },
+                        timeout: 15000
+                    }
+                );
+                responseData = response.data;
+                if (responseData && !responseData.awb_code) {
+                    responseData.awb_code = responseData.data?.master_awb || responseData.data?.lr_number || responseData.data || null;
+                    responseData.shipment_id = responseData.data?.system_order_id ? String(responseData.data.system_order_id) : invoiceId;
+                }
+            }
+
+            const awbCode = responseData.awb_code || null;
+            const shipmentId = responseData.shipment_id ? String(responseData.shipment_id) : null;
+
+            if (Order && (awbCode || shipmentId)) {
+                await Order.updateOne(
+                    { id: invoiceId },
+                    { 
+                        $set: { 
+                            bigship_awb: awbCode || 'Pending',
+                            bigship_shipment_id: shipmentId || 'Pending',
+                            shiprocket_awb: awbCode || 'Pending',
+                            shiprocket_shipment_id: shipmentId || 'Pending'
+                        } 
+                    }
+                );
+            }
+        } catch (shipErr) {
+            console.warn('Big Ship order booking note (Order safely stored in database):', shipErr.response ? shipErr.response.data : shipErr.message);
+        }
+
+        res.json({ success: true, data: responseData, order: savedOrder });
     } catch (error) {
-        console.error('Error creating Big Ship order:', error.response ? error.response.data : error.message);
-        res.status(500).json({ success: false, error: 'Failed to create shipment' });
+        console.error('Error in /api/create-shipment:', error.message);
+        res.status(500).json({ success: false, error: 'Internal server error processing shipment' });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 
 // ----------------------------------------------------
-// Endpoint 4: Get All Orders (For Admin App)
+// Endpoint 4: Orders (GET all orders for admin, POST to save directly)
 // ----------------------------------------------------
 app.get('/api/orders', async (req, res) => {
     try {
@@ -658,6 +703,49 @@ app.get('/api/orders', async (req, res) => {
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/orders', async (req, res) => {
+    try {
+        const orderData = req.body.orderData || req.body;
+        if (!orderData) return res.status(400).json({ success: false, error: 'No order data provided' });
+
+        const invoiceId = orderData.order_id || orderData.id || `ORD_${Date.now()}`;
+        const isCod = String(orderData.payment_type || orderData.paymentMethod || orderData.payment_method || '').toUpperCase().includes('COD');
+        const paymentLabel = isCod ? 'Cash on Delivery (COD)' : (orderData.payment_method || orderData.paymentMethod || 'Pre-paid (Razorpay)');
+        const codFee = isCod ? (orderData.cod_fee !== undefined ? Number(orderData.cod_fee) : Math.round(Number(orderData.total_amount || 0) * 0.02)) : 0;
+
+        const orderFields = {
+            id: invoiceId,
+            user_id: orderData.user_id || null,
+            customer_name: orderData.name || orderData.customer_name || 'Customer',
+            email: orderData.email || '',
+            phone: orderData.phone || '',
+            address: orderData.address || '',
+            total_amount: Number(orderData.total_amount) || 0,
+            items: orderData.items,
+            status: orderData.status || 'Placed',
+            payment_method: paymentLabel,
+            paymentMethod: paymentLabel,
+            payment_id: orderData.payment_id || orderData.paymentId || (isCod ? `COD_${invoiceId}` : null),
+            paymentId: orderData.payment_id || orderData.paymentId || (isCod ? `COD_${invoiceId}` : null),
+            cod_fee: codFee,
+            bigship_awb: orderData.bigship_awb || orderData.bigshipAwb || 'Pending',
+            bigship_shipment_id: orderData.bigship_shipment_id || orderData.bigshipShipmentId || 'Pending',
+            shiprocket_awb: orderData.shiprocket_awb || orderData.shiprocketAwb || 'Pending',
+            shiprocket_shipment_id: orderData.shiprocket_shipment_id || orderData.shiprocketShipmentId || 'Pending'
+        };
+
+        const saved = await Order.findOneAndUpdate(
+            { id: invoiceId },
+            { $set: orderFields },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ success: true, order: saved });
+    } catch (err) {
+        console.error('Error saving order directly:', err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

@@ -543,7 +543,7 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         showStatus('Placing your Cash on Delivery order...', 'loading');
 
         try {
-            const orderId = 'ORD' + Date.now().toString().slice(-6);
+            const orderId = 'ORD' + Date.now().toString().slice(-8) + Math.floor(10 + Math.random() * 90);
             const baseOrderData = {
                 order_id: orderId,
                 user_id: userId,
@@ -562,15 +562,29 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 cod_fee: codFee
             };
 
-            const shipRes = await fetchWithTimeoutAndRetry(`${API_BASE}/create-shipment`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderData: baseOrderData })
-            }, 2, 25000);
-            const shipData = await shipRes.json();
+            let shipData = null;
+            try {
+                const shipRes = await fetchWithTimeoutAndRetry(`${API_BASE}/create-shipment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderData: baseOrderData })
+                }, 2, 25000);
+                shipData = await shipRes.json();
+            } catch (shipFetchErr) {
+                console.warn('create-shipment request issue:', shipFetchErr);
+            }
 
-            if (!shipData.success) {
-                console.warn('Big Ship notice:', shipData.error);
+            if (!shipData || !shipData.success) {
+                console.warn('Big Ship notice (saving order directly):', shipData?.error);
+                try {
+                    await fetch(`${API_BASE}/orders`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderData: baseOrderData })
+                    });
+                } catch (saveErr) {
+                    console.warn('Direct order save fallback note:', saveErr);
+                }
             }
 
             const awbCode = shipData.data?.awb_code || 'Pending';
@@ -780,9 +794,10 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
 
             showStatus('Payment verified. Creating shipping label...', 'loading');
 
-            // B. Create Big Ship Shipment
+            // B. Create Big Ship Shipment & Persist Order
+            const orderId = 'ORD' + Date.now().toString().slice(-8) + Math.floor(10 + Math.random() * 90);
             const baseOrderData = {
-                order_id: 'ORD' + Date.now().toString().slice(-6),
+                order_id: orderId,
                 user_id: userId,
                 name: customerInfo.name,
                 email: customerInfo.email,
@@ -798,15 +813,29 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 payment_id: paymentResponse.razorpay_payment_id
             };
 
-            const shipRes = await fetch(`${API_BASE}/create-shipment`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderData: baseOrderData })
-            });
-            const shipData = await shipRes.json();
+            let shipData = null;
+            try {
+                const shipRes = await fetch(`${API_BASE}/create-shipment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderData: baseOrderData })
+                });
+                shipData = await shipRes.json();
+            } catch (shipFetchErr) {
+                console.warn('create-shipment fetch issue:', shipFetchErr);
+            }
 
-            if (!shipData.success) {
-                console.warn('Big Ship failed, but payment succeeded.');
+            if (!shipData || !shipData.success) {
+                console.warn('Big Ship notice (saving order directly):', shipData?.error);
+                try {
+                    await fetch(`${API_BASE}/orders`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ orderData: baseOrderData })
+                    });
+                } catch (saveErr) {
+                    console.warn('Direct order save fallback note:', saveErr);
+                }
             }
 
             // C. Save Final Complete Order to Firebase (For Admin App)
