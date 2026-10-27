@@ -1539,6 +1539,19 @@
                 });
                 sessionStorage.setItem(pixelOrderKey, 'true');
             }
+
+            // Admin Page Traffic Tracking
+            const trafficTrackKey = `traffic_tracked_${orderId}`;
+            if (!sessionStorage.getItem(trafficTrackKey)) {
+                fetch('https://restienestie.onrender.com/api/track-page', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ page: 'Thank You (Order Confirmed)' })
+                })
+                .then(res => res.json())
+                .then(() => sessionStorage.setItem(trafficTrackKey, 'true'))
+                .catch(err => console.warn('Failed to track confirmation page traffic', err));
+            }
         }
 
         function lookupMobileOrder() {
