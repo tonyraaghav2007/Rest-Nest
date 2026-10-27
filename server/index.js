@@ -189,45 +189,15 @@ let bigshipToken = null;
 let lastBigshipAuthError = null;
 
 // ----------------------------------------------------
-// Helper: Authenticate with Big Ship
+// Helper: Authenticate with Big Ship Direct
 // ----------------------------------------------------
 async function getBigshipToken() {
     if (bigshipToken) return bigshipToken;
 
-    const apiKey = process.env.BIGSHIP_API_KEY;
-    const userName = process.env.BIGSHIP_USER_NAME || process.env.SHIPROCKET_EMAIL;
-    const password = process.env.BIGSHIP_PASSWORD || process.env.SHIPROCKET_PASSWORD;
+    const userName = process.env.BIGSHIP_USER_NAME || 'contact@restnest.in';
+    const password = process.env.BIGSHIP_PASSWORD || '2051@Chirag';
 
-    if (!apiKey && !password) {
-        lastBigshipAuthError = 'Missing BIGSHIP_API_KEY / BIGSHIP_PASSWORD in environment';
-        console.warn('Big Ship API key/password missing. Using mock token.');
-        return 'MOCK_TOKEN';
-    }
-
-    // Method 1: BigShip API Login (https://api.bigship.in/api/login/user)
-    if (apiKey) {
-        try {
-            const response = await axios.post('https://api.bigship.in/api/login/user', {
-                user_name: userName,
-                password: password,
-                access_key: apiKey
-            }, { timeout: 10000 });
-
-            if (response.data && response.data.success && (response.data.data?.token || response.data.token)) {
-                bigshipToken = response.data.data?.token || response.data.token;
-                lastBigshipAuthError = null;
-                return bigshipToken;
-            } else {
-                lastBigshipAuthError = response.data?.message || 'Invalid Credentials on api.bigship.in';
-                console.warn('Big Ship api.bigship.in login returned non-success:', lastBigshipAuthError);
-            }
-        } catch (error) {
-            lastBigshipAuthError = error.response ? (error.response.data?.message || JSON.stringify(error.response.data)) : error.message;
-            console.error('Big Ship api.bigship.in auth error:', lastBigshipAuthError);
-        }
-    }
-
-    // Method 2: BigShip Direct Login fallback (https://appapi.bigship.direct/api/login)
+    // Method 1: BigShip Direct Login (https://appapi.bigship.direct/api/login)
     if (userName && password) {
         try {
             const response = await axios.post('https://appapi.bigship.direct/api/login', {
@@ -242,14 +212,175 @@ async function getBigshipToken() {
             } else {
                 const msg = response.data?.message || 'Invalid Credentials on appapi.bigship.direct';
                 console.warn('Big Ship appapi.bigship.direct login failed:', msg);
-                if (!lastBigshipAuthError) lastBigshipAuthError = msg;
+                lastBigshipAuthError = msg;
             }
         } catch (error) {
-            console.error('Big Ship appapi.bigship.direct auth error:', error.response ? error.response.data : error.message);
+            lastBigshipAuthError = error.response ? (error.response.data?.message || JSON.stringify(error.response.data)) : error.message;
+            console.error('Big Ship appapi.bigship.direct auth error:', lastBigshipAuthError);
+        }
+    }
+
+    // Method 2: Legacy BigShip API Login fallback (https://api.bigship.in/api/login/user)
+    const apiKey = process.env.BIGSHIP_API_KEY;
+    if (apiKey) {
+        try {
+            const response = await axios.post('https://api.bigship.in/api/login/user', {
+                user_name: userName,
+                password: password,
+                access_key: apiKey
+            }, { timeout: 10000 });
+
+            if (response.data && response.data.success && (response.data.data?.token || response.data.token)) {
+                bigshipToken = response.data.data?.token || response.data.token;
+                lastBigshipAuthError = null;
+                return bigshipToken;
+            }
+        } catch (error) {
+            console.error('Legacy BigShip auth error:', error.message);
         }
     }
 
     return 'MOCK_TOKEN';
+}
+
+// ----------------------------------------------------
+// Helper: Book Shipment directly on BigShip Direct
+// ----------------------------------------------------
+async function bookBigshipOrder(order) {
+    const token = await getBigshipToken();
+    if (token === 'MOCK_TOKEN') {
+        throw new Error(lastBigshipAuthError || 'BigShip authentication failed. Check credentials.');
+    }
+
+    // BigShip allows alphanumeric, hyphen, forward slash, backward slash in invoice/order ID
+    const rawId = String(order.id || ('RN-' + Date.now().toString().slice(-6)));
+    const cleanOrderId = rawId.replace(/[^a-zA-Z0-9\-\/\\]/g, '-');
+
+    const customerName = (order.customer_name || 'Customer').trim();
+    const phone = String(order.phone || '9999999999').replace(/[^0-9]/g, '').slice(-10) || '9999999999';
+    const email = order.email || 'contact@restnest.in';
+
+    // Extract pincode (clean 6 digits)
+    const rawPincode = String(order.pincode || (order.address?.match(/\b\d{6}\b/)?.[0]) || '110001');
+
+    // Geo resolution: lookup exact city and state names recognized by BigShip Direct
+    let city = (order.city || 'DELHI').trim().toUpperCase();
+    let state = (order.state || 'DELHI').trim().toUpperCase();
+    let country = 'India';
+
+    try {
+        const geoRes = await axios.post(
+            'https://appapi.bigship.direct/api/get-country-state-city',
+            { pincode: rawPincode },
+            { headers: { Authorization: `Bearer ${token}` }, timeout: 8000 }
+        );
+        if (geoRes.data?.status === 'Success' && geoRes.data?.data) {
+            if (geoRes.data.data.city) city = geoRes.data.data.city;
+            if (geoRes.data.data.state) state = geoRes.data.data.state;
+            if (geoRes.data.data.country) country = geoRes.data.data.country;
+        }
+    } catch (geoErr) {
+        console.warn('BigShip pincode lookup note:', geoErr.message);
+    }
+
+    // Clean address line 1 (max 75 chars) and line 2 (max 75 chars)
+    const fullAddr = (order.address || 'Delivery Address').replace(/[\r\n]+/g, ', ').trim();
+    const address1 = fullAddr.substring(0, 75).trim() || 'Delivery Address';
+    const address2 = fullAddr.length > 75 ? fullAddr.substring(75, 150).trim() : '';
+
+    const isCod = String(order.payment_method || order.paymentMethod || '').toUpperCase().includes('COD');
+    const totalAmount = Number(order.total_amount) || 0;
+    const collectableAmount = isCod ? totalAmount : 0;
+    const paymentMode = isCod ? '2' : '1';
+
+    const orderItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [];
+    const products = orderItems.length > 0 ? orderItems.map((item, idx) => {
+        const qty = Number(item.quantity) || 1;
+        const price = Number(item.price) || (totalAmount / (orderItems.length || 1));
+        const itemTotal = qty * price;
+        return {
+            productName: (item.name || `RestNest Item ${idx + 1}`).substring(0, 100),
+            qty: qty,
+            amount: price,
+            totalAmount: itemTotal,
+            ...(isCod ? { collectableAmount: itemTotal } : {}),
+            categoryId: 1
+        };
+    }) : [
+        {
+            productName: 'RestNest Bedding Product',
+            qty: 1,
+            amount: totalAmount,
+            totalAmount: totalAmount,
+            ...(isCod ? { collectableAmount: totalAmount } : {}),
+            categoryId: 1
+        }
+    ];
+
+    const boxes = [
+        {
+            parameter: [
+                { parameterId: '1', parameterValue: 10, parameterCategoryId: '1' },
+                { parameterId: '2', parameterValue: 10, parameterCategoryId: '1' },
+                { parameterId: '3', parameterValue: 10, parameterCategoryId: '1' },
+                { parameterId: '6', parameterValue: 0.5, parameterCategoryId: '5' }
+            ],
+            noOfBoxes: 1,
+            products: products
+        }
+    ];
+
+    const today = new Date().toISOString().slice(0, 10);
+    const time = new Date().toTimeString().slice(0, 8);
+    const pickupWarehouseId = Number(process.env.BIGSHIP_PICKUP_LOCATION_ID) || 209371;
+
+    const payload = {
+        PlatformTypeId: '1',
+        MasterVerticalId: '2',
+        LogisticsTypeId: '3',
+        WeightcategoryId: '1',
+        MasterOrderDate: `${today} ${time}`,
+        MasterOrderInvoiceAmount: totalAmount,
+        MasterOrderCollectableAmount: collectableAmount,
+        MasterOrderPaymentMode: paymentMode,
+        MasterCustomOrderId: cleanOrderId,
+        OrderInvoiceNo: cleanOrderId,
+        MasterOrderPickUpLocation: pickupWarehouseId,
+        MasterOrderReturnLocation: pickupWarehouseId,
+        totalNumOfBoxes: 1,
+        MasterOrderShippingName: customerName,
+        MasterOrderShippingMobileNo: phone,
+        MasterOrderShippingEmail: email,
+        MasterOrderShippingCountry: country,
+        MasterOrderShippingZipCode: rawPincode,
+        MasterOrderShippingCity: city,
+        MasterOrderShippingState: state,
+        MasterOrderShippingAddress: address1,
+        MasterOrderShippingAddress2: address2,
+        boxes: JSON.stringify(boxes)
+    };
+
+    const response = await axios.post('https://appapi.bigship.direct/api/create-order', payload, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+        },
+        timeout: 20000
+    });
+
+    if (response.data?.status === 'Success' || response.data?.data?.CustomGlobalOrderId) {
+        const shipmentId = response.data?.data?.CustomGlobalOrderId || response.data?.CustomGlobalOrderId;
+        return {
+            success: true,
+            shipment_id: String(shipmentId),
+            awb_code: 'Assigned on Dispatch',
+            data: response.data
+        };
+    } else {
+        const msg = response.data?.message || (response.data?.errors ? JSON.stringify(response.data.errors) : 'BigShip order creation failed');
+        throw new Error(msg);
+    }
 }
 
 // ----------------------------------------------------
@@ -612,120 +743,35 @@ app.post('/api/create-shipment', async (req, res) => {
         };
 
         try {
-            const bigshipOrderPayload = {
-                shipment_category: "b2c",
-                warehouse_detail: {
-                    pickup_location_id: 1,
-                    return_location_id: 1
-                },
-                consignee_detail: {
-                    first_name: firstName,
-                    last_name: lastName,
-                    company_name: "",
-                    contact_number_primary: orderData.phone || "9999999999",
-                    contact_number_secondary: "",
-                    email_id: orderData.email || "",
-                    consignee_address: {
-                        address_line_1: orderData.address || "Delivery Address",
-                        address_line_2: `${orderData.city || ''}, ${orderData.state || ''}`.trim(),
-                        address_landmark: "",
-                        pincode: String(orderData.pincode || "110001")
-                    }
-                },
-                order_detail: {
-                    invoice_date: new Date().toISOString(),
-                    invoice_id: invoiceId,
-                    payment_type: paymentType,
-                    shipment_invoice_amount: totalAmount,
-                    total_collectable_amount: collectableAmount,
-                    box_details: [
-                        {
-                            each_box_dead_weight: 1.0,
-                            each_box_length: 10,
-                            each_box_width: 10,
-                            each_box_height: 10,
-                            each_box_invoice_amount: totalAmount,
-                            each_box_collectable_amount: collectableAmount,
-                            box_count: 1,
-                            product_details: orderItems.map(item => ({
-                                product_category: "Others",
-                                product_sub_category: "",
-                                product_name: item.name || "Bedding Item",
-                                product_quantity: Number(item.quantity) || 1,
-                                each_product_invoice_amount: Number(item.price) || totalAmount,
-                                each_product_collectable_amount: isCod ? (Number(item.price) || totalAmount) : 0,
-                                hsn: ""
-                            }))
-                        }
-                    ]
-                }
+            const bookingResult = await bookBigshipOrder(orderDoc);
+            responseData = {
+                order_id: invoiceId,
+                shipment_id: bookingResult.shipment_id,
+                status: 'NEW',
+                status_code: 1,
+                awb_code: bookingResult.awb_code,
+                tracking_url: 'https://app.bigship.direct/',
+                data: bookingResult.data
             };
 
-            const token = await getBigshipToken();
-            if (token === 'MOCK_TOKEN') {
-                const mockAwb = `BS${Math.floor(1000000000 + Math.random() * 9000000000)}`;
-                responseData = {
-                    order_id: invoiceId,
-                    shipment_id: `BS_SHIP_${Math.floor(Math.random() * 1000000)}`,
-                    status: 'NEW',
-                    status_code: 1,
-                    awb_code: mockAwb,
-                    tracking_url: 'https://app.bigship.direct/',
-                    is_simulated: true,
-                    auth_error: lastBigshipAuthError
-                };
-                if (Order) {
-                    await Order.updateOne(
-                        { id: invoiceId },
-                        {
-                            $set: {
-                                bigship_status: 'Auth Failed',
-                                bigship_error: lastBigshipAuthError || 'Invalid BigShip Credentials'
-                            }
-                        }
-                    );
-                }
-            } else {
-                const response = await axios.post(
-                    'https://api.bigship.in/api/order/add/single',
-                    bigshipOrderPayload,
+            if (Order) {
+                await Order.updateOne(
+                    { id: invoiceId },
                     {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                            Accept: 'application/json'
-                        },
-                        timeout: 15000
+                        $set: {
+                            bigship_status: 'Booked',
+                            bigship_error: null,
+                            bigship_shipment_id: bookingResult.shipment_id,
+                            bigship_awb: bookingResult.awb_code,
+                            shiprocket_shipment_id: bookingResult.shipment_id,
+                            shiprocket_awb: bookingResult.awb_code
+                        }
                     }
                 );
-                responseData = response.data;
-                if (responseData && !responseData.awb_code) {
-                    responseData.awb_code = responseData.data?.master_awb || responseData.data?.lr_number || responseData.data || null;
-                    responseData.shipment_id = responseData.data?.system_order_id ? String(responseData.data.system_order_id) : invoiceId;
-                }
-
-                const awbCode = responseData.awb_code || null;
-                const shipmentId = responseData.shipment_id ? String(responseData.shipment_id) : null;
-
-                if (Order && (awbCode || shipmentId)) {
-                    await Order.updateOne(
-                        { id: invoiceId },
-                        { 
-                            $set: { 
-                                bigship_status: 'Booked',
-                                bigship_error: null,
-                                bigship_awb: awbCode || 'Pending',
-                                bigship_shipment_id: shipmentId || 'Pending',
-                                shiprocket_awb: awbCode || 'Pending',
-                                shiprocket_shipment_id: shipmentId || 'Pending'
-                            } 
-                        }
-                    );
-                }
             }
         } catch (shipErr) {
             const errMsg = shipErr.response ? (shipErr.response.data?.message || JSON.stringify(shipErr.response.data)) : shipErr.message;
-            console.warn('Big Ship order booking note (Order safely stored in database):', errMsg);
+            console.warn('Big Ship order booking error (Order safely stored in database):', errMsg);
             if (Order) {
                 await Order.updateOne(
                     { id: invoiceId },
@@ -742,18 +788,26 @@ app.post('/api/create-shipment', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Endpoint: Check BigShip Connection Status
+// Endpoint: Check BigShip Connection Status & Account Info
 // ----------------------------------------------------
 app.get('/api/bigship-status', async (req, res) => {
     try {
         const token = await getBigshipToken();
         const isConnected = token && token !== 'MOCK_TOKEN';
+        let accountData = null;
+        if (isConnected) {
+            accountData = {
+                account_email: process.env.BIGSHIP_USER_NAME || 'contact@restnest.in',
+                warehouse_id: Number(process.env.BIGSHIP_PICKUP_LOCATION_ID) || 209371,
+                platform: 'BigShip Direct (app.bigship.direct)'
+            };
+        }
         res.json({
             success: true,
             connected: isConnected,
             auth_error: lastBigshipAuthError,
-            user_configured: !!(process.env.BIGSHIP_USER_NAME || process.env.SHIPROCKET_EMAIL),
-            api_key_configured: !!process.env.BIGSHIP_API_KEY
+            account: accountData,
+            user_configured: true
         });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
@@ -773,86 +827,7 @@ app.post('/api/retry-shipment', async (req, res) => {
 
         // Reset token cache to re-authenticate with freshest credentials
         bigshipToken = null;
-        const token = await getBigshipToken();
-
-        if (token === 'MOCK_TOKEN') {
-            return res.status(400).json({
-                success: false,
-                error: `BigShip authentication failed: ${lastBigshipAuthError || 'Invalid credentials'}. Please verify BIGSHIP_USER_NAME, BIGSHIP_PASSWORD, and BIGSHIP_API_KEY in environment variables.`
-            });
-        }
-
-        const customerNameParts = (order.customer_name || '').trim().split(' ');
-        const firstName = customerNameParts[0] || 'Customer';
-        const lastName = customerNameParts.slice(1).join(' ') || '';
-        const orderItems = Array.isArray(order.items) ? order.items : [];
-        const isCod = String(order.payment_method || order.paymentMethod || '').toUpperCase().includes('COD');
-
-        const bigshipOrderPayload = {
-            shipment_category: "b2c",
-            warehouse_detail: {
-                pickup_location_id: Number(process.env.BIGSHIP_PICKUP_LOCATION_ID) || 1,
-                return_location_id: Number(process.env.BIGSHIP_RETURN_LOCATION_ID) || 1
-            },
-            consignee_detail: {
-                first_name: firstName,
-                last_name: lastName,
-                company_name: "",
-                contact_number_primary: order.phone || "9999999999",
-                contact_number_secondary: "",
-                email_id: order.email || "",
-                consignee_address: {
-                    address_line_1: order.address || "Delivery Address",
-                    address_line_2: "",
-                    address_landmark: "",
-                    pincode: String(order.address?.match(/\d{6}/)?.[0] || "110001")
-                }
-            },
-            order_detail: {
-                invoice_date: new Date().toISOString(),
-                invoice_id: order.id,
-                payment_type: isCod ? "COD" : "Prepaid",
-                shipment_invoice_amount: order.total_amount,
-                total_collectable_amount: isCod ? order.total_amount : 0,
-                box_details: [
-                    {
-                        each_box_dead_weight: 1.0,
-                        each_box_length: 10,
-                        each_box_width: 10,
-                        each_box_height: 10,
-                        each_box_invoice_amount: order.total_amount,
-                        each_box_collectable_amount: isCod ? order.total_amount : 0,
-                        box_count: 1,
-                        product_details: orderItems.map(item => ({
-                            product_category: "Others",
-                            product_sub_category: "",
-                            product_name: item.name || "Bedding Item",
-                            product_quantity: Number(item.quantity) || 1,
-                            each_product_invoice_amount: Number(item.price) || order.total_amount,
-                            each_product_collectable_amount: isCod ? (Number(item.price) || order.total_amount) : 0,
-                            hsn: ""
-                        }))
-                    }
-                ]
-            }
-        };
-
-        const response = await axios.post(
-            'https://api.bigship.in/api/order/add/single',
-            bigshipOrderPayload,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json'
-                },
-                timeout: 15000
-            }
-        );
-
-        const responseData = response.data;
-        const awbCode = responseData.awb_code || responseData.data?.master_awb || responseData.data?.lr_number || null;
-        const shipmentId = responseData.shipment_id || (responseData.data?.system_order_id ? String(responseData.data.system_order_id) : order.id);
+        const result = await bookBigshipOrder(order);
 
         await Order.updateOne(
             { id: order.id },
@@ -860,19 +835,77 @@ app.post('/api/retry-shipment', async (req, res) => {
                 $set: { 
                     bigship_status: 'Booked',
                     bigship_error: null,
-                    bigship_awb: awbCode || 'Pending',
-                    bigship_shipment_id: shipmentId || 'Pending',
-                    shiprocket_awb: awbCode || 'Pending',
-                    shiprocket_shipment_id: shipmentId || 'Pending'
+                    bigship_awb: result.awb_code || 'Assigned on Dispatch',
+                    bigship_shipment_id: result.shipment_id,
+                    shiprocket_awb: result.awb_code || 'Assigned on Dispatch',
+                    shiprocket_shipment_id: result.shipment_id
                 } 
             }
         );
 
-        res.json({ success: true, message: 'Shipment created successfully on BigShip', data: responseData });
+        res.json({ success: true, message: 'Shipment booked successfully on BigShip Direct', shipment_id: result.shipment_id, data: result.data });
     } catch (err) {
         const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
         console.error('Retry shipment error:', errMsg);
+        if (Order && req.body.orderId) {
+            await Order.updateOne(
+                { id: req.body.orderId },
+                { $set: { bigship_status: 'Failed', bigship_error: errMsg } }
+            );
+        }
         res.status(500).json({ success: false, error: errMsg });
+    }
+});
+
+// ----------------------------------------------------
+// Endpoint: Bulk Push All Unbooked Orders to BigShip Direct
+// ----------------------------------------------------
+app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
+    try {
+        const unbookedOrders = await Order.find({
+            $or: [
+                { bigship_status: { $ne: 'Booked' } },
+                { bigship_status: { $exists: false } }
+            ]
+        }).limit(20);
+
+        const results = {
+            total: unbookedOrders.length,
+            successCount: 0,
+            failureCount: 0,
+            details: []
+        };
+
+        for (const order of unbookedOrders) {
+            try {
+                const booking = await bookBigshipOrder(order);
+                await Order.updateOne(
+                    { id: order.id },
+                    {
+                        $set: {
+                            bigship_status: 'Booked',
+                            bigship_error: null,
+                            bigship_shipment_id: booking.shipment_id,
+                            bigship_awb: booking.awb_code
+                        }
+                    }
+                );
+                results.successCount++;
+                results.details.push({ id: order.id, status: 'Booked', shipment_id: booking.shipment_id });
+            } catch (err) {
+                const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
+                await Order.updateOne(
+                    { id: order.id },
+                    { $set: { bigship_status: 'Failed', bigship_error: errMsg } }
+                );
+                results.failureCount++;
+                results.details.push({ id: order.id, status: 'Failed', error: errMsg });
+            }
+        }
+
+        res.json({ success: true, results });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
