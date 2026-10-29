@@ -1,4 +1,4 @@
-package com.example.restnestadmin
+﻿package com.example.restnestadmin
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -371,6 +371,14 @@ fun AdminApp(
                                     scope.launch { updateOrderStatus(order.id, newStatus) }
                                 }
                             },
+                            onDeleteOrders = { idsToDelete ->
+                                orders.removeAll { it.id in idsToDelete }
+                                scope.launch { deleteMultipleOrdersBackend(idsToDelete) }
+                            },
+                            onDeleteAllOrders = {
+                                orders.clear()
+                                scope.launch { deleteAllOrdersBackend() }
+                            },
                             colors = colors
                         )
                         "Bulk" -> BulkOrdersScreen(colors = colors)
@@ -691,10 +699,23 @@ fun VerticalBarChart(data: List<PageVisit>, colors: AppColors) {
 
 // ──────────────────── ORDERS ────────────────────
 @Composable
-fun OrdersTableScreen(orders: List<Order>, onOrderClick: (Order) -> Unit, onRefresh: () -> Unit, onStatusChange: (Order, String) -> Unit, colors: AppColors) {
+fun OrdersTableScreen(
+    orders: List<Order>,
+    onOrderClick: (Order) -> Unit,
+    onRefresh: () -> Unit,
+    onStatusChange: (Order, String) -> Unit,
+    onDeleteOrders: (List<String>) -> Unit,
+    onDeleteAllOrders: () -> Unit,
+    colors: AppColors
+) {
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var refreshKey by remember { mutableIntStateOf(0) }
+
+    var isSelectionMode by remember { mutableStateOf(false) }
+    val selectedIds = remember { mutableStateListOf<String>() }
+    var showDeleteSelectedDialog by remember { mutableStateOf(false) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(refreshKey) {
         if (refreshKey > 0) {
@@ -706,37 +727,278 @@ fun OrdersTableScreen(orders: List<Order>, onOrderClick: (Order) -> Unit, onRefr
         }
     }
 
+    // Confirmation Dialog: Delete Selected
+    if (showDeleteSelectedDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteSelectedDialog = false },
+            title = {
+                Text(
+                    text = "Delete Selected Orders",
+                    fontWeight = FontWeight.Bold,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete ${selectedIds.size} selected order(s)? This action cannot be undone.",
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val ids = selectedIds.toList()
+                        showDeleteSelectedDialog = false
+                        isSelectionMode = false
+                        selectedIds.clear()
+                        onDeleteOrders(ids)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
+                ) {
+                    Text("Delete (${selectedIds.size})", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteSelectedDialog = false }) {
+                    Text("Cancel", color = colors.textPrimary)
+                }
+            },
+            containerColor = colors.cardBg
+        )
+    }
+
+    // Confirmation Dialog: Delete All
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = {
+                Text(
+                    text = "Delete All Orders",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFE53935)
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to permanently delete ALL ${orders.size} orders? This action cannot be undone.",
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteAllDialog = false
+                        isSelectionMode = false
+                        selectedIds.clear()
+                        onDeleteAllOrders()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935))
+                ) {
+                    Text("Delete All", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text("Cancel", color = colors.textPrimary)
+                }
+            },
+            containerColor = colors.cardBg
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 48.dp, start = 16.dp, end = 16.dp)
     ) {
-        // Title Row with Refresh
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Live Orders",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = colors.textPrimary
-            )
-            IconButton(
-                onClick = { refreshKey++ },
+        // Title & Actions Bar
+        if (isSelectionMode) {
+            // Selection Mode Header Bar
+            Row(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colors.accent.copy(alpha = 0.15f))
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Filled.Refresh,
-                    contentDescription = "Refresh",
-                    tint = colors.accent
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = {
+                            isSelectionMode = false
+                            selectedIds.clear()
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Close,
+                            contentDescription = "Cancel Selection",
+                            tint = colors.textPrimary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${selectedIds.size} selected",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.textPrimary
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Select All / Deselect Toggle
+                    val isAllSelected = orders.isNotEmpty() && selectedIds.size == orders.size
+                    OutlinedButton(
+                        onClick = {
+                            if (isAllSelected) {
+                                selectedIds.clear()
+                            } else {
+                                selectedIds.clear()
+                                selectedIds.addAll(orders.map { it.id })
+                            }
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = if (isAllSelected) "Deselect" else "Select All",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.accent
+                        )
+                    }
+
+                    // Delete Selected Icon
+                    IconButton(
+                        onClick = {
+                            if (selectedIds.isNotEmpty()) {
+                                showDeleteSelectedDialog = true
+                            }
+                        },
+                        enabled = selectedIds.isNotEmpty(),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (selectedIds.isNotEmpty()) Color(0xFFE53935).copy(alpha = 0.15f)
+                                else Color.Transparent
+                            )
+                    ) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = "Delete Selected",
+                            tint = if (selectedIds.isNotEmpty()) Color(0xFFE53935) else colors.textSecondary.copy(alpha = 0.4f)
+                        )
+                    }
+
+                    // Delete All Icon
+                    IconButton(
+                        onClick = {
+                            if (orders.isNotEmpty()) {
+                                showDeleteAllDialog = true
+                            }
+                        },
+                        enabled = orders.isNotEmpty(),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (orders.isNotEmpty()) Color(0xFFE53935).copy(alpha = 0.15f)
+                                else Color.Transparent
+                            )
+                    ) {
+                        Icon(
+                            Icons.Filled.DeleteSweep,
+                            contentDescription = "Delete All",
+                            tint = if (orders.isNotEmpty()) Color(0xFFE53935) else colors.textSecondary.copy(alpha = 0.4f)
+                        )
+                    }
+                }
+            }
+        } else {
+            // Normal Header Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Live Orders",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = colors.textPrimary
                 )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Select Mode Toggle Button
+                    OutlinedButton(
+                        onClick = {
+                            isSelectionMode = true
+                            selectedIds.clear()
+                        },
+                        enabled = orders.isNotEmpty(),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            tint = colors.accent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Select",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.accent
+                        )
+                    }
+
+                    // Delete All Orders Button
+                    IconButton(
+                        onClick = {
+                            if (orders.isNotEmpty()) {
+                                showDeleteAllDialog = true
+                            }
+                        },
+                        enabled = orders.isNotEmpty(),
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (orders.isNotEmpty()) Color(0xFFE53935).copy(alpha = 0.12f)
+                                else Color.Transparent
+                            )
+                    ) {
+                        Icon(
+                            Icons.Filled.DeleteSweep,
+                            contentDescription = "Delete All Orders",
+                            tint = if (orders.isNotEmpty()) Color(0xFFE53935) else colors.textSecondary.copy(alpha = 0.4f)
+                        )
+                    }
+
+                    // Refresh Button
+                    IconButton(
+                        onClick = { refreshKey++ },
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(colors.accent.copy(alpha = 0.15f))
+                    ) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = "Refresh",
+                            tint = colors.accent
+                        )
+                    }
+                }
             }
         }
 
@@ -746,6 +1008,29 @@ fun OrdersTableScreen(orders: List<Order>, onOrderClick: (Order) -> Unit, onRefr
             }
         } else if (error != null) {
             Text("Error: $error", color = Color.Red)
+        } else if (orders.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        Icons.Filled.ShoppingCart,
+                        contentDescription = null,
+                        tint = colors.textSecondary.copy(alpha = 0.4f),
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No orders found",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.textSecondary
+                    )
+                }
+            }
         } else {
             // Table Header
             Row(
@@ -753,11 +1038,33 @@ fun OrdersTableScreen(orders: List<Order>, onOrderClick: (Order) -> Unit, onRefr
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                     .background(colors.tableHeader)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 12.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("ID", color = colors.textPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.15f), maxLines = 1)
-                Text("Customer", color = colors.textPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.35f), maxLines = 1)
+                if (isSelectionMode) {
+                    val isAllSelected = orders.isNotEmpty() && selectedIds.size == orders.size
+                    Checkbox(
+                        checked = isAllSelected,
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                selectedIds.clear()
+                                selectedIds.addAll(orders.map { it.id })
+                            } else {
+                                selectedIds.clear()
+                            }
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = colors.accent,
+                            uncheckedColor = colors.textSecondary
+                        ),
+                        modifier = Modifier
+                            .size(28.dp)
+                            .padding(end = 6.dp)
+                    )
+                }
+                Text("ID", color = colors.textPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.18f), maxLines = 1)
+                Text("Customer", color = colors.textPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.32f), maxLines = 1)
                 Text("Total", color = colors.textPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.25f), maxLines = 1)
                 Text("Status", color = colors.textPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.25f), maxLines = 1)
             }
@@ -769,27 +1076,65 @@ fun OrdersTableScreen(orders: List<Order>, onOrderClick: (Order) -> Unit, onRefr
                     .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
                     .background(colors.cardBg)
             ) {
-                items(orders.withIndex().toList()) { (index, order) ->
-                    val rowBg = if (index % 2 == 0) Color.Transparent else colors.divider
+                items(orders.withIndex().toList(), key = { it.value.id }) { (index, order) ->
+                    val isSelected = isSelectionMode && order.id in selectedIds
+                    val rowBg = if (isSelected) {
+                        colors.accent.copy(alpha = 0.12f)
+                    } else if (index % 2 == 0) {
+                        Color.Transparent
+                    } else {
+                        colors.divider
+                    }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(rowBg)
-                            .clickable { onOrderClick(order) }
-                            .padding(16.dp),
+                            .clickable {
+                                if (isSelectionMode) {
+                                    if (order.id in selectedIds) {
+                                        selectedIds.remove(order.id)
+                                    } else {
+                                        selectedIds.add(order.id)
+                                    }
+                                } else {
+                                    onOrderClick(order)
+                                }
+                            }
+                            .padding(horizontal = 12.dp, vertical = 14.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (isSelectionMode) {
+                            Checkbox(
+                                checked = order.id in selectedIds,
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        if (order.id !in selectedIds) selectedIds.add(order.id)
+                                    } else {
+                                        selectedIds.remove(order.id)
+                                    }
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = colors.accent,
+                                    uncheckedColor = colors.textSecondary
+                                ),
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .padding(end = 6.dp)
+                            )
+                        }
+
                         Text(
                             text = "#" + order.id.takeLast(4),
                             color = colors.textSecondary,
-                            modifier = Modifier.weight(0.15f),
+                            modifier = Modifier.weight(0.18f),
                             maxLines = 1
                         )
                         Text(
                             text = order.customerName,
                             color = colors.textPrimary,
-                            modifier = Modifier.weight(0.35f),
+                            modifier = Modifier.weight(0.32f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -818,7 +1163,7 @@ fun OrdersTableScreen(orders: List<Order>, onOrderClick: (Order) -> Unit, onRefr
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(statusBg)
-                                    .clickable { expanded = true }
+                                    .clickable { if (!isSelectionMode) expanded = true }
                                     .padding(horizontal = 6.dp, vertical = 4.dp),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1189,11 +1534,56 @@ suspend fun updateOrderStatus(id: String, status: String) = withContext(Dispatch
 
 suspend fun deleteOrderBackend(id: String) = withContext(Dispatchers.IO) {
     try {
+        try {
+            RetrofitClient.instance.deleteOrder(id)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         val db = FirebaseFirestore.getInstance()
         db.collection("orders").whereEqualTo("id", id).get().addOnSuccessListener { querySnapshot ->
             if (!querySnapshot.isEmpty) {
                 val docId = querySnapshot.documents[0].id
                 db.collection("orders").document(docId).delete()
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+suspend fun deleteMultipleOrdersBackend(ids: List<String>) = withContext(Dispatchers.IO) {
+    if (ids.isEmpty()) return@withContext
+    try {
+        try {
+            RetrofitClient.instance.deleteMultipleOrders(com.example.restnestadmin.api.DeleteOrdersRequest(ids))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        val db = FirebaseFirestore.getInstance()
+        ids.forEach { id ->
+            db.collection("orders").whereEqualTo("id", id).get().addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val docId = querySnapshot.documents[0].id
+                    db.collection("orders").document(docId).delete()
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+suspend fun deleteAllOrdersBackend() = withContext(Dispatchers.IO) {
+    try {
+        try {
+            RetrofitClient.instance.resetAllOrders()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        val db = FirebaseFirestore.getInstance()
+        db.collection("orders").get().addOnSuccessListener { querySnapshot ->
+            for (doc in querySnapshot.documents) {
+                doc.reference.delete()
             }
         }
     } catch (e: Exception) {

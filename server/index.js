@@ -1197,6 +1197,22 @@ app.delete('/api/delete-order/:id', async (req, res) => {
 });
 
 // ----------------------------------------------------
+// Endpoint 7b: Delete Multiple Orders
+// ----------------------------------------------------
+app.post('/api/delete-orders', async (req, res) => {
+    try {
+        const ids = req.body.ids;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'No order IDs provided' });
+        }
+        await Order.deleteMany({ id: { $in: ids } });
+        res.json({ success: true, count: ids.length });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ----------------------------------------------------
 // Endpoint 8: Reset Orders
 // ----------------------------------------------------
 app.delete('/api/reset-orders', async (req, res) => {

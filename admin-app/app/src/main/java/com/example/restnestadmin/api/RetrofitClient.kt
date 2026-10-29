@@ -5,10 +5,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.DELETE
 import retrofit2.http.Body
 import retrofit2.http.Path
 
 data class OrdersResponse(val success: Boolean, val orders: List<Order>)
+data class SimpleResponse(val success: Boolean, val message: String? = null)
+data class DeleteOrdersRequest(val ids: List<String>)
+
 data class BulkOrder(
     val id: String,
     val first_name: String,
@@ -28,6 +32,15 @@ interface RestNestApi {
 
     @GET("api/bulk-orders")
     suspend fun getBulkOrders(): BulkOrdersResponse
+
+    @DELETE("api/delete-order/{id}")
+    suspend fun deleteOrder(@Path("id") id: String): SimpleResponse
+
+    @POST("api/delete-orders")
+    suspend fun deleteMultipleOrders(@Body body: DeleteOrdersRequest): SimpleResponse
+
+    @DELETE("api/reset-orders")
+    suspend fun resetAllOrders(): SimpleResponse
 }
 
 object RetrofitClient {
