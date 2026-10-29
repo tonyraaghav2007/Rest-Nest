@@ -392,7 +392,12 @@ function initCheckoutPage() {
                 cachedRazorpayKeyId = config.RAZORPAY_KEY_ID;
             }
             if (config && config.SUPABASE_URL && config.SUPABASE_ANON_KEY) {
-                supabase = createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+                let supUrl = (config.SUPABASE_URL || '').trim();
+                if (supUrl.includes('/project/')) {
+                    const match = supUrl.match(/project\/([a-zA-Z0-9_-]+)/);
+                    if (match) supUrl = `https://${match[1]}.supabase.co`;
+                }
+                supabase = createClient(supUrl, (config.SUPABASE_ANON_KEY || '').trim());
                 // Attempt to fetch user profile and auto-fill
                 supabase.auth.getSession().then(async ({ data: { session } }) => {
                     if (session) {

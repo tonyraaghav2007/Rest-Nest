@@ -1388,7 +1388,12 @@
         try {
             const res = await fetch(`${API_BASE}/public-config`);
             const config = await res.json();
-            supabaseClient = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+            let supUrl = (config.SUPABASE_URL || '').trim();
+            if (supUrl.includes('/project/')) {
+                const match = supUrl.match(/project\/([a-zA-Z0-9_-]+)/);
+                if (match) supUrl = `https://${match[1]}.supabase.co`;
+            }
+            supabaseClient = window.supabase.createClient(supUrl, (config.SUPABASE_ANON_KEY || '').trim());
 
             // Check existing session
             supabaseClient.auth.getSession().then(({ data: { session } }) => {

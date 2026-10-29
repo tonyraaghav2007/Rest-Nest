@@ -12,8 +12,15 @@ try {
 }
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://dummy.supabase.co';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'dummy';
+let rawSupabaseUrl = (process.env.SUPABASE_URL || 'https://dummy.supabase.co').trim();
+if (rawSupabaseUrl.includes('/project/')) {
+    const match = rawSupabaseUrl.match(/project\/([a-zA-Z0-9_-]+)/);
+    if (match) {
+        rawSupabaseUrl = `https://${match[1]}.supabase.co`;
+    }
+}
+const supabaseUrl = rawSupabaseUrl.replace(/\/+$/, '');
+const supabaseAnonKey = (process.env.SUPABASE_ANON_KEY || 'dummy').trim();
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const app = express();
