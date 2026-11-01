@@ -14,7 +14,7 @@
     // Redirect to mobile site if on a mobile device or small screen
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768) {
         if (!window.location.pathname.includes('/mobile/')) {
-            window.location.replace("mobile/");
+            window.location.replace("mobile/" + window.location.search + window.location.hash);
         }
     }
 </script>
@@ -732,7 +732,8 @@
 </div>
 </div>
 <script src="assets/products-data.js"></script>
-<script src="script.js?v=26"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+<script src="script.js?v=27"></script>
 </div>
 <!-- ===== FOOTER ===== -->
 <footer class="site-footer">

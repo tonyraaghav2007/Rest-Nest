@@ -26,6 +26,187 @@
 var basePath = window.basePath || (window.location.pathname.includes('/product/') || window.location.pathname.includes('/cushions/') || window.location.pathname.includes('/pillows/') || window.location.pathname.includes('/about/') || window.location.pathname.includes('/mobile/') || window.location.pathname.includes('/shipping/') || window.location.pathname.includes('/contact/') || window.location.pathname.includes('/terms/') || window.location.pathname.includes('/privacy/') || window.location.pathname.includes('/faqs/') || window.location.pathname.includes('/bulk/') ? '../' : './');
 var resolveImg = (url) => url ? (url.startsWith('http') ? url : (basePath + 'assets/' + url)) : '';
 
+// Universal Supabase Auth Handler & Session Synchronizer
+const RESTNEST_SUPABASE_CONFIG = {
+    url: 'https://hhfbxndhehgrobaqrtgl.supabase.co',
+    anonKey: 'sb_publishable_lmBDQlBRmyO7bzJtkXoy9w_fonPYsXT'
+};
+
+function decodeJwtPayload(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length < 2) return null;
+        let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+            base64 += '=';
+        }
+        const json = decodeURIComponent(atob(base64).split('').map(c => {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(json);
+    } catch (e) {
+        return null;
+    }
+}
+
+function handleOAuthHashRedirect() {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token')) return null;
+
+    try {
+        const cleanHash = hash.startsWith('#') ? hash.substring(1) : hash;
+        const params = new URLSearchParams(cleanHash);
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+        const expiresIn = parseInt(params.get('expires_in') || '3600', 10);
+        const expiresAtParam = params.get('expires_at');
+        const expiresAt = expiresAtParam ? parseInt(expiresAtParam, 10) : Math.floor(Date.now() / 1000) + expiresIn;
+        const tokenType = params.get('token_type') || 'bearer';
+
+        if (!accessToken) return null;
+
+        const payload = decodeJwtPayload(accessToken) || {};
+        const sessionData = {
+            access_token: accessToken,
+            refresh_token: refreshToken || '',
+            expires_in: expiresIn,
+            expires_at: expiresAt,
+            token_type: tokenType,
+            user: {
+                id: payload.sub || '',
+                aud: payload.aud || 'authenticated',
+                role: payload.role || 'authenticated',
+                email: payload.email || '',
+                user_metadata: payload.user_metadata || {},
+                app_metadata: payload.app_metadata || {}
+            }
+        };
+
+        const storageKey = 'sb-hhfbxndhehgrobaqrtgl-auth-token';
+        localStorage.setItem(storageKey, JSON.stringify(sessionData));
+
+        if (window.history && window.history.replaceState) {
+            const cleanUrl = window.location.pathname + window.location.search;
+            window.history.replaceState(null, document.title, cleanUrl);
+        }
+
+        return sessionData;
+    } catch (err) {
+        console.warn('OAuth hash handling error:', err);
+        return null;
+    }
+}
+
+function getStoredSupabaseSession() {
+    try {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && ((key.startsWith('sb-') && key.endsWith('-auth-token')) || key === 'supabase.auth.token')) {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const session = parsed.currentSession || parsed;
+                    if (session && (session.access_token || session.user)) {
+                        return session;
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Error reading Supabase session from localStorage:', e);
+    }
+    return null;
+}
+
+function updateAccountNavUI(session) {
+    const accountLinks = document.querySelectorAll('#account-link, a[href*="account.html"]');
+    if (!accountLinks.length) return;
+
+    accountLinks.forEach(link => {
+        if (session) {
+            if (link.innerHTML.includes('ACCOUNT')) {
+                link.innerHTML = link.innerHTML.replace('ACCOUNT', 'YOU');
+            } else if (link.textContent.trim().toLowerCase() === 'account') {
+                link.textContent = 'You';
+            }
+        } else {
+            if (link.innerHTML.includes('YOU')) {
+                link.innerHTML = link.innerHTML.replace('YOU', 'ACCOUNT');
+            } else if (link.textContent.trim().toLowerCase() === 'you') {
+                link.textContent = 'Account';
+            }
+        }
+    });
+}
+
+function initAuth() {
+    // 1. Process OAuth hash redirect immediately if arrived via OAuth (#access_token=...)
+    let session = handleOAuthHashRedirect();
+
+    // 2. Fallback to localStorage session check
+    if (!session) {
+        session = getStoredSupabaseSession();
+    }
+
+    // 3. Immediately reflect logged-in state on all account navigation links
+    if (session) {
+        updateAccountNavUI(session);
+
+        // If user initiated OAuth from account page, route them back now that session is stored
+        const returnUrl = sessionStorage.getItem('restnest_auth_return_url');
+        if (returnUrl) {
+            sessionStorage.removeItem('restnest_auth_return_url');
+            if (!window.location.href.includes('account.html')) {
+                window.location.replace(returnUrl);
+                return;
+            }
+        }
+    }
+
+    // 4. If Supabase client library is available, hook up live auth sync
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        try {
+            if (!window.restnestSupabase) {
+                window.restnestSupabase = window.supabase.createClient(RESTNEST_SUPABASE_CONFIG.url, RESTNEST_SUPABASE_CONFIG.anonKey);
+            }
+            const client = window.restnestSupabase;
+
+            client.auth.getSession().then(({ data: { session: activeSession } }) => {
+                if (activeSession) {
+                    updateAccountNavUI(activeSession);
+                    const returnUrl = sessionStorage.getItem('restnest_auth_return_url');
+                    if (returnUrl) {
+                        sessionStorage.removeItem('restnest_auth_return_url');
+                        if (!window.location.href.includes('account.html')) {
+                            window.location.replace(returnUrl);
+                        }
+                    }
+                }
+            });
+
+            client.auth.onAuthStateChange((event, newSession) => {
+                if (event === 'SIGNED_IN' && newSession) {
+                    updateAccountNavUI(newSession);
+                    const returnUrl = sessionStorage.getItem('restnest_auth_return_url');
+                    if (returnUrl) {
+                        sessionStorage.removeItem('restnest_auth_return_url');
+                        if (!window.location.href.includes('account.html')) {
+                            window.location.replace(returnUrl);
+                        }
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    updateAccountNavUI(null);
+                }
+            });
+        } catch (e) {
+            console.warn('Supabase client sync note:', e);
+        }
+    }
+}
+
+// Run auth check as early as possible
+initAuth();
+
 function initAll() {
     initHeroSlider();
     initScrollReveal();
@@ -37,15 +218,8 @@ function initAll() {
     initReviewsSlider();
     initMobileMenu();
     trackPageView();
-    
     // Auth Check
-    const token = localStorage.getItem('sb-julktcdhbnvxsjuqsimp-auth-token');
-    if (token) {
-        const accountLink = document.getElementById('account-link');
-        if (accountLink) {
-            accountLink.innerHTML = accountLink.innerHTML.replace('ACCOUNT', 'YOU');
-        }
-    }
+    initAuth();
 }
 
 if (document.readyState === 'loading') {

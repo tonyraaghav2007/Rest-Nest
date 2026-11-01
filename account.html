@@ -1383,29 +1383,52 @@
     const authSubtitle = document.getElementById('auth-subtitle');
     const authBtn = document.getElementById('auth-btn');
 
+    // ---- Supabase Initialization (Immediate Synchronous + Dynamic Fallback) ----
+    const DEFAULT_SUPABASE_URL = 'https://hhfbxndhehgrobaqrtgl.supabase.co';
+    const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_lmBDQlBRmyO7bzJtkXoy9w_fonPYsXT';
+
+    function createSupabaseInstance(url, key) {
+        if (!window.supabase) return null;
+        let cleanUrl = (url || '').trim();
+        if (cleanUrl.includes('/project/')) {
+            const match = cleanUrl.match(/project\/([a-zA-Z0-9_-]+)/);
+            if (match) cleanUrl = `https://${match[1]}.supabase.co`;
+        }
+        return window.supabase.createClient(cleanUrl, (key || '').trim());
+    }
+
+    // Initialize immediately without waiting for API
+    supabaseClient = createSupabaseInstance(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY);
+    if (supabaseClient) {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) handleSession(session);
+        });
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN') handleSession(session);
+            else if (event === 'SIGNED_OUT') handleSession(null);
+        });
+    }
+
     // ---- Init ----
     async function initApp() {
         try {
             const res = await fetch(`${API_BASE}/public-config`);
             const config = await res.json();
-            let supUrl = (config.SUPABASE_URL || '').trim();
-            if (supUrl.includes('/project/')) {
-                const match = supUrl.match(/project\/([a-zA-Z0-9_-]+)/);
-                if (match) supUrl = `https://${match[1]}.supabase.co`;
+            if (config && config.SUPABASE_URL && config.SUPABASE_ANON_KEY) {
+                const freshClient = createSupabaseInstance(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+                if (freshClient) {
+                    supabaseClient = freshClient;
+                    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                        if (session) handleSession(session);
+                    });
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        if (event === 'SIGNED_IN') handleSession(session);
+                        else if (event === 'SIGNED_OUT') handleSession(null);
+                    });
+                }
             }
-            supabaseClient = window.supabase.createClient(supUrl, (config.SUPABASE_ANON_KEY || '').trim());
-
-            // Check existing session
-            supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                if (session) handleSession(session);
-            });
-
-            supabaseClient.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN') handleSession(session);
-                else if (event === 'SIGNED_OUT') handleSession(null);
-            });
         } catch(e) {
-            console.error('Failed to load config', e);
+            console.warn('Public config fetch note (using defaults):', e);
         }
     }
     initApp();
@@ -1546,16 +1569,20 @@
     // ---- OAuth Login ----
     document.getElementById('google-login').addEventListener('click', async () => {
         if (!supabaseClient) { showAuthStatus('Please wait, loading...', 'loading'); return; }
+        sessionStorage.setItem('restnest_auth_return_url', window.location.href);
+        const origin = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'https://restnest.in';
         await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin + '/account.html' }
+            options: { redirectTo: origin + '/account.html' }
         });
     });
     document.getElementById('apple-login').addEventListener('click', async () => {
         if (!supabaseClient) { showAuthStatus('Please wait, loading...', 'loading'); return; }
+        sessionStorage.setItem('restnest_auth_return_url', window.location.href);
+        const origin = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'https://restnest.in';
         await supabaseClient.auth.signInWithOAuth({
             provider: 'apple',
-            options: { redirectTo: window.location.origin + '/account.html' }
+            options: { redirectTo: origin + '/account.html' }
         });
     });
 
