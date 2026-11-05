@@ -23,7 +23,6 @@ window.RESTNEST_PRODUCTS = {
             "Cool & Breathable — Cotton fabric lets air flow so you stay comfortable all night",
             "Lightweight Comfort — Soft and airy without feeling heavy or bulky",
             "Supportive Filling — Cushions your head and keeps your neck comfortably aligned",
-            "Pack of 2 Value — Set of 2 pillows, perfect for your bedroom or guest room",
             "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "available": true
@@ -70,7 +69,6 @@ window.RESTNEST_PRODUCTS = {
             "Keeps Its Shape — The fiber springs back after every use, so you get no flat spots or lumps, even after months of use",
             "Soft 180 GSM Fabric — Dense cover that is smooth to the touch and built to last",
             "Even Support — Soft fiber spreads evenly to cradle your head and neck and ease morning stiffness",
-            "Pack of 2 Value — Set of 2 pillows, perfect for refreshing your bed or setting up a guest room",
             "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "images": [
@@ -108,7 +106,6 @@ window.RESTNEST_PRODUCTS = {
             "Holds Its Shape — Fiber springs back after every use so the pillow stays plump and even",
             "Soft 180 GSM Fabric — Dense, smooth cover is gentle on your skin and made to last",
             "Cloud-Soft Comfort — Soft fiber cushions your head while keeping your neck supported",
-            "Pack of 2 Value — Set of 2 pillows, perfect for upgrading your bedroom or gifting family",
             "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "images": [
@@ -501,7 +498,6 @@ window.RESTNEST_PRODUCTS = {
             "Stays Looking Fresh — Darker tone hides everyday marks better than plain white pillows",
             "Soft, Supportive Filling — Cradles your head and keeps your neck comfortably aligned",
             "Holds Its Shape — Stays plump and even night after night",
-            "Pack of 2 Value — Set of 2 pillows, great for kids' rooms, guest rooms, or modern master beds",
             "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "sizes": [
@@ -573,7 +569,6 @@ window.RESTNEST_PRODUCTS = {
             "Soft & Airy Feel — Honeycomb texture is gentle on your skin and lets air move freely",
             "Plush, Supportive Filling — Cradles your head and neck in a comfortable, natural position",
             "Holds Its Shape — Stays full and even night after night",
-            "Pack of 2 Value — Set of 2 pillows, perfect for your master bed or a ready-made gift",
             "Shop Worry-Free — Free shipping, a 1-year warranty and easy returns"
         ],
         "sizes": [
