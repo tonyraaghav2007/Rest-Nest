@@ -838,11 +838,11 @@ app.get('/api/bigship-status', async (req, res) => {
 });
 
 // ----------------------------------------------------
-// Endpoint: Retry Shipment Creation for an Order
+// Endpoint: Retry / Push Single Shipment to BigShip Direct
 // ----------------------------------------------------
-app.post('/api/retry-shipment', async (req, res) => {
+const handleSingleShipmentPush = async (req, res) => {
+    const orderId = req.body.orderId || req.body.id;
     try {
-        const { orderId } = req.body;
         if (!orderId) return res.status(400).json({ success: false, error: 'Missing orderId' });
 
         const order = await Order.findOne({ id: orderId });
@@ -852,56 +852,73 @@ app.post('/api/retry-shipment', async (req, res) => {
         bigshipToken = null;
         const result = await bookBigshipOrder(order);
 
+        const assignedAwb = result.awb_code || 'Assigned on Dispatch';
         await Order.updateOne(
             { id: order.id },
             { 
                 $set: { 
                     bigship_status: 'Booked',
                     bigship_error: null,
-                    bigship_awb: result.awb_code || 'Assigned on Dispatch',
+                    bigship_awb: assignedAwb,
                     bigship_shipment_id: result.shipment_id,
-                    shiprocket_awb: result.awb_code || 'Assigned on Dispatch',
+                    shiprocket_awb: assignedAwb,
                     shiprocket_shipment_id: result.shipment_id
                 } 
             }
         );
 
-        res.json({ success: true, message: 'Shipment booked successfully on BigShip Direct', shipment_id: result.shipment_id, data: result.data });
+        res.json({
+            success: true,
+            message: 'Shipment booked successfully on BigShip Direct',
+            shipment_id: result.shipment_id,
+            awb: assignedAwb,
+            data: result.data
+        });
     } catch (err) {
         const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
-        console.error('Retry shipment error:', errMsg);
-        if (Order && req.body.orderId) {
+        console.error('Retry/Push shipment error:', errMsg);
+        if (Order && orderId) {
             await Order.updateOne(
-                { id: req.body.orderId },
+                { id: orderId },
                 { $set: { bigship_status: 'Failed', bigship_error: errMsg } }
             );
         }
         res.status(500).json({ success: false, error: errMsg });
     }
-});
+};
+
+app.post('/api/retry-shipment', handleSingleShipmentPush);
+app.post('/api/push-single-to-bigship', handleSingleShipmentPush);
 
 // ----------------------------------------------------
-// Endpoint: Bulk Push All Unbooked Orders to BigShip Direct
+// Endpoint: Custom Push Selected Orders to BigShip Direct
 // ----------------------------------------------------
-app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
+app.post('/api/push-selected-to-bigship', async (req, res) => {
     try {
-        const unbookedOrders = await Order.find({
-            $or: [
-                { bigship_status: { $ne: 'Booked' } },
-                { bigship_status: { $exists: false } }
-            ]
-        }).limit(20);
+        const orderIds = req.body.orderIds || req.body.ids;
+        if (!Array.isArray(orderIds) || orderIds.length === 0) {
+            return res.status(400).json({ success: false, error: 'No order IDs provided' });
+        }
+
+        const orders = await Order.find({ id: { $in: orderIds } });
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ success: false, error: 'No matching orders found' });
+        }
+
+        // Reset token once before batch
+        bigshipToken = null;
 
         const results = {
-            total: unbookedOrders.length,
+            total: orders.length,
             successCount: 0,
             failureCount: 0,
             details: []
         };
 
-        for (const order of unbookedOrders) {
+        for (const order of orders) {
             try {
                 const booking = await bookBigshipOrder(order);
+                const assignedAwb = booking.awb_code || 'Assigned on Dispatch';
                 await Order.updateOne(
                     { id: order.id },
                     {
@@ -909,12 +926,14 @@ app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
                             bigship_status: 'Booked',
                             bigship_error: null,
                             bigship_shipment_id: booking.shipment_id,
-                            bigship_awb: booking.awb_code
+                            bigship_awb: assignedAwb,
+                            shiprocket_awb: assignedAwb,
+                            shiprocket_shipment_id: booking.shipment_id
                         }
                     }
                 );
                 results.successCount++;
-                results.details.push({ id: order.id, status: 'Booked', shipment_id: booking.shipment_id });
+                results.details.push({ id: order.id, status: 'Booked', shipment_id: booking.shipment_id, awb: assignedAwb });
             } catch (err) {
                 const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
                 await Order.updateOne(
@@ -926,8 +945,85 @@ app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
             }
         }
 
-        res.json({ success: true, results });
+        res.json({
+            success: true,
+            message: `Processed ${results.total} selected orders (${results.successCount} succeeded, ${results.failureCount} failed)`,
+            results
+        });
     } catch (err) {
+        console.error('Error pushing selected orders to BigShip:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ----------------------------------------------------
+// Endpoint: Bulk Push All Unbooked Orders to BigShip Direct
+// ----------------------------------------------------
+app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
+    try {
+        const unbookedOrders = await Order.find({
+            $or: [
+                { bigship_status: { $ne: 'Booked' } },
+                { bigship_status: { $exists: false } },
+                { bigship_awb: 'Pending' },
+                { bigship_awb: 'N/A' },
+                { bigship_awb: { $exists: false } }
+            ]
+        }).limit(100);
+
+        if (unbookedOrders.length === 0) {
+            return res.json({
+                success: true,
+                message: 'All orders are already booked on BigShip Direct!',
+                results: { total: 0, successCount: 0, failureCount: 0, details: [] }
+            });
+        }
+
+        bigshipToken = null;
+        const results = {
+            total: unbookedOrders.length,
+            successCount: 0,
+            failureCount: 0,
+            details: []
+        };
+
+        for (const order of unbookedOrders) {
+            try {
+                const booking = await bookBigshipOrder(order);
+                const assignedAwb = booking.awb_code || 'Assigned on Dispatch';
+                await Order.updateOne(
+                    { id: order.id },
+                    {
+                        $set: {
+                            bigship_status: 'Booked',
+                            bigship_error: null,
+                            bigship_shipment_id: booking.shipment_id,
+                            bigship_awb: assignedAwb,
+                            shiprocket_awb: assignedAwb,
+                            shiprocket_shipment_id: booking.shipment_id
+                        }
+                    }
+                );
+                results.successCount++;
+                results.details.push({ id: order.id, status: 'Booked', shipment_id: booking.shipment_id, awb: assignedAwb });
+            } catch (err) {
+                const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
+                await Order.updateOne(
+                    { id: order.id },
+                    { $set: { bigship_status: 'Failed', bigship_error: errMsg } }
+                );
+                results.failureCount++;
+                results.details.push({ id: order.id, status: 'Failed', error: errMsg });
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Processed ${results.total} unbooked orders (${results.successCount} succeeded, ${results.failureCount} failed)`,
+            results
+        });
+    } catch (err) {
+        console.error('Error pushing unbooked orders to BigShip:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -939,7 +1035,42 @@ const PORT = process.env.PORT || 3000;
 // ----------------------------------------------------
 app.get('/api/orders', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ created_at: -1 });
+        const rawOrders = await Order.find().sort({ created_at: -1 }).lean();
+        const orders = rawOrders.map(o => {
+            const rawItems = typeof o.items === 'string' ? o.items : JSON.stringify(o.items || []);
+            let itemsSummary = '';
+            if (Array.isArray(o.items)) {
+                itemsSummary = o.items.map(i => `${i.quantity || 1}x ${i.name || 'Item'}`).join(', ');
+            } else if (typeof o.items === 'string') {
+                itemsSummary = o.items;
+            }
+            return {
+                ...o,
+                id: o.id,
+                customerName: o.customer_name || o.customerName || 'Customer',
+                customer_name: o.customer_name || o.customerName || 'Customer',
+                address: o.address || '',
+                phone: o.phone || '',
+                amount: Number(o.total_amount || o.amount || 0),
+                total_amount: Number(o.total_amount || o.amount || 0),
+                items: itemsSummary || o.items || '',
+                rawItems: rawItems,
+                status: o.status || 'Placed',
+                paymentMethod: o.payment_method || o.paymentMethod || 'Unknown',
+                payment_method: o.payment_method || o.paymentMethod || 'Unknown',
+                paymentId: o.payment_id || o.paymentId || 'N/A',
+                payment_id: o.payment_id || o.paymentId || 'N/A',
+                bigshipAwb: o.bigship_awb || o.bigshipAwb || 'N/A',
+                bigship_awb: o.bigship_awb || o.bigshipAwb || 'N/A',
+                bigshipShipmentId: o.bigship_shipment_id || o.bigshipShipmentId || 'N/A',
+                bigship_shipment_id: o.bigship_shipment_id || o.bigshipShipmentId || 'N/A',
+                bigshipStatus: o.bigship_status || o.bigshipStatus || 'Pending',
+                bigship_status: o.bigship_status || o.bigshipStatus || 'Pending',
+                shiprocketAwb: o.shiprocket_awb || o.bigship_awb || 'N/A',
+                createdAt: o.created_at ? new Date(o.created_at).getTime() : Date.now(),
+                date: o.created_at ? new Date(o.created_at).toLocaleDateString() : ''
+            };
+        });
         res.json({ success: true, orders });
     } catch (error) {
         console.error('Error fetching orders:', error);

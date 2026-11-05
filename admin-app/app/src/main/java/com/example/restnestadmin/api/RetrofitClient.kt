@@ -13,6 +13,16 @@ data class OrdersResponse(val success: Boolean, val orders: List<Order>)
 data class SimpleResponse(val success: Boolean, val message: String? = null)
 data class DeleteOrdersRequest(val ids: List<String>)
 
+data class PushSingleOrderRequest(val orderId: String)
+data class PushSelectedOrdersRequest(val orderIds: List<String>)
+data class BigShipPushResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val shipment_id: String? = null,
+    val awb: String? = null,
+    val error: String? = null
+)
+
 data class BulkOrder(
     val id: String,
     val first_name: String,
@@ -41,6 +51,15 @@ interface RestNestApi {
 
     @DELETE("api/reset-orders")
     suspend fun resetAllOrders(): SimpleResponse
+
+    @POST("api/retry-shipment")
+    suspend fun pushSingleOrderToBigShip(@Body body: PushSingleOrderRequest): BigShipPushResponse
+
+    @POST("api/push-selected-to-bigship")
+    suspend fun pushSelectedOrdersToBigShip(@Body body: PushSelectedOrdersRequest): BigShipPushResponse
+
+    @POST("api/push-all-unbooked-to-bigship")
+    suspend fun pushAllUnbookedOrdersToBigShip(): BigShipPushResponse
 }
 
 object RetrofitClient {

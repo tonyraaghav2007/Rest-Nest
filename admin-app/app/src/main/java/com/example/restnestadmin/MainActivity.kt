@@ -1,4 +1,4 @@
-﻿package com.example.restnestadmin
+package com.example.restnestadmin
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -62,24 +62,56 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import com.example.restnestadmin.api.RetrofitClient
 import com.example.restnestadmin.api.BulkOrder
 import kotlinx.coroutines.delay
+import com.google.gson.annotations.SerializedName
+import android.widget.Toast
 
 
 // ──────────────────── Data Classes ────────────────────
 data class Order(
-    val id: String,
-    val customerName: String,
-    val address: String,
-    val phone: String,
-    val amount: Double,
-    val items: String,
-    val rawItems: String,
-    val status: String,
-    val date: String,
-    val createdAt: Long,
+    @SerializedName("id")
+    val id: String = "",
+
+    @SerializedName(value = "customerName", alternate = ["customer_name", "name"])
+    val customerName: String = "",
+
+    @SerializedName("address")
+    val address: String = "",
+
+    @SerializedName("phone")
+    val phone: String = "",
+
+    @SerializedName(value = "amount", alternate = ["total_amount", "total"])
+    val amount: Double = 0.0,
+
+    @SerializedName("items")
+    val items: String = "",
+
+    @SerializedName("rawItems")
+    val rawItems: String = "[]",
+
+    @SerializedName("status")
+    val status: String = "Placed",
+
+    @SerializedName("date")
+    val date: String = "",
+
+    @SerializedName(value = "createdAt", alternate = ["created_at"])
+    val createdAt: Long = 0L,
+
+    @SerializedName(value = "paymentMethod", alternate = ["payment_method"])
     val paymentMethod: String = "Unknown",
+
+    @SerializedName(value = "paymentId", alternate = ["payment_id"])
     val paymentId: String = "N/A",
+
+    @SerializedName(value = "bigshipAwb", alternate = ["bigship_awb"])
     val bigshipAwb: String = "N/A",
-    val shiprocketAwb: String = "N/A"
+
+    @SerializedName(value = "shiprocketAwb", alternate = ["shiprocket_awb"])
+    val shiprocketAwb: String = "N/A",
+
+    @SerializedName(value = "bigshipStatus", alternate = ["bigship_status"])
+    val bigshipStatus: String = "Pending"
 )
 
 data class ProductSale(val name: String, val amount: Double, val color: Color)
@@ -258,7 +290,8 @@ fun AdminApp(
                             paymentMethod = apiOrder.paymentMethod ?: "Unknown",
                             paymentId = apiOrder.paymentId ?: "N/A",
                             bigshipAwb = apiOrder.bigshipAwb.takeIf { it != "N/A" } ?: apiOrder.shiprocketAwb ?: "N/A",
-                            shiprocketAwb = apiOrder.bigshipAwb.takeIf { it != "N/A" } ?: apiOrder.shiprocketAwb ?: "N/A"
+                            shiprocketAwb = apiOrder.bigshipAwb.takeIf { it != "N/A" } ?: apiOrder.shiprocketAwb ?: "N/A",
+                            bigshipStatus = apiOrder.bigshipStatus
                         )
                     }
                     
@@ -355,6 +388,25 @@ fun AdminApp(
                             selectedOrder = null
                             scope.launch { deleteOrderBackend(order.id) }
                         },
+                        onPushToBigShip = { order ->
+                            scope.launch {
+                                try {
+                                    Toast.makeText(context, "Pushing order #${order.id.takeLast(4)} to Big Ship...", Toast.LENGTH_SHORT).show()
+                                    val res = pushSingleOrderBackend(order.id)
+                                    val awbMsg = res.awb?.takeIf { it.isNotBlank() } ?: res.shipment_id ?: "Booked"
+                                    Toast.makeText(context, res.message ?: "Booked on BigShip: $awbMsg", Toast.LENGTH_LONG).show()
+                                    val updatedAwb = res.awb ?: "Assigned on Dispatch"
+                                    val idx = orders.indexOfFirst { it.id == order.id }
+                                    if (idx >= 0) {
+                                        orders[idx] = orders[idx].copy(bigshipAwb = updatedAwb, status = "Shipped")
+                                        selectedOrder = orders[idx]
+                                    }
+                                    refreshTrigger++
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "BigShip Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        },
                         colors = colors
                     )
                 } else {
@@ -378,6 +430,30 @@ fun AdminApp(
                             onDeleteAllOrders = {
                                 orders.clear()
                                 scope.launch { deleteAllOrdersBackend() }
+                            },
+                            onPushSelectedToBigShip = { idsToPush ->
+                                scope.launch {
+                                    try {
+                                        Toast.makeText(context, "Pushing ${idsToPush.size} orders to Big Ship...", Toast.LENGTH_SHORT).show()
+                                        val res = pushSelectedOrdersBackend(idsToPush)
+                                        Toast.makeText(context, res.message ?: "Selected orders pushed successfully!", Toast.LENGTH_LONG).show()
+                                        refreshTrigger++
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "BigShip Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            },
+                            onPushAllUnbookedToBigShip = {
+                                scope.launch {
+                                    try {
+                                        Toast.makeText(context, "Pushing all unbooked orders to Big Ship...", Toast.LENGTH_SHORT).show()
+                                        val res = pushAllUnbookedOrdersBackend()
+                                        Toast.makeText(context, res.message ?: "All unbooked orders processed!", Toast.LENGTH_LONG).show()
+                                        refreshTrigger++
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "BigShip Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                    }
+                                }
                             },
                             colors = colors
                         )
@@ -706,6 +782,8 @@ fun OrdersTableScreen(
     onStatusChange: (Order, String) -> Unit,
     onDeleteOrders: (List<String>) -> Unit,
     onDeleteAllOrders: () -> Unit,
+    onPushSelectedToBigShip: (List<String>) -> Unit,
+    onPushAllUnbookedToBigShip: () -> Unit,
     colors: AppColors
 ) {
     var isLoading by remember { mutableStateOf(false) }
@@ -716,6 +794,8 @@ fun OrdersTableScreen(
     val selectedIds = remember { mutableStateListOf<String>() }
     var showDeleteSelectedDialog by remember { mutableStateOf(false) }
     var showDeleteAllDialog by remember { mutableStateOf(false) }
+    var showPushSelectedDialog by remember { mutableStateOf(false) }
+    var showPushAllDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(refreshKey) {
         if (refreshKey > 0) {
@@ -806,6 +886,95 @@ fun OrdersTableScreen(
         )
     }
 
+    // Confirmation Dialog: Push Selected to Big Ship
+    if (showPushSelectedDialog) {
+        AlertDialog(
+            onDismissRequest = { showPushSelectedDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.LocalShipping, contentDescription = null, tint = Color(0xFF673AB7))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Push Selected to Big Ship",
+                        fontWeight = FontWeight.Bold,
+                        color = colors.textPrimary
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = "Push ${selectedIds.size} selected order(s) to Big Ship Direct for automated shipment booking?",
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val ids = selectedIds.toList()
+                        showPushSelectedDialog = false
+                        isSelectionMode = false
+                        selectedIds.clear()
+                        onPushSelectedToBigShip(ids)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
+                ) {
+                    Icon(Icons.Filled.LocalShipping, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Push (${selectedIds.size})", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPushSelectedDialog = false }) {
+                    Text("Cancel", color = colors.textPrimary)
+                }
+            },
+            containerColor = colors.cardBg
+        )
+    }
+
+    // Confirmation Dialog: Push All Unbooked
+    if (showPushAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showPushAllDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.LocalShipping, contentDescription = null, tint = Color(0xFF673AB7))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Push All Unbooked",
+                        fontWeight = FontWeight.Bold,
+                        color = colors.textPrimary
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = "This will find all unbooked orders and push them to Big Ship Direct. Continue?",
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showPushAllDialog = false
+                        onPushAllUnbookedToBigShip()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
+                ) {
+                    Icon(Icons.Filled.LocalShipping, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Push All Unbooked", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPushAllDialog = false }) {
+                    Text("Cancel", color = colors.textPrimary)
+                }
+            },
+            containerColor = colors.cardBg
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -867,6 +1036,29 @@ fun OrdersTableScreen(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = colors.accent
+                        )
+                    }
+
+                    // Push Selected to Big Ship Icon
+                    IconButton(
+                        onClick = {
+                            if (selectedIds.isNotEmpty()) {
+                                showPushSelectedDialog = true
+                            }
+                        },
+                        enabled = selectedIds.isNotEmpty(),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (selectedIds.isNotEmpty()) Color(0xFF673AB7).copy(alpha = 0.18f)
+                                else Color.Transparent
+                            )
+                    ) {
+                        Icon(
+                            Icons.Filled.LocalShipping,
+                            contentDescription = "Push Selected to Big Ship",
+                            tint = if (selectedIds.isNotEmpty()) Color(0xFF673AB7) else colors.textSecondary.copy(alpha = 0.4f)
                         )
                     }
 
@@ -936,6 +1128,28 @@ fun OrdersTableScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Push All Unbooked Button
+                    OutlinedButton(
+                        onClick = { showPushAllDialog = true },
+                        enabled = orders.isNotEmpty(),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.LocalShipping,
+                            contentDescription = null,
+                            tint = Color(0xFF673AB7),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Push All",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF673AB7)
+                        )
+                    }
+
                     // Select Mode Toggle Button
                     OutlinedButton(
                         onClick = {
@@ -1125,12 +1339,25 @@ fun OrdersTableScreen(
                             )
                         }
 
-                        Text(
-                            text = "#" + order.id.takeLast(4),
-                            color = colors.textSecondary,
+                        Row(
                             modifier = Modifier.weight(0.18f),
-                            maxLines = 1
-                        )
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "#" + order.id.takeLast(4),
+                                color = colors.textSecondary,
+                                maxLines = 1
+                            )
+                            if (order.bigshipAwb.isNotBlank() && order.bigshipAwb != "N/A" && order.bigshipAwb != "Pending") {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    Icons.Filled.LocalShipping,
+                                    contentDescription = "Booked",
+                                    tint = Color(0xFF4CAF50),
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
+                        }
                         Text(
                             text = order.customerName,
                             color = colors.textPrimary,
@@ -1213,6 +1440,7 @@ fun OrderDetailScreen(
     onBack: () -> Unit,
     onStatusChange: (Order, String) -> Unit,
     onDelete: (Order) -> Unit,
+    onPushToBigShip: (Order) -> Unit,
     colors: AppColors
 ) {
     Column(
@@ -1323,6 +1551,75 @@ fun OrderDetailScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Delete Order", fontWeight = FontWeight.Bold)
                     }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Big Ship Direct Integration Card
+        val isBookedOnBigShip = order.bigshipAwb.isNotBlank() && order.bigshipAwb != "N/A" && order.bigshipAwb != "Pending"
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFF673AB7).copy(alpha = 0.12f))
+                .padding(18.dp)
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.LocalShipping,
+                            contentDescription = null,
+                            tint = Color(0xFF673AB7),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                "Big Ship Direct",
+                                color = colors.textPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                if (isBookedOnBigShip) "Booked • AWB: ${order.bigshipAwb}" else "Shipment not booked yet",
+                                color = if (isBookedOnBigShip) Color(0xFF4CAF50) else colors.textSecondary,
+                                fontSize = 12.sp,
+                                fontWeight = if (isBookedOnBigShip) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = { onPushToBigShip(order) },
+                    modifier = Modifier.fillMaxWidth().height(46.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF673AB7)
+                    )
+                ) {
+                    Icon(
+                        Icons.Filled.CloudUpload,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        if (isBookedOnBigShip) "Re-push to Big Ship" else "Push to Big Ship",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
                 }
             }
         }
@@ -1589,6 +1886,18 @@ suspend fun deleteAllOrdersBackend() = withContext(Dispatchers.IO) {
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+suspend fun pushSingleOrderBackend(orderId: String): com.example.restnestadmin.api.BigShipPushResponse = withContext(Dispatchers.IO) {
+    RetrofitClient.instance.pushSingleOrderToBigShip(com.example.restnestadmin.api.PushSingleOrderRequest(orderId))
+}
+
+suspend fun pushSelectedOrdersBackend(ids: List<String>): com.example.restnestadmin.api.BigShipPushResponse = withContext(Dispatchers.IO) {
+    RetrofitClient.instance.pushSelectedOrdersToBigShip(com.example.restnestadmin.api.PushSelectedOrdersRequest(ids))
+}
+
+suspend fun pushAllUnbookedOrdersBackend(): com.example.restnestadmin.api.BigShipPushResponse = withContext(Dispatchers.IO) {
+    RetrofitClient.instance.pushAllUnbookedOrdersToBigShip()
 }
 
 
