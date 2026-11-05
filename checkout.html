@@ -1265,14 +1265,37 @@
                         <!-- Populated by JS -->
                     </div>
 
+                    <!-- Promo Code / Coupon Section -->
+                    <div class="checkout-coupon-box" style="margin: 1.25rem 0 1rem; padding: 0.85rem; background: #FFFFFF; border: 1px solid rgba(75,54,33,0.12); border-radius: 10px;">
+                        <div style="font-size: 0.75rem; font-weight: 600; color: #8B7355; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Promo / Discount Code</span>
+                            <span style="color: #8A6414; font-size: 0.7rem; font-weight: 700;">🪔 10% OFF</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="coupon-code-input" placeholder="e.g. FIRST10" autocomplete="off" autocapitalize="characters" style="flex: 1; padding: 0.55rem 0.75rem; border: 1.5px solid #c4a173; border-radius: 6px; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; color: #4B3621; background: #FAF9F6;">
+                            <button type="button" id="apply-coupon-btn" style="padding: 0.55rem 1.1rem; background: #4B3621; color: #FAF9F6; border: none; border-radius: 6px; font-weight: 600; font-size: 0.825rem; cursor: pointer; transition: background 0.2s;">Apply</button>
+                        </div>
+                        <div id="coupon-chip" style="margin-top: 0.55rem; display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(212,175,55,0.14); border: 1px dashed #D4AF37; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.75rem; color: #8A6414; cursor: pointer; transition: background 0.2s;">
+                            <span>🎉 Tap to apply <strong>FIRST10</strong> for 10% OFF 1st order</span>
+                        </div>
+                        <div id="coupon-status" style="margin-top: 0.45rem; font-size: 0.78rem; display: none;"></div>
+                    </div>
+
                     <div class="checkout-totals">
                         <div class="totals-row">
                             <span>Subtotal</span>
                             <span id="summary-subtotal">Rs. 0.00</span>
                         </div>
+                        <div class="totals-row discount" id="summary-discount-row" style="display: none; color: #27ae60; font-weight: 600;">
+                            <span id="summary-discount-label">First Order Discount (FIRST10 - 10%)</span>
+                            <span id="summary-discount">-Rs. 0.00</span>
+                        </div>
                         <div class="totals-row shipping">
                             <span>Shipping</span>
-                            <span>Free</span>
+                            <span style="color: #27ae60; font-weight: 600;">Free Express (₹0.00)</span>
+                        </div>
+                        <div class="delivery-estimate-row" style="font-size: 0.76rem; color: #8B7355; margin-top: -0.35rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>🚚 Estimated Delivery: <strong>2–5 Business Days</strong> via BigShip</span>
                         </div>
                         <div class="totals-row cod-fee" id="summary-cod-fee-row" style="display: none;">
                             <span>COD Handling Fee (2%)</span>
@@ -1313,6 +1336,13 @@
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                         </svg>
                         Secure checkout · SSL encrypted
+                    </div>
+                    <div class="return-guarantee-badge" style="display: flex; align-items: center; justify-content: center; gap: 0.45rem; font-size: 0.8rem; color: #4B3621; margin-top: 0.75rem; font-weight: 500;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        <span><strong>24 Hours Return Guarantee</strong> · 100% Risk-Free</span>
                     </div>
                 </div>
             </div>

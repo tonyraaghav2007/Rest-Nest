@@ -4012,3 +4012,330 @@ body:not(.page-home) .pill-nav:not(.scrolled) .pill-nav__logo img {
         width: auto !important;
     }
 }
+
+
+/* ==============================================
+   DIWALI CELEBRATION SALE — MODAL, TAG & PERKS
+   ============================================== */
+
+@keyframes diwaliGlow {
+    0%, 100% {
+        box-shadow: 0 4px 18px rgba(75, 54, 33, 0.35), 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+    50% {
+        box-shadow: 0 6px 26px rgba(75, 54, 33, 0.45), 0 0 20px rgba(212, 175, 55, 0.65);
+    }
+}
+
+.diwali-floating-tag {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 998;
+    background: #2A1D11;
+    color: #FAF9F6;
+    border: 1.5px solid #D4AF37;
+    border-radius: 50px;
+    padding: 0.6rem 1.15rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: inherit;
+    font-size: 0.825rem;
+    cursor: pointer;
+    animation: diwaliGlow 3s ease-in-out infinite;
+    transition: transform 0.25s ease, background 0.25s ease;
+}
+.diwali-floating-tag:hover {
+    transform: translateY(-2px) scale(1.03);
+    background: #4B3621;
+}
+.diwali-floating-tag .floating-diya {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+.diwali-floating-tag strong {
+    color: #F1D28C;
+    margin-left: 0.15rem;
+}
+
+.diwali-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(42, 29, 17, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+.diwali-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+.diwali-modal {
+    background: #FAF9F6;
+    color: #333;
+    border: 1.5px solid #D4AF37;
+    border-radius: 16px;
+    max-width: 490px;
+    width: 100%;
+    padding: 2.2rem 2rem 1.6rem;
+    position: relative;
+    box-shadow: 0 25px 60px rgba(42, 29, 17, 0.4), 0 0 45px rgba(212, 175, 55, 0.2);
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+.diwali-modal-overlay.active .diwali-modal {
+    transform: translateY(0) scale(1);
+}
+.diwali-modal__close {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.95rem;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: #8B7355;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s;
+}
+.diwali-modal__close:hover {
+    color: #2A1D11;
+    background: rgba(75, 54, 33, 0.08);
+}
+.diwali-modal__header {
+    text-align: center;
+    margin-bottom: 1.3rem;
+}
+.diwali-badge {
+    display: inline-block;
+    background: rgba(212, 175, 55, 0.16);
+    color: #8A6414;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.25rem 0.85rem;
+    border-radius: 20px;
+    margin-bottom: 0.65rem;
+    text-transform: uppercase;
+}
+.diwali-title {
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 1.95rem;
+    font-weight: 600;
+    color: #2A1D11;
+    margin: 0 0 0.35rem;
+    line-height: 1.2;
+}
+.diwali-subtitle {
+    font-size: 0.875rem;
+    color: #6d5b4a;
+    margin: 0;
+    line-height: 1.4;
+}
+.diwali-perks-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+    margin-bottom: 1.25rem;
+}
+.diwali-perk-item {
+    background: #FFFFFF;
+    border: 1px solid rgba(75, 54, 33, 0.1);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.diwali-perk-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+.diwali-perk-text strong {
+    display: block;
+    font-size: 0.825rem;
+    color: #2A1D11;
+    line-height: 1.2;
+}
+.diwali-perk-text span {
+    display: block;
+    font-size: 0.7rem;
+    color: #777;
+    margin-top: 0.15rem;
+    line-height: 1.2;
+}
+.diwali-coupon-box {
+    background: #FFFDF8;
+    border: 1.5px dashed #D4AF37;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+.diwali-coupon-code {
+    display: flex;
+    flex-direction: column;
+}
+.diwali-coupon-code .coupon-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: #8A6414;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.diwali-coupon-code .coupon-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #2A1D11;
+}
+.diwali-copy-btn {
+    background: #A67C52;
+    color: #FAF9F6;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.825rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+.diwali-copy-btn:hover {
+    background: #4B3621;
+}
+.diwali-copy-msg {
+    font-size: 0.75rem;
+    color: #27ae60;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+.diwali-modal__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    align-items: center;
+}
+.diwali-cta-btn {
+    width: 100%;
+    background: #4B3621;
+    color: #FAF9F6;
+    padding: 0.8rem 1rem;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.925rem;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    display: inline-block;
+    transition: background 0.2s, transform 0.1s;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: none;
+}
+.diwali-cta-btn:hover {
+    background: #362617;
+}
+.diwali-dismiss-link {
+    background: none;
+    border: none;
+    color: #8B7355;
+    font-size: 0.775rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0.25rem;
+}
+.diwali-dismiss-link:hover {
+    color: #2A1D11;
+}
+
+@media (max-width: 480px) {
+    .diwali-floating-tag {
+        bottom: 1rem;
+        left: 1rem;
+        padding: 0.5rem 0.95rem;
+        font-size: 0.75rem;
+    }
+    .diwali-modal {
+        padding: 1.6rem 1.25rem 1.25rem;
+    }
+    .diwali-title {
+        font-size: 1.55rem;
+    }
+    .diwali-perks-list {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+}
+
+/* Product Detail Page Trust Strip */
+.product-trust-strip {
+    background: #FAF9F6;
+    border: 1px solid rgba(75, 54, 33, 0.14);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    margin: 1.25rem 0 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.product-trust-strip .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.825rem;
+    color: #4B3621;
+    line-height: 1.35;
+}
+.product-trust-strip .trust-item svg {
+    flex-shrink: 0;
+    color: #A67C52;
+}
+.product-trust-strip .trust-item--promo {
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px dashed #D4AF37;
+    border-radius: 6px;
+    padding: 0.45rem 0.75rem;
+    margin-top: 0.25rem;
+}
+.trust-promo-tag {
+    background: #4B3621;
+    color: #F1D28C;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+}
+
+/* Cart Promo Banner */
+.cart-promo-banner {
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px dashed #D4AF37;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.78rem;
+    color: #4B3621;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

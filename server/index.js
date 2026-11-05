@@ -612,10 +612,20 @@ function calculateCartTotal(cart) {
 // ----------------------------------------------------
 app.post('/api/create-order', authLimiter, async (req, res) => {
     try {
-        const { cart, currency = 'INR', receipt } = req.body;
+        const { cart, currency = 'INR', receipt, couponCode, coupon_code } = req.body;
         
         // Anti-tampering: Calculate total securely on server
-        const realAmount = calculateCartTotal(cart);
+        let realAmount = calculateCartTotal(cart);
+        if (realAmount <= 0) {
+            return res.status(400).json({ success: false, error: 'Invalid cart or empty total.' });
+        }
+
+        // Apply first order / festival coupon code
+        const code = (couponCode || coupon_code || '').toString().trim().toUpperCase();
+        if (code === 'FIRST10' || code === 'DIWALI10') {
+            const discount = Math.round(realAmount * 0.10);
+            realAmount = Math.max(1, realAmount - discount);
+        }
         if (realAmount <= 0) {
             return res.status(400).json({ success: false, error: 'Invalid cart or empty total.' });
         }
@@ -717,6 +727,9 @@ app.post('/api/create-shipment', async (req, res) => {
             phone: orderData.phone || '',
             address: formattedAddress,
             total_amount: totalAmount,
+            subtotal: Number(orderData.subtotal) || totalAmount,
+            discount_amount: Number(orderData.discount_amount || orderData.discountAmount || 0),
+            coupon_code: orderData.coupon_code || orderData.couponCode || null,
             items: orderItems,
             status: orderData.status || 'Placed',
             payment_method: paymentLabel,
@@ -952,6 +965,9 @@ app.post('/api/orders', async (req, res) => {
             phone: orderData.phone || '',
             address: orderData.address || '',
             total_amount: Number(orderData.total_amount) || 0,
+            subtotal: Number(orderData.subtotal) || (Number(orderData.total_amount) || 0),
+            discount_amount: Number(orderData.discount_amount || orderData.discountAmount || 0),
+            coupon_code: orderData.coupon_code || orderData.couponCode || null,
             items: orderData.items,
             status: orderData.status || 'Placed',
             payment_method: paymentLabel,

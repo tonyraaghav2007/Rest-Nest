@@ -236,10 +236,27 @@ function initCheckoutPage() {
         setPayButtonState('default', '', currentPaymentMethod);
     }
 
+    let appliedCoupon = null;
+
     function updateSummaryTotals() {
         const isCod = (currentPaymentMethod === 'cod');
-        const codFee = isCod ? calculateCodFee(totalAmount) : 0;
-        const finalTotal = totalAmount + codFee;
+        const discountAmount = (appliedCoupon && appliedCoupon.percent) ? Math.round(Number(totalAmount || 0) * (appliedCoupon.percent / 100)) : 0;
+        const discountedSubtotal = Math.max(0, totalAmount - discountAmount);
+        const codFee = isCod ? calculateCodFee(discountedSubtotal) : 0;
+        const finalTotal = discountedSubtotal + codFee;
+
+        const discountRow = document.getElementById('summary-discount-row');
+        const discountEl = document.getElementById('summary-discount');
+        const discountLabel = document.getElementById('summary-discount-label');
+        if (discountRow) {
+            if (discountAmount > 0) {
+                discountRow.style.display = 'flex';
+                if (discountEl) discountEl.textContent = `-Rs. ${discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                if (discountLabel) discountLabel.textContent = `First Order Discount (${appliedCoupon.code} - ${appliedCoupon.percent}%)`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+        }
 
         const codFeeEl = document.getElementById('summary-cod-fee');
         if (codFeeEl) codFeeEl.textContent = formatPrice(codFee);
@@ -248,10 +265,88 @@ function initCheckoutPage() {
 
         const codBadge = document.getElementById('cod-badge-fee');
         if (codBadge) {
-            const calculatedFee = calculateCodFee(totalAmount);
+            const calculatedFee = calculateCodFee(discountedSubtotal);
             codBadge.textContent = calculatedFee > 0 ? `+${formatPrice(calculatedFee)} (2% fee)` : `+2% COD fee`;
         }
     }
+
+    function applyCoupon(rawCode) {
+        const code = (rawCode || '').trim().toUpperCase();
+        const statusEl = document.getElementById('coupon-status');
+        const inputEl = document.getElementById('coupon-code-input');
+        if (!code) {
+            if (statusEl) {
+                statusEl.textContent = 'Please enter a coupon code.';
+                statusEl.style.color = '#e74c3c';
+                statusEl.style.display = 'block';
+            }
+            return;
+        }
+
+        if (code === 'FIRST10' || code === 'DIWALI10') {
+            appliedCoupon = { code: code, percent: 10 };
+            try { sessionStorage.setItem('restnest_coupon', code); } catch(e) {}
+            if (inputEl) inputEl.value = code;
+            if (statusEl) {
+                statusEl.innerHTML = `✓ Code <strong>${code}</strong> applied! 10% discount added. <button type="button" id="remove-coupon-btn" style="background:none; border:none; color:#e74c3c; cursor:pointer; text-decoration:underline; font-weight:600; margin-left:6px;">Remove</button>`;
+                statusEl.style.color = '#27ae60';
+                statusEl.style.display = 'block';
+
+                const removeBtn = document.getElementById('remove-coupon-btn');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', removeCoupon);
+                }
+            }
+            updateSummaryTotals();
+        } else {
+            if (statusEl) {
+                statusEl.textContent = 'Invalid promo code. Use FIRST10 for 10% off your first order!';
+                statusEl.style.color = '#e74c3c';
+                statusEl.style.display = 'block';
+            }
+        }
+    }
+
+    function removeCoupon() {
+        appliedCoupon = null;
+        try { sessionStorage.removeItem('restnest_coupon'); } catch(e) {}
+        const statusEl = document.getElementById('coupon-status');
+        const inputEl = document.getElementById('coupon-code-input');
+        if (inputEl) inputEl.value = '';
+        if (statusEl) {
+            statusEl.textContent = 'Coupon removed.';
+            statusEl.style.color = '#8B7355';
+            setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 2000);
+        }
+        updateSummaryTotals();
+    }
+
+    const applyBtn = document.getElementById('apply-coupon-btn');
+    const couponInput = document.getElementById('coupon-code-input');
+    const couponChip = document.getElementById('coupon-chip');
+
+    if (applyBtn && couponInput) {
+        applyBtn.addEventListener('click', () => applyCoupon(couponInput.value));
+        couponInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyCoupon(couponInput.value);
+            }
+        });
+    }
+
+    if (couponChip) {
+        couponChip.addEventListener('click', () => {
+            applyCoupon('FIRST10');
+        });
+    }
+
+    try {
+        const savedCoupon = sessionStorage.getItem('restnest_coupon');
+        if (savedCoupon && (savedCoupon.toUpperCase() === 'FIRST10' || savedCoupon.toUpperCase() === 'DIWALI10')) {
+            applyCoupon(savedCoupon);
+        }
+    } catch(e) {}
 
     // Attach listeners for payment method radio selection & card clicks
     document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
@@ -535,8 +630,10 @@ async function fetchWithTimeoutAndRetry(url, options = {}, retries = 2, timeoutM
 // ----------------------------------------------------
 async function processCheckout(cart, totalAmount, customerInfo, userId = null, isBuyNow = false, paymentMethod = 'prepaid') {
     const isCod = (paymentMethod === 'cod');
-    const codFee = isCod ? Math.round(Number(totalAmount || 0) * 0.02) : 0.0;
-    const finalTotalAmount = totalAmount + codFee;
+    const discountAmount = (appliedCoupon && appliedCoupon.percent) ? Math.round(Number(totalAmount || 0) * (appliedCoupon.percent / 100)) : 0;
+    const discountedSubtotal = Math.max(0, totalAmount - discountAmount);
+    const codFee = isCod ? Math.round(Number(discountedSubtotal || 0) * 0.02) : 0.0;
+    const finalTotalAmount = discountedSubtotal + codFee;
 
     // Use localhost for local testing, otherwise use the live Render backend
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
@@ -563,6 +660,9 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 state: customerInfo.state,
                 pincode: customerInfo.pincode,
                 total_amount: finalTotalAmount,
+                subtotal: totalAmount,
+                discount_amount: discountAmount,
+                coupon_code: appliedCoupon ? appliedCoupon.code : null,
                 items: cart,
                 payment_type: "COD",
                 paymentMethod: "Cash on Delivery (COD)",
@@ -721,7 +821,11 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
         const orderRes = await fetchWithTimeoutAndRetry(`${API_BASE}/create-order`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart: cart, currency: 'INR' })
+            body: JSON.stringify({ 
+                cart: cart, 
+                couponCode: appliedCoupon ? appliedCoupon.code : null,
+                currency: 'INR' 
+            })
         }, 2, 25000);
         const orderDataRes = await orderRes.json();
         
@@ -858,7 +962,10 @@ async function processCheckout(cart, totalAmount, customerInfo, userId = null, i
                 phone: customerInfo.phone,
                 address: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} - ${customerInfo.pincode}`,
                 subtotal: totalAmount,
-                total_amount: totalAmount,
+                total_amount: (totalAmount - ((appliedCoupon && appliedCoupon.percent) ? Math.round(Number(totalAmount || 0) * (appliedCoupon.percent / 100)) : 0)),
+                subtotal: totalAmount,
+                discount_amount: ((appliedCoupon && appliedCoupon.percent) ? Math.round(Number(totalAmount || 0) * (appliedCoupon.percent / 100)) : 0),
+                coupon_code: appliedCoupon ? appliedCoupon.code : null,
                 items: cart.map(i => `${i.name} (x${i.quantity})`).join(', '),
                 items_list: cart,
                 raw_items: JSON.stringify(cart),

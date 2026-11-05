@@ -220,6 +220,7 @@ function initAll() {
     trackPageView();
     // Auth Check
     initAuth();
+    initDiwaliSale();
 }
 
 if (document.readyState === 'loading') {
@@ -1249,7 +1250,16 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                 cartItemsContainer.appendChild(div);
             });
 
-            if (cartFooter) cartFooter.style.display = 'block';
+            if (cartFooter) {
+                cartFooter.style.display = 'block';
+                let promoBanner = cartFooter.querySelector('.cart-promo-banner');
+                if (!promoBanner) {
+                    promoBanner = document.createElement('div');
+                    promoBanner.className = 'cart-promo-banner';
+                    promoBanner.innerHTML = '<span>🪔 10% OFF 1st order: <strong>FIRST10</strong></span><span style="color: #27ae60; font-weight: 600;">✓ Free Shipping</span>';
+                    cartFooter.insertBefore(promoBanner, cartFooter.firstChild);
+                }
+            }
             if (cartBadge) {
                 cartBadge.style.display = 'flex';
                 cartBadge.textContent = count;
@@ -1594,3 +1604,182 @@ document.addEventListener('DOMContentLoaded', initProductSort);
         }
     }
 })();
+
+
+/* ==============================================
+   DIWALI CELEBRATION SALE & FIRST ORDER OFFER
+   ============================================== */
+function initDiwaliSale() {
+    if (document.getElementById('diwaliModalOverlay')) return;
+
+    const isSubdir = window.location.pathname.includes('/pillows/') || 
+                     window.location.pathname.includes('/product/') || 
+                     window.location.pathname.includes('/cushions/') ||
+                     window.location.pathname.includes('/about/') ||
+                     window.location.pathname.includes('/bulk/') ||
+                     window.location.pathname.includes('/contact/') ||
+                     window.location.pathname.includes('/mobile/');
+
+    const shopLink = isSubdir ? '../pillows/' : 'pillows/';
+
+    const modalMarkup = `
+        <div class="diwali-modal-overlay" id="diwaliModalOverlay" style="display: none;">
+            <div class="diwali-modal" id="diwaliModal" role="dialog" aria-modal="true" aria-labelledby="diwaliModalTitle">
+                <button class="diwali-modal__close" id="diwaliModalClose" aria-label="Close dialog">&times;</button>
+                <div class="diwali-modal__header">
+                    <span class="diwali-badge">🪔 REST NEST FESTIVE SPECIAL 🪔</span>
+                    <h3 class="diwali-title" id="diwaliModalTitle">Diwali Comfort Sale</h3>
+                    <p class="diwali-subtitle">Bring festive peace, luxury, and cloud-like rest into your home.</p>
+                </div>
+                
+                <div class="diwali-perks-list">
+                    <div class="diwali-perk-item">
+                        <span class="diwali-perk-icon">🏷️</span>
+                        <div class="diwali-perk-text">
+                            <strong>Flat 10% OFF</strong>
+                            <span>On your 1st order with code <strong>FIRST10</strong></span>
+                        </div>
+                    </div>
+                    <div class="diwali-perk-item">
+                        <span class="diwali-perk-icon">🚚</span>
+                        <div class="diwali-perk-text">
+                            <strong>Free Shipping</strong>
+                            <span>Express delivery on all orders across India</span>
+                        </div>
+                    </div>
+                    <div class="diwali-perk-item">
+                        <span class="diwali-perk-icon">⚡</span>
+                        <div class="diwali-perk-text">
+                            <strong>2–5 Days Delivery</strong>
+                            <span>Dispatched in 24 hrs with live BigShip tracking</span>
+                        </div>
+                    </div>
+                    <div class="diwali-perk-item">
+                        <span class="diwali-perk-icon">🔄</span>
+                        <div class="diwali-perk-text">
+                            <strong>24 Hours Return</strong>
+                            <span>Hassle-free 24-hr return & replacement guarantee</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diwali-coupon-box">
+                    <div class="diwali-coupon-code">
+                        <span class="coupon-label">FIRST ORDER COUPON</span>
+                        <span class="coupon-val" id="diwaliCouponVal">FIRST10</span>
+                    </div>
+                    <button class="diwali-copy-btn" id="diwaliCopyBtn" type="button">Copy Code</button>
+                </div>
+                <div class="diwali-copy-msg" id="diwaliCopyMsg" style="display: none;">✓ Code FIRST10 copied & applied for checkout!</div>
+
+                <div class="diwali-modal__actions">
+                    <a href="${shopLink}" class="diwali-cta-btn" id="diwaliCtaBtn">Shop Diwali Offers →</a>
+                    <button class="diwali-dismiss-link" id="diwaliDismissLink" type="button">Continue to Site</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="diwali-floating-tag" id="diwaliFloatingTag" aria-label="View Diwali Offers">
+            <span class="floating-diya">🪔</span>
+            <span class="floating-text">Diwali Sale: <strong>10% OFF</strong></span>
+        </button>
+    `;
+
+    const container = document.createElement('div');
+    container.id = 'diwaliOfferContainer';
+    container.innerHTML = modalMarkup;
+    document.body.appendChild(container);
+
+    const overlay = document.getElementById('diwaliModalOverlay');
+    const closeBtn = document.getElementById('diwaliModalClose');
+    const dismissLink = document.getElementById('diwaliDismissLink');
+    const copyBtn = document.getElementById('diwaliCopyBtn');
+    const copyMsg = document.getElementById('diwaliCopyMsg');
+    const floatingTag = document.getElementById('diwaliFloatingTag');
+    const ctaBtn = document.getElementById('diwaliCtaBtn');
+
+    function openDiwaliModal() {
+        if (!overlay) return;
+        overlay.style.display = 'flex';
+        void overlay.offsetWidth;
+        overlay.classList.add('active');
+    }
+
+    function closeDiwaliModal() {
+        if (!overlay) return;
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 350);
+        try {
+            sessionStorage.setItem('restnest_diwali_seen', 'true');
+        } catch (e) {}
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeDiwaliModal);
+    if (dismissLink) dismissLink.addEventListener('click', closeDiwaliModal);
+    if (floatingTag) floatingTag.addEventListener('click', openDiwaliModal);
+
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeDiwaliModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) {
+            closeDiwaliModal();
+        }
+    });
+
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const code = 'FIRST10';
+            try {
+                navigator.clipboard.writeText(code);
+            } catch (err) {
+                const tempInput = document.createElement('input');
+                tempInput.value = code;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            }
+            try {
+                sessionStorage.setItem('restnest_coupon', code);
+            } catch (e) {}
+            copyBtn.textContent = 'Copied! ✓';
+            copyBtn.style.background = '#27ae60';
+            if (copyMsg) copyMsg.style.display = 'block';
+            setTimeout(() => {
+                copyBtn.textContent = 'Copy Code';
+                copyBtn.style.background = '#A67C52';
+            }, 3000);
+        });
+    }
+
+    if (ctaBtn) {
+        ctaBtn.addEventListener('click', (e) => {
+            try {
+                sessionStorage.setItem('restnest_coupon', 'FIRST10');
+            } catch (err) {}
+            const productsEl = document.getElementById('categories') || document.getElementById('products-grid');
+            if (productsEl && !isSubdir) {
+                e.preventDefault();
+                closeDiwaliModal();
+                productsEl.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                closeDiwaliModal();
+            }
+        });
+    }
+
+    try {
+        const alreadySeen = sessionStorage.getItem('restnest_diwali_seen');
+        if (!alreadySeen) {
+            setTimeout(openDiwaliModal, 1200);
+        }
+    } catch (e) {
+        setTimeout(openDiwaliModal, 1200);
+    }
+}
