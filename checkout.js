@@ -8,6 +8,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 let supabase = null;
 let cachedRazorpayKeyId = null;
+let appliedCoupon = null;
 
 const firebaseConfig = {
   apiKey: "AIzaSyAkIbq6sF7awGkuct1a1q-maFclLbGTAbA",
@@ -236,7 +237,7 @@ function initCheckoutPage() {
         setPayButtonState('default', '', currentPaymentMethod);
     }
 
-    let appliedCoupon = null;
+    appliedCoupon = null;
 
     function updateSummaryTotals() {
         const isCod = (currentPaymentMethod === 'cod');
@@ -528,37 +529,89 @@ function initCheckoutPage() {
         })
         .catch(e => console.warn('Public config non-blocking fetch note:', e));
 
-    // Form Submission Handler
+    // Form Submission Handler & Direct Pay Button Wiring
     const form = document.getElementById('checkout-form');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
+    const payBtn = document.getElementById('pay-btn');
 
-            const customerInfo = {
-                name: `${document.getElementById('fname').value} ${document.getElementById('lname').value}`.trim(),
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                address: document.getElementById('address').value,
-                city: document.getElementById('city').value,
-                state: document.getElementById('state').value,
-                pincode: document.getElementById('pincode').value
-            };
+    let isSubmitting = false;
 
-            let userId = null;
-            if (supabase) {
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    userId = session ? session.user.id : null;
-                } catch (err) {}
-            }
+    async function handleOrderSubmission(e) {
+        if (e) e.preventDefault();
+        if (isSubmitting) return;
 
-            const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'prepaid';
+        if (!cart || cart.length === 0) {
+            alert('Your cart is empty! Please add items before checking out.');
+            return;
+        }
+
+        // Validate form fields natively
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const fname = (document.getElementById('fname')?.value || '').trim();
+        const lname = (document.getElementById('lname')?.value || '').trim();
+        const email = (document.getElementById('email')?.value || '').trim();
+        let phone = (document.getElementById('phone')?.value || '').trim();
+        const address = (document.getElementById('address')?.value || '').trim();
+        const city = (document.getElementById('city')?.value || '').trim();
+        const state = (document.getElementById('state')?.value || '').trim();
+        let pincode = (document.getElementById('pincode')?.value || '').trim();
+
+        if (!fname || !email || !phone || !address || !city || !state || !pincode) {
+            showStatus('Please fill in all required shipping fields.', 'error');
+            if (form) form.reportValidity();
+            return;
+        }
+
+        // Sanitize phone: keep last 10 digits if country code entered
+        const rawDigits = phone.replace(/[^0-9]/g, '');
+        if (rawDigits.length >= 10) {
+            phone = rawDigits.slice(-10);
+        }
+        pincode = pincode.replace(/[^0-9]/g, '').slice(0, 6);
+
+        const customerInfo = {
+            name: `${fname} ${lname}`.trim(),
+            email: email,
+            phone: phone,
+            address: address,
+            city: city,
+            state: state,
+            pincode: pincode
+        };
+
+        let userId = null;
+        if (supabase) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                userId = session ? session.user.id : null;
+            } catch (err) {}
+        }
+
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'prepaid';
+        
+        isSubmitting = true;
+        try {
             await processCheckout(cart, totalAmount, customerInfo, userId, isBuyNow, selectedMethod);
+        } catch (err) {
+            console.error('Checkout processing error:', err);
+            showStatus('Failed to process order: ' + (err.message || 'Please try again.'), 'error');
+            setPayButtonState('default', '', selectedMethod);
+        } finally {
+            isSubmitting = false;
+        }
+    }
+
+    if (form) {
+        form.addEventListener('submit', handleOrderSubmission);
+    }
+
+    if (payBtn) {
+        payBtn.addEventListener('click', (e) => {
+            // Direct click handling for browsers where form attribute doesn't dispatch submit
+            handleOrderSubmission(e);
         });
     }
 }
