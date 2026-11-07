@@ -1007,15 +1007,39 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    showStatus('Thank you! Your bulk order request has been submitted successfully.', 'success');
-                    e.target.reset();
+                    showStatus('Thank you! Redirecting to confirmation...', 'success');
+                    try {
+                        sessionStorage.setItem('restnest_bulk_order', JSON.stringify({
+                            id: data.bulkOrder?.id || ('BULK_' + Date.now().toString().slice(-6)),
+                            business: payload.business_name,
+                            name: (payload.first_name + ' ' + payload.last_name).trim(),
+                            quantity: payload.quantity,
+                            phone: payload.phone,
+                            email: payload.email,
+                            created_at: new Date().toISOString()
+                        }));
+                    } catch (err) {}
+
+                    const q = new URLSearchParams({
+                        id: data.bulkOrder?.id || '',
+                        business: payload.business_name || '',
+                        name: (payload.first_name + ' ' + payload.last_name).trim(),
+                        qty: payload.quantity || '',
+                        phone: payload.phone || '',
+                        email: payload.email || ''
+                    });
+
+                    setTimeout(() => {
+                        window.location.href = 'thank-you.html?' + q.toString();
+                    }, 400);
                 } else {
                     showStatus('Error: ' + (data.error || 'Failed to submit request.'), 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Submit Bulk Request <span class="btn-icon">→</span>';
                 }
             } catch (err) {
                 console.error(err);
                 showStatus('Network error. Please try again.', 'error');
-            } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'Submit Bulk Request <span class="btn-icon">→</span>';
             }

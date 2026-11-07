@@ -61,6 +61,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 import com.example.restnestadmin.api.RetrofitClient
 import com.example.restnestadmin.api.BulkOrder
+import com.example.restnestadmin.api.UpdateBulkStatusRequest
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
 import kotlinx.coroutines.delay
 import com.google.gson.annotations.SerializedName
 import android.widget.Toast
@@ -1906,47 +1909,452 @@ suspend fun pushAllUnbookedOrdersBackend(): com.example.restnestadmin.api.BigShi
 fun BulkOrdersScreen(colors: AppColors) {
     var bulkOrders by remember { mutableStateOf<List<BulkOrder>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    var selectedFilter by remember { mutableStateOf("All") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    suspend fun fetchOrders(showSpinner: Boolean = false) {
+        if (showSpinner) isRefreshing = true
+        try {
+            val response = RetrofitClient.instance.getBulkOrders()
+            if (response.success && response.bulkOrders != null) {
+                bulkOrders = response.bulkOrders
+                errorMessage = null
+            } else {
+                if (bulkOrders.isEmpty()) {
+                    errorMessage = "Failed to load bulk requests."
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (bulkOrders.isEmpty()) {
+                errorMessage = "Network error: ${e.localizedMessage ?: "Unable to connect"}"
+            }
+        } finally {
+            isLoading = false
+            isRefreshing = false
+        }
+    }
 
     LaunchedEffect(Unit) {
-        while(true) {
-            try {
-                val response = RetrofitClient.instance.getBulkOrders()
-                if (response.success) {
-                    bulkOrders = response.bulkOrders
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            isLoading = false
+        while (true) {
+            fetchOrders(showSpinner = false)
             delay(10000)
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(top = 48.dp, start = 16.dp, end = 16.dp)) {
-        Text(text = "Bulk Requests", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = colors.textPrimary, modifier = Modifier.padding(bottom = 24.dp))
-        
-        if (isLoading && bulkOrders.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = colors.accent)
+    val filteredOrders = remember(bulkOrders, selectedFilter) {
+        when (selectedFilter) {
+            "Pending" -> bulkOrders.filter { it.status.equals("Pending", ignoreCase = true) }
+            "Contacted" -> bulkOrders.filter { it.status.equals("Contacted", ignoreCase = true) }
+            "Completed" -> bulkOrders.filter { it.status.equals("Completed", ignoreCase = true) }
+            else -> bulkOrders
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 48.dp, start = 16.dp, end = 16.dp)
+    ) {
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Bulk Requests",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = colors.textPrimary
+                )
+                Text(
+                    text = "${bulkOrders.size} total inquiries",
+                    fontSize = 13.sp,
+                    color = colors.textSecondary
+                )
             }
-        } else {
-            LazyColumn {
-                items(bulkOrders) { order ->
-                    Box(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clip(RoundedCornerShape(12.dp)).background(colors.cardBg).padding(16.dp)) {
-                        Column {
-                            Text("ID: ${order.id}", color = colors.accent, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text("Business: ${order.business_name}", color = colors.textPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Text("Qty: ${order.quantity}", color = colors.accent, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text("Name: ${order.first_name} ${order.last_name}", color = colors.textPrimary)
-                            Text("Email: ${order.email}", color = colors.textSecondary)
-                            Text("Phone: ${order.phone}", color = colors.textSecondary)
-                            Text("Status: ${order.status}", color = if(order.status == "Pending") Color(0xFFFFC107) else Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
-                        }
+
+            IconButton(
+                onClick = {
+                    coroutineScope.launch {
+                        fetchOrders(showSpinner = true)
+                        Toast.makeText(context, "Refreshed bulk orders", Toast.LENGTH_SHORT).show()
                     }
+                },
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colors.cardBg)
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = colors.accent
+                    )
+                } else {
+                    Icon(
+                        Icons.Filled.Refresh,
+                        contentDescription = "Refresh",
+                        tint = colors.accent
+                    )
                 }
             }
         }
+
+        // Filter Pills
+        val filterOptions = listOf("All", "Pending", "Contacted", "Completed")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            filterOptions.forEach { filter ->
+                val isSelected = selectedFilter == filter
+                val count = when (filter) {
+                    "Pending" -> bulkOrders.count { it.status.equals("Pending", ignoreCase = true) }
+                    "Contacted" -> bulkOrders.count { it.status.equals("Contacted", ignoreCase = true) }
+                    "Completed" -> bulkOrders.count { it.status.equals("Completed", ignoreCase = true) }
+                    else -> bulkOrders.size
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (isSelected) colors.accent else colors.cardBg)
+                        .clickable { selectedFilter = filter }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "$filter ($count)",
+                        fontSize = 12.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) Color.White else colors.textSecondary
+                    )
+                }
+            }
+        }
+
+        // Content
+        if (isLoading && bulkOrders.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = colors.accent)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        "Loading bulk requests...",
+                        color = colors.textSecondary,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        } else if (filteredOrders.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(bottom = 64.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.ShoppingCart,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        tint = colors.textSecondary.copy(alpha = 0.5f)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = if (errorMessage != null) errorMessage!! else "No bulk requests found",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Customer requests from restnest.in/bulk will appear here.",
+                        fontSize = 13.sp,
+                        color = colors.textSecondary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            coroutineScope.launch { fetchOrders(showSpinner = true) }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.accent)
+                    ) {
+                        Text("Retry Refresh", color = Color.White)
+                    }
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 96.dp)
+            ) {
+                items(filteredOrders, key = { it.id.ifEmpty { it.hashCode().toString() } }) { order ->
+                    BulkOrderCard(
+                        order = order,
+                        colors = colors,
+                        onStatusChange = { newStatus ->
+                            coroutineScope.launch {
+                                try {
+                                    val res = RetrofitClient.instance.updateBulkOrderStatus(
+                                        order.id,
+                                        UpdateBulkStatusRequest(newStatus)
+                                    )
+                                    if (res.success) {
+                                        Toast.makeText(context, "Status updated to $newStatus", Toast.LENGTH_SHORT).show()
+                                        fetchOrders(showSpinner = false)
+                                    } else {
+                                        Toast.makeText(context, "Failed to update status", Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        onDelete = {
+                            coroutineScope.launch {
+                                try {
+                                    val res = RetrofitClient.instance.deleteBulkOrder(order.id)
+                                    if (res.success) {
+                                        Toast.makeText(context, "Bulk request removed", Toast.LENGTH_SHORT).show()
+                                        fetchOrders(showSpinner = false)
+                                    } else {
+                                        Toast.makeText(context, "Failed to delete", Toast.LENGTH_SHORT).show()
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BulkOrderCard(
+    order: BulkOrder,
+    colors: AppColors,
+    onStatusChange: (String) -> Unit,
+    onDelete: () -> Unit
+) {
+    val context = LocalContext.current
+    var showStatusDialog by remember { mutableStateOf(false) }
+
+    val statusColor = when (order.status.lowercase()) {
+        "completed" -> Color(0xFF22C55E)
+        "contacted" -> Color(0xFF3B82F6)
+        else -> Color(0xFFF59E0B) // Pending
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.cardBg)
+            .padding(16.dp)
+    ) {
+        Column {
+            // Header Row: ID + Status Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = order.id.ifEmpty { "Inquiry" },
+                    color = colors.accent,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp
+                )
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(statusColor.copy(alpha = 0.15f))
+                        .clickable { showStatusDialog = true }
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(statusColor)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = order.status,
+                            color = statusColor,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Business & Quantity
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = order.business_name,
+                    color = colors.textPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colors.accent.copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "📦 ${order.quantity} pcs",
+                        color = colors.accent,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Contact Info
+            Text(
+                text = "Contact: ${order.customerName}",
+                color = colors.textPrimary,
+                fontSize = 14.sp
+            )
+            if (order.email.isNotBlank()) {
+                Text(
+                    text = "Email: ${order.email}",
+                    color = colors.textSecondary,
+                    fontSize = 13.sp
+                )
+            }
+            if (order.phone.isNotBlank()) {
+                Text(
+                    text = "Phone: ${order.phone}",
+                    color = colors.textSecondary,
+                    fontSize = 13.sp
+                )
+            }
+            if (order.created_at.isNotBlank()) {
+                Text(
+                    text = "Date: ${order.created_at.take(10)}",
+                    color = colors.textSecondary.copy(alpha = 0.7f),
+                    fontSize = 12.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Actions row: Call, WhatsApp, Update Status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Call button
+                if (order.phone.isNotBlank()) {
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${order.phone}"))
+                            context.startActivity(intent)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.accent.copy(alpha = 0.15f)),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Icon(Icons.Filled.Phone, contentDescription = "Call", tint = colors.accent, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Call", color = colors.accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    // WhatsApp button
+                    val cleanPhone = order.phone.replace("[^0-9]".toRegex(), "")
+                    val targetPhone = if (cleanPhone.length == 10) "91$cleanPhone" else cleanPhone
+                    Button(
+                        onClick = {
+                            val uri = Uri.parse("https://wa.me/$targetPhone?text=${Uri.encode("Hello ${order.first_name}, thank you for your bulk inquiry (${order.id}) with RestNest. We would love to assist you.")}")
+                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                            context.startActivity(intent)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366).copy(alpha = 0.15f)),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("WhatsApp", color = Color(0xFF25D366), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Status dropdown/quick button
+                Button(
+                    onClick = { showStatusDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.accent),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text("Status", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+
+    if (showStatusDialog) {
+        AlertDialog(
+            onDismissRequest = { showStatusDialog = false },
+            title = { Text("Update Order Status", color = colors.textPrimary) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Select new status for ${order.id}:", color = colors.textSecondary)
+                    listOf("Pending", "Contacted", "Completed").forEach { st ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (order.status.equals(st, ignoreCase = true)) colors.accent.copy(alpha = 0.2f) else Color.Transparent)
+                                .clickable {
+                                    showStatusDialog = false
+                                    onStatusChange(st)
+                                }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(st, color = colors.textPrimary, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showStatusDialog = false }) {
+                    Text("Cancel", color = colors.accent)
+                }
+            }
+        )
     }
 }

@@ -134,17 +134,20 @@ if (mongoose) {
 
     const bulkOrderSchema = new mongoose.Schema({
         id: { type: String, required: true, unique: true },
-        first_name: String,
-        last_name: String,
-        email: String,
-        phone: String,
-        address: String,
-        city: String,
-        state: String,
-        pincode: String,
+        first_name: { type: String, default: '' },
+        last_name: { type: String, default: '' },
+        email: { type: String, default: '' },
+        phone: { type: String, default: '' },
+        business_name: { type: String, default: '' },
+        quantity: { type: Number, default: 50 },
+        address: { type: String, default: '' },
+        city: { type: String, default: '' },
+        state: { type: String, default: '' },
+        pincode: { type: String, default: '' },
+        notes: { type: String, default: '' },
         status: { type: String, default: 'Pending' },
         created_at: { type: Date, default: Date.now }
-    });
+    }, { strict: false });
 
     BulkOrder = mongoose.model('BulkOrder', bulkOrderSchema);
 
@@ -1380,30 +1383,100 @@ app.delete('/api/reset-orders', async (req, res) => {
 // ----------------------------------------------------
 app.post('/api/bulk-orders', async (req, res) => {
     try {
-        const { first_name, last_name, email, phone, business_name, quantity } = req.body;
+        const body = req.body || {};
+        const first_name = (body.first_name || body.fname || '').trim();
+        const last_name = (body.last_name || body.lname || '').trim();
+        const email = (body.email || '').trim();
+        const phone = (body.phone || '').trim();
+        const business_name = (body.business_name || body.businessName || body.company || '').trim();
+        const rawQty = parseInt(body.quantity, 10);
+        const quantity = isNaN(rawQty) || rawQty <= 0 ? 50 : rawQty;
+        const address = (body.address || '').trim();
+        const city = (body.city || '').trim();
+        const state = (body.state || '').trim();
+        const pincode = (body.pincode || '').trim();
+        const notes = (body.notes || body.message || '').trim();
+
         const newBulkOrder = new BulkOrder({
             id: `bulk_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
             first_name,
             last_name,
             email,
             phone,
-            business_name,
-            quantity: Number(quantity)
+            business_name: business_name || (first_name ? `${first_name}'s Business` : 'Wholesale Inquiry'),
+            quantity,
+            address,
+            city,
+            state,
+            pincode,
+            notes,
+            status: 'Pending',
+            created_at: new Date()
         });
         await newBulkOrder.save();
         res.json({ success: true, bulkOrder: newBulkOrder });
     } catch (error) {
         console.error('Error creating bulk order:', error);
-        res.status(500).json({ success: false, error: 'Internal Server Error' });
+        res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
     }
 });
 
 app.get('/api/bulk-orders', async (req, res) => {
     try {
-        const bulkOrders = await BulkOrder.find().sort({ created_at: -1 });
-        res.json({ success: true, bulkOrders });
+        const bulkOrders = await BulkOrder.find().sort({ created_at: -1 }).lean();
+        const sanitized = bulkOrders.map(b => ({
+            _id: b._id,
+            id: b.id || `bulk_${b._id}`,
+            first_name: b.first_name || '',
+            last_name: b.last_name || '',
+            email: b.email || '',
+            phone: b.phone || '',
+            business_name: b.business_name || (b.first_name ? `${b.first_name}'s Business` : 'Wholesale Inquiry'),
+            quantity: typeof b.quantity === 'number' && !isNaN(b.quantity) && b.quantity > 0 ? b.quantity : 50,
+            address: b.address || '',
+            city: b.city || '',
+            state: b.state || '',
+            pincode: b.pincode || '',
+            notes: b.notes || '',
+            status: b.status || 'Pending',
+            created_at: b.created_at ? new Date(b.created_at).toISOString() : new Date().toISOString()
+        }));
+        res.json({ success: true, bulkOrders: sanitized });
     } catch (error) {
         console.error('Error fetching bulk orders:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/bulk-orders/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const updated = await BulkOrder.findOneAndUpdate(
+            { id },
+            { $set: { status: status || 'Pending' } },
+            { new: true }
+        );
+        if (!updated) {
+            return res.status(404).json({ success: false, message: 'Bulk order not found' });
+        }
+        res.json({ success: true, bulkOrder: updated });
+    } catch (error) {
+        console.error('Error updating bulk order status:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+app.delete('/api/bulk-orders/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await BulkOrder.findOneAndDelete({ id });
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: 'Bulk order not found' });
+        }
+        res.json({ success: true, message: 'Bulk order deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting bulk order:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 });
