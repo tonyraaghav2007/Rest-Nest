@@ -58,9 +58,9 @@ window.RESTNEST_PRODUCTS = {
     "classic-fiber-pillow-midnight": {
         "title": "Classic Fiber Pillow — Midnight",
         "imgUrl": "product-4/1.jpg",
-        "salePrice": "Rs. 666.40",
+        "salePrice": "Rs. 799.00",
         "originalPrice": "Rs. 1,200.00",
-        "discount": "-44%",
+        "discount": "-33%",
         "id": "classic-fiber-pillow-midnight",
         "category": "Pillow",
         "description": "Good sleep starts with the right pillow. The Rest Nest Black Fiber Pillow is filled with 100% virgin Recron fiber, which is soft and springy and holds its shape night after night. The cover is a soft 180 GSM fabric that feels gentle on your skin. Together they support your head and neck without going flat by morning. That makes it a good fit for back sleepers, side sleepers and everyone in between.\n\nYou get two in every pack, so you can refresh your own bed, set up the guest room, or gift a pair.",
@@ -95,9 +95,9 @@ window.RESTNEST_PRODUCTS = {
     "classic-fiber-pillow-serene": {
         "title": "Classic Fiber Pillow — Serene",
         "imgUrl": "product-white-latex-pillow/1.jpg",
-        "salePrice": "Rs. 666.40",
+        "salePrice": "Rs. 799.00",
         "originalPrice": "Rs. 1,200.00",
-        "discount": "-44%",
+        "discount": "-33%",
         "id": "classic-fiber-pillow-serene",
         "category": "Pillow",
         "description": "Give your bed the clean, fluffy feel of a hotel. The Rest Nest White Fiber Pillow is filled with 100% virgin Recron fiber that stays light, airy and full of bounce. Its soft 180 GSM fabric cover feels smooth against your face every night. Lie down and it gently hugs your head and neck. Get up and it puffs right back into shape, ready for the next night.\n\nIts classic all-white look goes with any bedsheet and any room. Plus, you get two in every pack, so it’s an easy upgrade for your bedroom or a thoughtful gift for family.",
