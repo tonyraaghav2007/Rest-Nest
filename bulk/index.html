@@ -1008,9 +1008,26 @@
                 
                 if (data.success) {
                     showStatus('Thank you! Redirecting to confirmation...', 'success');
+
+                    const bulkOrderId = data.bulkOrder?.id || ('BULK_' + Date.now().toString().slice(-6));
+
+                    // Track Meta Pixel Subscribe Event
+                    if (typeof fbq === 'function') {
+                        try {
+                            fbq('track', 'Subscribe', {
+                                content_name: 'Bulk Order Inquiry',
+                                currency: 'INR',
+                                value: 0.00
+                            });
+                            sessionStorage.setItem(`pixel_bulk_subscribe_${bulkOrderId}`, 'true');
+                        } catch (pixelErr) {
+                            console.warn('Meta Pixel tracking error:', pixelErr);
+                        }
+                    }
+
                     try {
                         sessionStorage.setItem('restnest_bulk_order', JSON.stringify({
-                            id: data.bulkOrder?.id || ('BULK_' + Date.now().toString().slice(-6)),
+                            id: bulkOrderId,
                             business: payload.business_name,
                             name: (payload.first_name + ' ' + payload.last_name).trim(),
                             quantity: payload.quantity,
@@ -1021,7 +1038,7 @@
                     } catch (err) {}
 
                     const q = new URLSearchParams({
-                        id: data.bulkOrder?.id || '',
+                        id: bulkOrderId,
                         business: payload.business_name || '',
                         name: (payload.first_name + ' ' + payload.last_name).trim(),
                         qty: payload.quantity || '',

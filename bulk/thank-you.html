@@ -21,6 +21,10 @@
         })(window, document, "clarity", "script", "y1ui8xvx9v");
     </script>
 
+    <!-- Meta Pixel -->
+    <script src="../meta-pixel.js"></script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=29080819768207553&ev=PageView&noscript=1"/></noscript>
+
     <style>
         /* ====================================================
            RESTNEST BULK ORDER CONFIRMATION PAGE
@@ -835,6 +839,17 @@
             if (waBtn) {
                 const message = encodeURIComponent(`Hello RestNest, I have just submitted a Bulk Order inquiry (#${orderId}) for ${businessName} (${quantity} units). Could you please provide the commercial quotation?`);
                 waBtn.href = `https://wa.me/917404674889?text=${message}`;
+            }
+
+            // Meta Pixel Subscribe Event (Idempotent to avoid duplicate counts on page refresh)
+            const pixelKey = `pixel_bulk_subscribe_${orderId}`;
+            if (!sessionStorage.getItem(pixelKey) && typeof fbq === 'function') {
+                fbq('track', 'Subscribe', {
+                    content_name: 'Bulk Order Inquiry',
+                    currency: 'INR',
+                    value: 0.00
+                });
+                sessionStorage.setItem(pixelKey, 'true');
             }
 
             // Confetti Animation
