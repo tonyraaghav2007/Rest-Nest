@@ -964,7 +964,8 @@ app.post('/api/push-selected-to-bigship', async (req, res) => {
 // ----------------------------------------------------
 app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
     try {
-        const unbookedOrders = await Order.find({
+        const force = Boolean(req.body && (req.body.force === true || req.body.force === 'true'));
+        const query = force ? {} : {
             $or: [
                 { bigship_status: { $ne: 'Booked' } },
                 { bigship_status: { $exists: false } },
@@ -972,7 +973,8 @@ app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
                 { bigship_awb: 'N/A' },
                 { bigship_awb: { $exists: false } }
             ]
-        }).limit(100);
+        };
+        const unbookedOrders = await Order.find(query).limit(100);
 
         if (unbookedOrders.length === 0) {
             return res.json({
