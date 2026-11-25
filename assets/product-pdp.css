@@ -1,0 +1,778 @@
+/* ==========================================================================
+   REST NEST — SleepyCat-Inspired Product Detail Page & Recommendations Slider
+   Clean, High-Converting Luxury Bedding UI
+   ========================================================================== */
+
+:root {
+    --pdp-primary: #4B3621;
+    --pdp-accent: #A67C52;
+    --pdp-accent-hover: #8D6741;
+    --pdp-surface: #FAF9F6;
+    --pdp-surface-alt: #F4EFEA;
+    --pdp-border: #E5DDD4;
+    --pdp-text: #2D231A;
+    --pdp-text-muted: #726255;
+    --pdp-success: #2E7D32;
+    --pdp-success-bg: #E8F5E9;
+    --pdp-radius-sm: 6px;
+    --pdp-radius-md: 10px;
+    --pdp-radius-lg: 14px;
+    --pdp-shadow-sm: 0 2px 8px rgba(75, 54, 33, 0.06);
+    --pdp-shadow-md: 0 6px 20px rgba(75, 54, 33, 0.10);
+    --pdp-shadow-lg: 0 12px 30px rgba(75, 54, 33, 0.14);
+}
+
+/* Breadcrumbs */
+.pdp-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--pdp-text-muted);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.pdp-breadcrumbs a {
+    color: var(--pdp-text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.pdp-breadcrumbs a:hover {
+    color: var(--pdp-accent);
+}
+
+.pdp-breadcrumbs span.sep {
+    opacity: 0.5;
+}
+
+.pdp-breadcrumbs .pdp-breadcrumb-active {
+    color: var(--pdp-primary);
+    font-weight: 500;
+}
+
+/* SleepyCat-style Price Display */
+.pdp-price-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--pdp-border);
+    margin-bottom: 1.25rem;
+}
+
+.pdp-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.pdp-sale-price {
+    font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--pdp-primary);
+    line-height: 1.1;
+}
+
+.pdp-original-price {
+    font-size: 1.2rem;
+    color: #9C8E82;
+    text-decoration: line-through;
+    font-weight: 400;
+}
+
+.pdp-discount-pill {
+    background: #EAF3E7;
+    color: #27672B;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+    border: 1px solid rgba(39, 103, 43, 0.2);
+}
+
+.pdp-tax-notice {
+    font-size: 0.8rem;
+    color: var(--pdp-text-muted);
+}
+
+/* SleepyCat Variant & Size Selector */
+.pdp-options-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+}
+
+.pdp-options-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--pdp-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pdp-options-title span.selected-value {
+    color: var(--pdp-accent);
+    font-weight: 600;
+    text-transform: none;
+}
+
+.pdp-variant-pills {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.65rem;
+}
+
+.pdp-variant-pill {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0.9rem;
+    background: #FFF;
+    border: 1.5px solid var(--pdp-border);
+    border-radius: var(--pdp-radius-md);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: left;
+    user-select: none;
+}
+
+.pdp-variant-pill:hover {
+    border-color: var(--pdp-accent);
+    background: #FDFCFB;
+}
+
+.pdp-variant-pill.active {
+    border-color: var(--pdp-primary);
+    background: #F8F4EE;
+    box-shadow: 0 2px 8px rgba(75, 54, 33, 0.12);
+}
+
+.pdp-variant-pill.active::after {
+    content: "✓";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.75rem;
+    width: 18px;
+    height: 18px;
+    background: var(--pdp-primary);
+    color: #FFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.pdp-variant-pill__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--pdp-primary);
+    margin-bottom: 0.2rem;
+}
+
+.pdp-variant-pill__desc {
+    font-size: 0.75rem;
+    color: var(--pdp-text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.pdp-variant-pill__price {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--pdp-accent);
+}
+
+.pdp-variant-pill__badge {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: var(--pdp-accent);
+    color: #FFF;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* SleepyCat-Style 7-8 Days Delivery Box */
+.pdp-delivery-card {
+    background: #FBF9F6;
+    border: 1px solid #EAE3DB;
+    border-radius: var(--pdp-radius-md);
+    padding: 1rem 1.15rem;
+    margin: 1.25rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    box-shadow: var(--pdp-shadow-sm);
+}
+
+.pdp-delivery-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pdp-delivery-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #EFE8DF;
+    color: var(--pdp-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.pdp-delivery-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.pdp-delivery-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--pdp-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pdp-delivery-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #2E7D32;
+    color: #FFF;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+}
+
+.pdp-delivery-sub {
+    font-size: 0.82rem;
+    color: var(--pdp-text-muted);
+}
+
+.pdp-pincode-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+.pdp-pincode-input {
+    flex: 1;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.88rem;
+    border: 1px solid var(--pdp-border);
+    border-radius: var(--pdp-radius-sm);
+    background: #FFF;
+    color: var(--pdp-primary);
+    outline: none;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+}
+
+.pdp-pincode-input:focus {
+    border-color: var(--pdp-accent);
+}
+
+.pdp-pincode-submit {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--pdp-primary);
+    color: #FFF;
+    border: none;
+    border-radius: var(--pdp-radius-sm);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.pdp-pincode-submit:hover {
+    background: var(--pdp-accent);
+}
+
+.pdp-pincode-msg {
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--pdp-success);
+    font-weight: 500;
+}
+
+/* SleepyCat-Style Key Highlights (Bullets) */
+.pdp-highlights-card {
+    background: #FFF;
+    border: 1px solid var(--pdp-border);
+    border-radius: var(--pdp-radius-md);
+    padding: 1.15rem 1.25rem;
+    margin: 1.25rem 0;
+    box-shadow: var(--pdp-shadow-sm);
+}
+
+.pdp-highlights-heading {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--pdp-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pdp-highlights-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.pdp-highlight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    font-size: 0.88rem;
+    color: var(--pdp-text);
+    line-height: 1.5;
+}
+
+.pdp-highlight-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #EAF3E7;
+    color: #27672B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.pdp-highlight-text strong {
+    color: var(--pdp-primary);
+    font-weight: 600;
+}
+
+/* SleepyCat-Style Accordions */
+.pdp-accordions-wrapper {
+    margin: 2rem 0;
+    border-top: 1px solid var(--pdp-border);
+}
+
+.pdp-accordion-item {
+    border-bottom: 1px solid var(--pdp-border);
+}
+
+.pdp-accordion-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--pdp-primary);
+    text-align: left;
+    transition: color 0.2s ease;
+}
+
+.pdp-accordion-trigger:hover {
+    color: var(--pdp-accent);
+}
+
+.pdp-accordion-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--pdp-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: transform 0.3s ease, background 0.2s ease;
+    flex-shrink: 0;
+    color: var(--pdp-text-muted);
+}
+
+.pdp-accordion-item.open .pdp-accordion-icon {
+    transform: rotate(45deg);
+    background: var(--pdp-primary);
+    color: #FFF;
+    border-color: var(--pdp-primary);
+}
+
+.pdp-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), padding 0.35s ease;
+    padding: 0;
+    color: var(--pdp-text);
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+.pdp-accordion-item.open .pdp-accordion-content {
+    max-height: 600px;
+    padding-bottom: 1.25rem;
+}
+
+/* Specifications Table */
+.pdp-specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 0.5rem;
+}
+
+.pdp-specs-table tr {
+    border-bottom: 1px solid #EFEAE3;
+}
+
+.pdp-specs-table tr:last-child {
+    border-bottom: none;
+}
+
+.pdp-specs-table td {
+    padding: 0.65rem 0.5rem;
+}
+
+.pdp-specs-table td.spec-name {
+    width: 40%;
+    color: var(--pdp-text-muted);
+    font-weight: 500;
+}
+
+.pdp-specs-table td.spec-val {
+    width: 60%;
+    color: var(--pdp-primary);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   SLIDING RECOMMENDATIONS CAROUSEL (SleepyCat-style "You May Also Like")
+   ========================================================================== */
+.pdp-recommendations-section {
+    padding: 4rem 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.pdp-rec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+}
+
+.pdp-rec-heading-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.pdp-rec-tag {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--pdp-accent);
+}
+
+.pdp-rec-title {
+    font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif);
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: var(--pdp-primary);
+    margin: 0;
+}
+
+.pdp-rec-nav-arrows {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pdp-rec-arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--pdp-border);
+    background: #FFF;
+    color: var(--pdp-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: var(--pdp-shadow-sm);
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.pdp-rec-arrow:hover {
+    background: var(--pdp-primary);
+    color: #FAF9F6;
+    border-color: var(--pdp-primary);
+    transform: scale(1.05);
+}
+
+/* Carousel Track */
+.pdp-rec-slider-container {
+    overflow: hidden;
+    position: relative;
+    padding: 0.5rem 0.25rem 1.5rem;
+}
+
+.pdp-rec-track {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.5rem;
+}
+
+.pdp-rec-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Recommendation Card */
+.pdp-rec-card {
+    flex: 0 0 calc(25% - 1.15rem);
+    min-width: 260px;
+    max-width: 320px;
+    background: #FFF;
+    border: 1px solid var(--pdp-border);
+    border-radius: var(--pdp-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--pdp-shadow-sm);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.pdp-rec-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--pdp-shadow-md);
+    border-color: var(--pdp-accent);
+}
+
+.pdp-rec-image-wrap {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    background: #F4EFEA;
+    overflow: hidden;
+}
+
+.pdp-rec-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.pdp-rec-card:hover .pdp-rec-image-wrap img {
+    transform: scale(1.06);
+}
+
+.pdp-rec-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #27672B;
+    color: #FFF;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+}
+
+.pdp-rec-delivery-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    color: var(--pdp-primary);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pdp-rec-body {
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.pdp-rec-category {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--pdp-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+}
+
+.pdp-rec-title-link {
+    text-decoration: none;
+    color: var(--pdp-primary);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.4rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 2.7rem;
+    transition: color 0.2s ease;
+}
+
+.pdp-rec-title-link:hover {
+    color: var(--pdp-accent);
+}
+
+.pdp-rec-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: #EAB308;
+    margin-bottom: 0.75rem;
+}
+
+.pdp-rec-rating span.count {
+    color: var(--pdp-text-muted);
+    font-size: 0.75rem;
+    margin-left: 2px;
+}
+
+.pdp-rec-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-top: auto;
+    margin-bottom: 0.9rem;
+}
+
+.pdp-rec-sale {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pdp-primary);
+}
+
+.pdp-rec-orig {
+    font-size: 0.88rem;
+    color: #9C8E82;
+    text-decoration: line-through;
+}
+
+.pdp-rec-btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.pdp-rec-btn-view {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid var(--pdp-border);
+    background: #FFF;
+    color: var(--pdp-primary);
+    border-radius: var(--pdp-radius-sm);
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.pdp-rec-btn-view:hover {
+    background: #F4EFEA;
+    border-color: var(--pdp-primary);
+}
+
+.pdp-rec-btn-add {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--pdp-accent);
+    color: #FAF9F6;
+    border: 1px solid var(--pdp-accent);
+    border-radius: var(--pdp-radius-sm);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    text-align: center;
+}
+
+.pdp-rec-btn-add:hover {
+    background: var(--pdp-accent-hover);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .pdp-rec-card {
+        flex: 0 0 calc(33.333% - 1rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .pdp-rec-card {
+        flex: 0 0 calc(50% - 0.75rem);
+        min-width: 220px;
+    }
+    .pdp-rec-title {
+        font-size: 1.8rem;
+    }
+    .pdp-rec-image-wrap {
+        height: 180px;
+    }
+    .pdp-rec-btn-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .pdp-rec-card {
+        flex: 0 0 85%;
+        max-width: none;
+    }
+}
