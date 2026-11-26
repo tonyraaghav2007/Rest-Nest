@@ -1745,8 +1745,12 @@ app.post('/api/bulk-orders/:id/status', async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
+        const validIdQuery = (mongoose && mongoose.isValidObjectId(id)) 
+            ? { $or: [{ id }, { _id: id }] } 
+            : { id };
+
         const updated = await BulkOrder.findOneAndUpdate(
-            { id },
+            validIdQuery,
             { $set: { status: status || 'Pending' } },
             { new: true }
         );
@@ -1763,7 +1767,11 @@ app.post('/api/bulk-orders/:id/status', async (req, res) => {
 app.delete('/api/bulk-orders/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const deleted = await BulkOrder.findOneAndDelete({ id });
+        const validIdQuery = (mongoose && mongoose.isValidObjectId(id)) 
+            ? { $or: [{ id }, { _id: id }] } 
+            : { id };
+
+        const deleted = await BulkOrder.findOneAndDelete(validIdQuery);
         if (!deleted) {
             return res.status(404).json({ success: false, message: 'Bulk order not found' });
         }
@@ -1771,6 +1779,26 @@ app.delete('/api/bulk-orders/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting bulk order:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/delete-bulk-orders', async (req, res) => {
+    try {
+        const ids = req.body.ids;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ success: false, error: 'No bulk order IDs provided' });
+        }
+        const validObjectIds = ids.filter(id => mongoose && mongoose.isValidObjectId(id));
+        await BulkOrder.deleteMany({
+            $or: [
+                { id: { $in: ids } },
+                { _id: { $in: validObjectIds } }
+            ]
+        });
+        res.json({ success: true, count: ids.length });
+    } catch (error) {
+        console.error('Error batch deleting bulk orders:', error);
+        res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
     }
 });
 
