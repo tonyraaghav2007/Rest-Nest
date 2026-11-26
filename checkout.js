@@ -288,7 +288,7 @@ function initCheckoutPage() {
             return;
         }
 
-        if (code === 'FIRST10' || code === 'DIWALI10') {
+        if (code === 'FIRST10' || code === 'DIWALI10' || code === 'WINTER10') {
             appliedCoupon = { code: code, percent: 10 };
             try { sessionStorage.setItem('restnest_coupon', code); } catch(e) {}
             if (inputEl) inputEl.value = code;
@@ -348,7 +348,7 @@ function initCheckoutPage() {
 
     try {
         const savedCoupon = sessionStorage.getItem('restnest_coupon');
-        if (savedCoupon && (savedCoupon.toUpperCase() === 'FIRST10' || savedCoupon.toUpperCase() === 'DIWALI10')) {
+        if (savedCoupon && (savedCoupon.toUpperCase() === 'FIRST10' || savedCoupon.toUpperCase() === 'DIWALI10' || savedCoupon.toUpperCase() === 'WINTER10')) {
             applyCoupon(savedCoupon);
         }
     } catch(e) {}

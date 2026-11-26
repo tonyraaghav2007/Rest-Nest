@@ -3113,7 +3113,7 @@ function initScrollReveal() {
                 if (!promoBanner) {
                     promoBanner = document.createElement('div');
                     promoBanner.className = 'cart-promo-banner';
-                    promoBanner.innerHTML = '<span>🪔 10% OFF 1st order: <strong>FIRST10</strong></span><span style="color: #27ae60; font-weight: 600;">✓ Express Delivery</span>';
+                    promoBanner.innerHTML = '<span>❄️ 10% OFF 1st order: <strong>FIRST10</strong></span><span style="color: #27ae60; font-weight: 600;">✓ Express Delivery</span>';
                     cartFooter.insertBefore(promoBanner, cartFooter.firstChild);
                 }
             }
@@ -3394,9 +3394,9 @@ function initScrollReveal() {
                 <div class="diwali-modal" id="diwaliModal" role="dialog" aria-modal="true">
                     <button class="diwali-modal__close" id="diwaliModalClose">&times;</button>
                     <div class="diwali-modal__header">
-                        <span class="diwali-badge">🪔 REST NEST FESTIVE SPECIAL 🪔</span>
-                        <h3 class="diwali-title">Diwali Comfort Sale</h3>
-                        <p class="diwali-subtitle">Bring festive peace, luxury, and cloud-like rest into your home.</p>
+                        <span class="diwali-badge">❄️ REST NEST WINTER SPECIAL ❄️</span>
+                        <h3 class="diwali-title">Winter Comfort Sale</h3>
+                        <p class="diwali-subtitle">Bring cozy luxury, warmth, and cloud-like rest into your home.</p>
                     </div>
                     
                     <div class="diwali-perks-list">
@@ -3440,15 +3440,15 @@ function initScrollReveal() {
                     <div class="diwali-copy-msg" id="diwaliCopyMsg" style="display: none;">✓ Code FIRST10 copied & applied!</div>
 
                     <div class="diwali-modal__actions">
-                        <a href="../pillows/" class="diwali-cta-btn" id="diwaliCtaBtn">Shop Diwali Offers →</a>
+                        <a href="../pillows/" class="diwali-cta-btn" id="diwaliCtaBtn">Shop Winter Offers →</a>
                         <button class="diwali-dismiss-link" id="diwaliDismissLink" type="button">Continue to Site</button>
                     </div>
                 </div>
             </div>
 
-            <button class="diwali-floating-tag" id="diwaliFloatingTag" aria-label="View Diwali Offers">
-                <span class="floating-diya">🪔</span>
-                <span class="floating-text">Diwali Sale: <strong>10% OFF</strong></span>
+            <button class="diwali-floating-tag" id="diwaliFloatingTag" aria-label="View Winter Offers">
+                <span class="floating-diya">❄️</span>
+                <span class="floating-text">Winter Sale: <strong>10% OFF</strong></span>
             </button>
         `;
 
@@ -3475,7 +3475,7 @@ function initScrollReveal() {
             if (!overlay) return;
             overlay.classList.remove('active');
             setTimeout(() => { overlay.style.display = 'none'; }, 350);
-            try { sessionStorage.setItem('restnest_diwali_seen', 'true'); } catch (e) {}
+            try { sessionStorage.setItem('restnest_winter_seen', 'true'); } catch (e) {}
         }
 
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
@@ -3510,7 +3510,7 @@ function initScrollReveal() {
         }
 
         try {
-            if (!sessionStorage.getItem('restnest_diwali_seen')) {
+            if (!sessionStorage.getItem('restnest_winter_seen')) {
                 setTimeout(openModal, 1200);
             }
         } catch(e) {

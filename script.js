@@ -1242,7 +1242,7 @@ document.addEventListener('DOMContentLoaded', initProductSort);
                 if (!promoBanner) {
                     promoBanner = document.createElement('div');
                     promoBanner.className = 'cart-promo-banner';
-                    promoBanner.innerHTML = '<span>🪔 10% OFF 1st order: <strong>FIRST10</strong></span><span style="color: #27ae60; font-weight: 600;">✓ Free Shipping</span>';
+                    promoBanner.innerHTML = '<span>❄️ 10% OFF 1st order: <strong>FIRST10</strong></span><span style="color: #27ae60; font-weight: 600;">✓ Express Delivery</span>';
                     cartFooter.insertBefore(promoBanner, cartFooter.firstChild);
                 }
             }
@@ -1617,9 +1617,9 @@ function initDiwaliSale() {
             <div class="diwali-modal" id="diwaliModal" role="dialog" aria-modal="true" aria-labelledby="diwaliModalTitle">
                 <button class="diwali-modal__close" id="diwaliModalClose" aria-label="Close dialog">&times;</button>
                 <div class="diwali-modal__header">
-                    <span class="diwali-badge">🪔 REST NEST FESTIVE SPECIAL 🪔</span>
-                    <h3 class="diwali-title" id="diwaliModalTitle">Diwali Comfort Sale</h3>
-                    <p class="diwali-subtitle">Bring festive peace, luxury, and cloud-like rest into your home.</p>
+                    <span class="diwali-badge">❄️ REST NEST WINTER SPECIAL ❄️</span>
+                    <h3 class="diwali-title" id="diwaliModalTitle">Winter Comfort Sale</h3>
+                    <p class="diwali-subtitle">Bring cozy luxury, warmth, and cloud-like rest into your home.</p>
                 </div>
                 
                 <div class="diwali-perks-list">
@@ -1633,8 +1633,8 @@ function initDiwaliSale() {
                     <div class="diwali-perk-item">
                         <span class="diwali-perk-icon">🚚</span>
                         <div class="diwali-perk-text">
-                            <strong>Free Shipping</strong>
-                            <span>Express delivery on all orders across India</span>
+                            <strong>Express Delivery</strong>
+                            <span>Fast pan-India delivery on all orders</span>
                         </div>
                     </div>
                     <div class="diwali-perk-item">
@@ -1663,15 +1663,15 @@ function initDiwaliSale() {
                 <div class="diwali-copy-msg" id="diwaliCopyMsg" style="display: none;">✓ Code FIRST10 copied & applied for checkout!</div>
 
                 <div class="diwali-modal__actions">
-                    <a href="${shopLink}" class="diwali-cta-btn" id="diwaliCtaBtn">Shop Diwali Offers →</a>
+                    <a href="${shopLink}" class="diwali-cta-btn" id="diwaliCtaBtn">Shop Winter Offers →</a>
                     <button class="diwali-dismiss-link" id="diwaliDismissLink" type="button">Continue to Site</button>
                 </div>
             </div>
         </div>
 
-        <button class="diwali-floating-tag" id="diwaliFloatingTag" aria-label="View Diwali Offers">
-            <span class="floating-diya">🪔</span>
-            <span class="floating-text">Diwali Sale: <strong>10% OFF</strong></span>
+        <button class="diwali-floating-tag" id="diwaliFloatingTag" aria-label="View Winter Offers">
+            <span class="floating-diya">❄️</span>
+            <span class="floating-text">Winter Sale: <strong>10% OFF</strong></span>
         </button>
     `;
 
@@ -1702,7 +1702,7 @@ function initDiwaliSale() {
             overlay.style.display = 'none';
         }, 350);
         try {
-            sessionStorage.setItem('restnest_diwali_seen', 'true');
+            sessionStorage.setItem('restnest_winter_seen', 'true');
         } catch (e) {}
     }
 
@@ -1765,7 +1765,7 @@ function initDiwaliSale() {
     }
 
     try {
-        const alreadySeen = sessionStorage.getItem('restnest_diwali_seen');
+        const alreadySeen = sessionStorage.getItem('restnest_winter_seen');
         if (!alreadySeen) {
             setTimeout(openDiwaliModal, 1200);
         }

@@ -776,7 +776,7 @@ app.post('/api/create-order', authLimiter, async (req, res) => {
 
         // Apply first order / festival coupon code
         const code = (couponCode || coupon_code || '').toString().trim().toUpperCase();
-        if (code === 'FIRST10' || code === 'DIWALI10') {
+        if (code === 'FIRST10' || code === 'DIWALI10' || code === 'WINTER10') {
             const discount = Math.round(realAmount * 0.10);
             realAmount = Math.max(1, realAmount - discount);
         }
