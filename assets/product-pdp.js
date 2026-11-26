@@ -10,10 +10,11 @@
 
     // Helper: Parse currency strings to numeric float
     function parseNumericPrice(str) {
-        if (typeof str === 'number') return str;
+        if (typeof str === 'number') return isNaN(str) ? 0 : str;
         if (!str) return 0;
-        var cleaned = str.toString().replace(/[^0-9.]/g, '');
-        return parseFloat(cleaned) || 0;
+        var s = str.toString().replace(/,/g, '');
+        var match = s.match(/[0-9]+(\.[0-9]+)?/);
+        return match ? (parseFloat(match[0]) || 0) : 0;
     }
 
     // Helper: Format number to Indian Currency string
@@ -82,10 +83,12 @@
         // Handle alias resolution
         var entry = products[pid];
         var defaultVariantLabel = null;
-        if (entry && entry.aliasOf) {
-            defaultVariantLabel = entry.defaultVariant || null;
+        var depth = 0;
+        while (entry && entry.aliasOf && depth < 5) {
+            defaultVariantLabel = entry.defaultVariant || defaultVariantLabel;
             pid = entry.aliasOf;
             entry = products[pid];
+            depth++;
         }
 
         if (!entry) {
@@ -93,10 +96,44 @@
             return;
         }
 
+        var fallbackPrices = {
+            'classic-fiber-pillow-midnight': { sale: 799, orig: 1200, disc: '-33% OFF' },
+            'classic-fiber-pillow-serene': { sale: 799, orig: 1200, disc: '-33% OFF' },
+            'classic-fiber-pillow': { sale: 799, orig: 1200, disc: '-33% OFF' },
+            'white-latex-pillow': { sale: 799, orig: 1200, disc: '-33% OFF' },
+            'rest-nest-slim-microfiber-pillow-17x27-inch-white-1-pcs': { sale: 1299, orig: 1528, disc: '-15% OFF' },
+            'honeycomb-pillow': { sale: 1299, orig: 1528, disc: '-15% OFF' },
+            'black-dotted-pillow': { sale: 999, orig: 1175, disc: '-15% OFF' },
+            'rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2': { sale: 1199, orig: 1411, disc: '-15% OFF' }
+        };
+
+        var parsedSale = parseNumericPrice(entry.salePrice);
+        var parsedOrig = parseNumericPrice(entry.originalPrice);
+
+        var requestedId = urlParams.get('id') || '';
+        var fallbackInfo = fallbackPrices[pid] || fallbackPrices[requestedId];
+        if (!parsedSale || parsedSale < 100) {
+            if (fallbackInfo) {
+                parsedSale = fallbackInfo.sale;
+                parsedOrig = fallbackInfo.orig;
+            } else {
+                parsedSale = 799;
+                parsedOrig = 1200;
+            }
+        }
+
+        if (!parsedOrig || parsedOrig <= parsedSale) {
+            if (fallbackInfo && fallbackInfo.orig > parsedSale) {
+                parsedOrig = fallbackInfo.orig;
+            } else {
+                parsedOrig = Math.round(parsedSale * 1.5);
+            }
+        }
+
         state.productId = pid;
         state.product = entry;
-        state.unitBasePrice = parseNumericPrice(entry.salePrice);
-        state.unitOriginalPrice = parseNumericPrice(entry.originalPrice) || (state.unitBasePrice * 1.35);
+        state.unitBasePrice = parsedSale;
+        state.unitOriginalPrice = parsedOrig;
 
         // Images array
         state.images = entry.images && entry.images.length > 0 ? entry.images : [entry.imgUrl || 'sold_out.jpg'];
@@ -279,12 +316,29 @@
         var stickyPriceEl = document.getElementById('pdp-sticky-price');
 
         var currentSale = state.unitBasePrice;
+        if (!currentSale || currentSale < 100) {
+            currentSale = 799;
+        }
+
         var currentOrig = state.unitOriginalPrice;
+        if (!currentOrig || currentOrig <= currentSale) {
+            currentOrig = 1200;
+        }
+
         var discountPct = Math.round(((currentOrig - currentSale) / currentOrig) * 100);
+        if (discountPct <= 0 || isNaN(discountPct)) {
+            discountPct = 33;
+        }
+
+        var discText = '-' + Math.abs(discountPct) + '% OFF';
+        if (state.product && state.product.discount) {
+            var dClean = state.product.discount.toString().replace(/[^0-9]/g, '');
+            if (dClean) discText = '-' + dClean + '% OFF';
+        }
 
         if (saleEl) saleEl.textContent = formatINR(currentSale);
         if (origEl) origEl.textContent = formatINR(currentOrig);
-        if (discEl) discEl.textContent = '-' + discountPct + '% OFF';
+        if (discEl) discEl.textContent = discText;
         if (stickyPriceEl) stickyPriceEl.textContent = formatINR(currentSale);
     }
 

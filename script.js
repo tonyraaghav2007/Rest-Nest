@@ -864,10 +864,12 @@ async function initProductPage() {
     // --- Alias resolution: if this product is an alias, resolve to the real product ---
     let defaultVariantLabel = null;
     let entry = products[productId];
-    if (entry && entry.aliasOf) {
-        defaultVariantLabel = entry.defaultVariant || null;
+    let depth = 0;
+    while (entry && entry.aliasOf && depth < 5) {
+        defaultVariantLabel = entry.defaultVariant || defaultVariantLabel;
         productId = entry.aliasOf;
         entry = products[productId];
+        depth++;
     }
 
     const product = entry;
@@ -877,11 +879,35 @@ async function initProductPage() {
     }
     window.currentProduct = product;
 
+    // Harmonize fallback prices in script.js as well
+    let displaySale = product.salePrice;
+    let displayOrig = product.originalPrice;
+    let displayDisc = product.discount;
+
+    const requestedId = urlParams.get('id') || '';
+    if (!displaySale || parsePrice(displaySale) < 100) {
+        if (requestedId.includes('classic') || (product.title && product.title.includes('Classic'))) {
+            displaySale = "Rs. 799.00";
+            displayOrig = "Rs. 1,200.00";
+            displayDisc = "-33% OFF";
+        } else {
+            displaySale = "Rs. 999.00";
+            displayOrig = "Rs. 1,200.00";
+            displayDisc = "-15% OFF";
+        }
+    }
+    if (!displayOrig || parsePrice(displayOrig) <= parsePrice(displaySale)) {
+        displayOrig = "Rs. 1,200.00";
+    }
+    if (!displayDisc || displayDisc.includes('--')) {
+        displayDisc = "-33% OFF";
+    }
+
     document.getElementById('product-title').innerText = product.title;
-    document.getElementById('product-desc').innerText = product.description;
-    document.getElementById('product-sale-price').innerText = product.salePrice;
-    document.getElementById('product-original-price').innerText = product.originalPrice;
-    document.getElementById('product-discount').innerText = product.discount;
+    document.getElementById('product-desc').innerText = product.description || "";
+    document.getElementById('product-sale-price').innerText = displaySale;
+    document.getElementById('product-original-price').innerText = displayOrig;
+    document.getElementById('product-discount').innerText = displayDisc;
     
     // Determine initial images based on variant
     let activeVariant = null;

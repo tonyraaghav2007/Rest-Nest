@@ -131,7 +131,10 @@ window.RESTNEST_PRODUCTS = {
         "available": true
     },
     "classic-fiber-pillow": {
-        "aliasOf": "classic-fiber-pillow-midnight"
+        "aliasOf": "classic-fiber-pillow-midnight",
+        "salePrice": "Rs. 799.00",
+        "originalPrice": "Rs. 1,200.00",
+        "discount": "-33%"
     },
     "rest-nest-premium-white-glace-cotton-pillows-pack-of-2-800g-each": {
         "aliasOf": "classic-fiber-pillow-midnight"
