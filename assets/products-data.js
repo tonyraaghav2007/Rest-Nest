@@ -1,4 +1,4 @@
-﻿window.RESTNEST_PRODUCTS = {
+window.RESTNEST_PRODUCTS = {
     "rest-nest-premium-white-sleeping-pillow-glace-cotton-fabric-lightweight-comfortable-pack-of-2": {
         "title": "Loom Glace Cotton Pillow",
         "imgUrl": "product-1/1.jpg",
