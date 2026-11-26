@@ -1065,8 +1065,7 @@ async function initProductPage() {
             }
         }
 
-        // Generate Description & Benefits (for pillows) or Sizes (for cushions)
-        const sizesContainer = document.getElementById('product-sizes');
+        // Generate Description & Benefits (for pillows)
         const benefitsSection = document.getElementById('product-benefits-section');
         const benefitsListEl = document.getElementById('product-benefits');
 
@@ -1080,22 +1079,9 @@ async function initProductPage() {
                 benefitsListEl.appendChild(li);
             });
             benefitsSection.style.display = 'block';
-        } else if (sizesContainer && product.sizes) {
-            sizesContainer.innerHTML = '';
-            product.sizes.forEach((size, index) => {
-                const btn = document.createElement('button');
-                btn.className = `size-btn ${index === 0 ? 'active' : ''}`;
-                btn.innerHTML = `<strong>${size.label}</strong><span>${size.desc}</span>`;
-                sizesContainer.appendChild(btn);
-                
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                });
-            });
         }
         
-        document.title = product.title + " – Cloudrest";
+        document.title = product.title + " – Rest Nest";
 
         // Meta Pixel: ViewContent event
         if (typeof fbq === 'function') {

@@ -1,15 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RestNest</title>
-    <meta name="description" content="Experience the artistry of handcrafted, customizable rugs that blend heritage with your unique style. Explore our collections of luxury handmade rugs.">
+    <title>Rest Nest | Luxury Sleep & Comfort</title>
+    <meta name="description" content="Experience ergonomic sleep luxury with Rest Nest memory foam and microfiber pillows. Designed for optimal spinal alignment, cool breathability, and deep restorative rest.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Great+Vibes&family=Inter:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Great+Vibes&family=Inter:wght@300;400;500;600;700&family=Pinyon+Script&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css?v=28">
-    <link rel="stylesheet" href="../assets/product-pdp.css">
+    <link rel="stylesheet" href="../assets/product-pdp.css?v=20261126-3">
     <style>
         .gallery-arrow {
             position: absolute;
@@ -19,8 +19,8 @@
             color: #4B3621;
             border: 1px solid rgba(75, 54, 33, 0.12);
             font-size: 1.6rem;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             line-height: 1;
             text-align: center;
             border-radius: 50%;
@@ -34,7 +34,6 @@
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             transition: all 0.25s ease;
-            -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
         .gallery-arrow:hover, .gallery-arrow:active {
@@ -42,30 +41,26 @@
             color: #FAF9F6;
             transform: translateY(-50%) scale(1.08);
         }
-        .gallery-arrow--prev { left: 12px; }
-        .gallery-arrow--next { right: 12px; }
+        .gallery-arrow--prev { left: 14px; }
+        .gallery-arrow--next { right: 14px; }
 
         @media (max-width: 768px) {
             .gallery-arrow {
                 width: 36px;
                 height: 36px;
-                font-size: 1.4rem;
+                font-size: 1.3rem;
             }
             .gallery-arrow--prev { left: 8px; }
             .gallery-arrow--next { right: 8px; }
         }
     </style>
 
-<!-- Meta Pixel -->
-<script src="../meta-pixel.js"></script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=29080819768207553&ev=PageView&noscript=1"/></noscript>
+    <!-- Meta Pixel -->
+    <script src="../meta-pixel.js"></script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=29080819768207553&ev=PageView&noscript=1"/></noscript>
 </head>
 <body>
 
-    
-    
-    
-    
     <!-- Simple Page Loader -->
     <style>
         .page-loader-overlay {
@@ -79,141 +74,58 @@
         .page-loader-overlay.active {
             opacity: 1; visibility: visible; pointer-events: all;
         }
-        
         .loader-scene {
             position: relative;
             width: 200px;
             height: 200px;
         }
-
-        /* 3D Hole setup */
         .loader-hole-back {
-            position: absolute;
-            width: 70px;
-            height: 18px;
-            background: #2A1D11;
-            border-radius: 50%;
-            top: 155px;
-            left: 120px;
-            z-index: 5;
+            position: absolute; width: 70px; height: 18px; background: #2A1D11;
+            border-radius: 50%; top: 155px; left: 120px; z-index: 5;
             clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
         }
         .loader-hole-front {
-            position: absolute;
-            width: 70px;
-            height: 18px;
-            background: #2A1D11;
-            border-radius: 50%;
-            top: 155px;
-            left: 120px;
-            z-index: 15;
+            position: absolute; width: 70px; height: 18px; background: #2A1D11;
+            border-radius: 50%; top: 155px; left: 120px; z-index: 15;
             clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
         }
         .loader-floor-mask {
-            position: absolute;
-            width: 100%;
-            height: 400px;
-            background: #FAF9F6;
-            top: 164px; /* exact vertical center of the hole */
-            left: 0;
-            z-index: 14;
+            position: absolute; width: 100%; height: 400px; background: #FAF9F6;
+            top: 164px; left: 0; z-index: 14;
         }
-
-        /* Bed */
         .loader-bed {
-            position: absolute;
-            width: 100px;
-            height: 22px;
-            background: #4B3621;
-            border-radius: 4px;
-            top: 120px;
-            left: 20px;
-            z-index: 8;
+            position: absolute; width: 100px; height: 22px; background: #4B3621;
+            border-radius: 4px; top: 120px; left: 20px; z-index: 8;
             box-shadow: 0 4px 10px rgba(75, 54, 33, 0.2);
         }
-        /* Bed Legs */
         .loader-bed::before, .loader-bed::after {
-            content: '';
-            position: absolute;
-            width: 8px;
-            height: 16px;
-            background: #3a2818;
-            top: 22px;
-            border-radius: 2px;
+            content: ''; position: absolute; width: 8px; height: 16px;
+            background: #3a2818; top: 22px; border-radius: 2px;
         }
         .loader-bed::before { left: 10px; }
         .loader-bed::after { right: 10px; }
-        
-        /* Headboard */
         .loader-bed-headboard {
-            position: absolute;
-            width: 12px;
-            height: 40px;
-            background: #4B3621;
-            top: 102px;
-            left: 14px;
-            z-index: 7;
-            border-radius: 4px 4px 0 0;
+            position: absolute; width: 12px; height: 40px; background: #4B3621;
+            top: 102px; left: 14px; z-index: 7; border-radius: 4px 4px 0 0;
         }
-
-        /* Mattress */
         .loader-mattress {
-            position: absolute;
-            width: 90px;
-            height: 18px;
-            background: #E8E2DA;
-            border: 2px solid #c4a173;
-            border-radius: 6px;
-            top: 100px;
-            left: 25px;
-            z-index: 10;
-            box-sizing: border-box;
+            position: absolute; width: 90px; height: 18px; background: #E8E2DA;
+            border: 2px solid #c4a173; border-radius: 6px; top: 100px; left: 25px;
+            z-index: 10; box-sizing: border-box;
             box-shadow: inset 0 -3px 0 rgba(139, 115, 85, 0.2);
         }
-
-        .mattress-1 {
-            animation: mattress-cycle 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .mattress-2 {
-            animation: mattress-cycle 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1) -1.2s;
-        }
-
+        .mattress-1 { animation: mattress-cycle 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+        .mattress-2 { animation: mattress-cycle 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1) -1.2s; }
         @keyframes mattress-cycle {
-            0%, 10% {
-                transform: translate(0, 0) rotate(0deg);
-                opacity: 1;
-            }
-            20% {
-                transform: translate(30px, -40px) rotate(50deg);
-                opacity: 1;
-            }
-            30% {
-                /* Hover perfectly vertical over the hole */
-                transform: translate(85px, -10px) rotate(90deg);
-                opacity: 1;
-            }
-            40% {
-                /* Drop straight down into the hole */
-                transform: translate(85px, 150px) rotate(90deg);
-                opacity: 1;
-            }
-            41%, 50% {
-                transform: translate(0, -200px) rotate(0deg);
-                opacity: 0;
-            }
-            51%, 65% {
-                transform: translate(0, -200px) rotate(0deg);
-                opacity: 1;
-            }
-            85% {
-                transform: translate(0, 0) rotate(0deg);
-            }
-            90% {
-                transform: translate(0, 4px) scaleY(0.8) scaleX(1.05);
-            }
-            95%, 100% {
-                transform: translate(0, 0) scaleY(1) scaleX(1);
-            }
+            0%, 10% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            20% { transform: translate(30px, -40px) rotate(50deg); opacity: 1; }
+            30% { transform: translate(85px, -10px) rotate(90deg); opacity: 1; }
+            40% { transform: translate(85px, 150px) rotate(90deg); opacity: 1; }
+            41%, 50% { transform: translate(0, -200px) rotate(0deg); opacity: 0; }
+            51%, 65% { transform: translate(0, -200px) rotate(0deg); opacity: 1; }
+            85% { transform: translate(0, 0) rotate(0deg); }
+            90% { transform: translate(0, 4px) scaleY(0.8) scaleX(1.05); }
+            95%, 100% { transform: translate(0, 0) scaleY(1) scaleX(1); }
         }
     </style>
     <div id="page-loader" class="page-loader-overlay">
@@ -232,7 +144,7 @@
             var loaderTimeout = setTimeout(function() {
                 var loader = document.getElementById('page-loader');
                 if (loader) loader.classList.add('active');
-            }, 500); // 500ms threshold for fast connections
+            }, 500);
 
             window.addEventListener('load', function() {
                 clearTimeout(loaderTimeout);
@@ -256,15 +168,16 @@
         </defs>
     </svg>
     <div class="bg-texture" aria-hidden="true"></div>
+
     <!-- ===== UNIFIED PILL NAVIGATION ===== -->
     <nav id="pill-nav" class="pill-nav">
         <div class="pill-nav__inner">
-<!-- Mobile Hamburger -->
-<button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-<span class="mobile-menu-toggle__bar"></span>
-<span class="mobile-menu-toggle__bar"></span>
-<span class="mobile-menu-toggle__bar"></span>
-</button>
+            <!-- Mobile Hamburger -->
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span class="mobile-menu-toggle__bar"></span>
+                <span class="mobile-menu-toggle__bar"></span>
+                <span class="mobile-menu-toggle__bar"></span>
+            </button>
             <!-- Left: Main Nav -->
             <ul class="pill-nav__list">
                 <li><a href="../index.html" class="main-nav__link" id="nav-home">Home</a></li>
@@ -274,12 +187,12 @@
                 <li><a href="../about/" class="main-nav__link" id="nav-about-us">About us</a></li>
             </ul>
 
-<!-- Center: Logo -->
-<div class="pill-nav__logo">
-    <a href="../" style="display: flex; align-items: center;">
-        <img src="../assets/logo-nav.png" alt="RestNest">
-    </a>
-</div>
+            <!-- Center: Logo -->
+            <div class="pill-nav__logo">
+                <a href="../" style="display: flex; align-items: center;">
+                    <img src="../assets/logo-nav.png" alt="RestNest">
+                </a>
+            </div>
 
             <!-- Right: Utilities -->
             <div class="pill-nav__utils">
@@ -310,62 +223,106 @@
             </div>
         </div>
     </nav>
-<!-- ===== MOBILE NAV CURTAIN ===== -->
-<div class="mobile-nav-curtain" id="mobile-nav-curtain">
-<div class="mobile-nav-curtain__inner">
-<a class="mobile-nav-curtain__link" href="../mobile/index.html">Home</a>
-<a class="mobile-nav-curtain__link" href="../pillows/">Pillow</a>
-<a class="mobile-nav-curtain__link" href="../cushions/">Cushion</a>
-<a class="mobile-nav-curtain__link" href="../about/">About Us</a>
-</div>
-</div>
 
-    
-    <!-- ===== PRODUCT PAGE ===== -->
+    <!-- ===== MOBILE NAV CURTAIN ===== -->
+    <div class="mobile-nav-curtain" id="mobile-nav-curtain">
+        <div class="mobile-nav-curtain__inner">
+            <a class="mobile-nav-curtain__link" href="../mobile/index.html">Home</a>
+            <a class="mobile-nav-curtain__link" href="../pillows/">Pillow</a>
+            <a class="mobile-nav-curtain__link" href="../cushions/">Cushion</a>
+            <a class="mobile-nav-curtain__link" href="../about/">About Us</a>
+        </div>
+    </div>
+
+    <!-- ===== BREADCRUMB ===== -->
+    <div class="pdp-breadcrumb">
+        <a href="../index.html">Home</a>
+        <span class="pdp-breadcrumb__sep">/</span>
+        <a href="../pillows/" id="breadcrumb-category">Pillows</a>
+        <span class="pdp-breadcrumb__sep">/</span>
+        <span class="pdp-breadcrumb__current" id="breadcrumb-title">Product Details</span>
+    </div>
+
+    <!-- ===== MAIN PRODUCT HERO SECTION ===== -->
     <section class="product-page">
         <div class="product-page__container">
             
             <!-- Left: Gallery -->
             <div class="product-gallery">
                 <div class="product-gallery__thumbnails" id="product-thumbnails">
-                    <!-- Thumbnails will be injected here -->
+                    <!-- Thumbnails injected via JS -->
                 </div>
-                <div class="product-gallery__main" style="position: relative;">
+                <div class="product-gallery__main" id="product-gallery-main">
+                    <span class="product-gallery__badge" id="product-gallery-badge">Best Seller</span>
                     <img id="product-main-image" src="" alt="Product Image">
                     <button id="gallery-prev" class="gallery-arrow gallery-arrow--prev" aria-label="Previous Image">‹</button>
                     <button id="gallery-next" class="gallery-arrow gallery-arrow--next" aria-label="Next Image">›</button>
+                    <span class="product-gallery__counter" id="gallery-counter">1 / 1</span>
                 </div>
             </div>
 
-            <!-- Right: Details -->
+            <!-- Right: Product Buy Box -->
             <div class="product-details">
+                <span class="product-brand-tag" id="product-collection-tag">Rest Nest Luxury Sleep</span>
                 <h1 class="product-details__title" id="product-title">Loading...</h1>
                 
-                <div class="product-details__reviews">
-                    <div class="stars">
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <!-- Ratings & Stock Status -->
+                <div class="product-details__reviews-row">
+                    <a href="#reviews" class="pdp-stars-badge" id="pdp-stars-badge">
+                        <div class="stars">
+                            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <span class="score">4.8</span>
+                        <span class="pdp-reviews-link">(256 Reviews)</span>
+                    </a>
+                    <div class="pdp-stock-badge">
+                        <span class="pdp-stock-dot"></span>
+                        <span>In Stock • Ready to Dispatch</span>
                     </div>
-                    <span class="reviews-count">4.8 (256 Reviews)</span>
                 </div>
 
-                <div class="product-details__price-wrap">
-                    <span class="price-sale" id="product-sale-price"></span>
-                    <span class="price-original" id="product-original-price"></span>
-                    <span class="price-badge" id="product-discount"></span>
+                <!-- Price Box -->
+                <div class="pdp-price-box">
+                    <div class="pdp-price-line">
+                        <span class="price-sale" id="product-sale-price"></span>
+                        <span class="price-original" id="product-original-price"></span>
+                        <span class="price-badge" id="product-discount"></span>
+                    </div>
+                    <p class="pdp-tax-line">Inclusive of all taxes</p>
                 </div>
 
-                <p class="product-details__desc" id="product-desc"></p>
+                <!-- Description Snippet -->
+                <p class="product-details__desc" id="product-desc" style="color: var(--pdp-text-muted); font-size: 0.93rem; line-height: 1.6; margin: 0;"></p>
 
-                <!-- Benefits -->
-                <div class="product-benefits-section" id="product-benefits-section" style="display:none; margin-top: 1.25rem;">
-                    <h4 class="product-options__label">Benefits</h4>
-                    <ul id="product-benefits" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <!-- Benefits will be injected here -->
-                    </ul>
+                <!-- Exclusive Coupon Offers Card (SleepyCat signature) -->
+                <div class="pdp-offers-card">
+                    <div class="pdp-offers-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                        Exclusive Offers & Savings
+                    </div>
+                    <div class="pdp-offer-item">
+                        <span>🏷️ Use code <strong class="pdp-offer-code" onclick="navigator.clipboard.writeText('RESTNEST10'); alert('Coupon RESTNEST10 copied!');">RESTNEST10</strong> for flat 10% instant discount</span>
+                    </div>
+                    <div class="pdp-offer-item">
+                        <span>⚡ Extra 5% instant discount on all prepaid UPI/Card orders at checkout</span>
+                    </div>
+                </div>
+
+                <!-- Pincode Delivery Checker (SleepyCat signature) -->
+                <div class="pdp-pincode-card">
+                    <div class="pdp-pincode-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        Estimated Delivery & COD Availability
+                    </div>
+                    <div class="pdp-pincode-form">
+                        <input type="text" id="pdp-pincode-input" class="pdp-pincode-input" placeholder="Enter 6-digit Pincode" maxlength="6" aria-label="Enter pincode">
+                        <button type="button" id="pdp-pincode-btn" class="pdp-pincode-btn">Check</button>
+                    </div>
+                    <div id="pdp-pincode-result" class="pdp-pincode-result"></div>
                 </div>
 
                 <!-- Quantity -->
@@ -378,60 +335,63 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
-                <div class="product-actions" style="display: flex; gap: 0.75rem; align-items: stretch;">
-                    <button class="btn btn--primary add-to-cart-btn" style="padding: 0.65rem 1.25rem; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1rem; height:1rem; margin-right:0.4rem;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <!-- Dual Action CTAs -->
+                <div class="product-actions">
+                    <button class="btn btn--primary add-to-cart-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.15rem; height:1.15rem;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
                         Add to Cart
                     </button>
-                    <button class="btn buy-now-btn" style="flex: 1; padding: 0.65rem 1.5rem; font-size: 0.95rem; font-weight: 600; background: #A67C52; color: #FAF9F6; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.3s ease, transform 0.2s ease; letter-spacing: 0.03em;">
+                    <button class="btn buy-now-btn">
                         Buy Now
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.1rem; height:1.1rem;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.15rem; height:1.15rem;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
                 </div>
 
-                <!-- Perks -->
-                <!-- Trust & Delivery Strip -->
-                <div class="product-trust-strip">
-                    <div class="trust-item">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="1" y="3" width="15" height="13"></rect>
-                            <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
-                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                        </svg>
-                        <span><strong>Free Shipping:</strong> Delivery in <strong>7–8 Business Days</strong> (Dispatches in 24 hrs via BigShip)</span>
+                <!-- Trust Perks Row -->
+                <div class="pdp-perks-grid">
+                    <div class="pdp-perk-item">
+                        <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        <span>Express Dispatch</span>
+                        <small>Fast Pan-India delivery</small>
                     </div>
-                    <div class="trust-item">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                            <path d="M3 3v5h5"></path>
-                        </svg>
-                        <span><strong>24 Hours Return Guarantee:</strong> Hassle-free return or replacement upon delivery</span>
+                    <div class="pdp-perk-item">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span>1 Year Warranty</span>
+                        <small>Sag-free assurance</small>
                     </div>
-                    <div class="trust-item trust-item--promo">
-                        <span class="trust-promo-tag">🪔 Diwali Sale</span>
-                        <span>Use code <strong>FIRST10</strong> for <strong>10% OFF</strong> your first order!</span>
+                    <div class="pdp-perk-item">
+                        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                        <span>7 Days Returns</span>
+                        <small>Hassle-free policy</small>
+                    </div>
+                    <div class="pdp-perk-item">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        <span>COD Available</span>
+                        <small>Pay upon delivery</small>
                     </div>
                 </div>
 
-                <!-- Perks -->
-                <div class="product-perks" style="grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-                    <div class="perk">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-                        <div class="perk-text"><span>Free Shipping</span><br><small>Across India</small></div>
+                <!-- Frequently Bought Together / Great to Pair With (SleepyCat Signature) -->
+                <div class="pdp-pair-with-card" id="pdp-pair-with-container">
+                    <div class="pdp-pair-header">
+                        <h4 class="pdp-pair-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                            Great to Pair With
+                        </h4>
+                        <span class="pdp-pair-badge">Bundle & Save 10%</span>
                     </div>
-                    <div class="perk">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <div class="perk-text"><span>Delivery 7–8 Days</span><br><small>Dispatched in 24h</small></div>
+                    <div class="pdp-pair-items-row" id="pdp-pair-items-row">
+                        <!-- Injected dynamically via PDP JS -->
                     </div>
-                    <div class="perk">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                        <div class="perk-text"><span>24 Hours Return</span><br><small>100% Hassle-Free</small></div>
-                    </div>
-                    <div class="perk">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        <div class="perk-text"><span>1 Year Warranty</span><br><small>Quality assured</small></div>
+                    <div class="pdp-pair-footer">
+                        <div class="pdp-pair-total">
+                            <span class="pdp-pair-total-label">Total Bundle Price:</span>
+                            <span class="pdp-pair-total-price" id="pdp-pair-total-price">Rs. 0.00</span>
+                        </div>
+                        <button type="button" class="pdp-pair-add-btn" id="pdp-pair-add-btn">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add Both to Cart
+                        </button>
                     </div>
                 </div>
 
@@ -439,55 +399,298 @@
         </div>
     </section>
 
-    <!-- ===== FEATURES ===== -->
-    <section class="engineered-features">
-        <h2 class="engineered-features__heading">Engineered for Better Sleep</h2>
-        <div class="engineered-features__grid">
-            <div class="eng-feature">
-                <div class="eng-feature__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+    <!-- ===== WHY YOU'LL LOVE IT / CORE FEATURES SECTION (Key Product Highlights) ===== -->
+    <section class="pdp-features-section" id="pdp-features-section">
+        <div class="pdp-section-header">
+            <span class="pdp-section-subtitle">Sleep Science Engineering</span>
+            <h2 class="pdp-section-title">Why You'll Love This Product</h2>
+        </div>
+        <div class="pdp-features-grid" id="pdp-features-grid">
+            <div class="pdp-feature-card">
+                <div class="pdp-feature-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 12h20M2 12l5-5M2 12l5 5M22 12l-5-5M22 12l-5 5"/></svg>
                 </div>
-                <div class="eng-feature__content">
-                    <h4>Ergonomic Support</h4>
-                    <p>Contours to your head and neck for perfect spinal alignment.</p>
+                <h4 class="pdp-feature-title">Ergonomic Spinal Alignment</h4>
+                <p class="pdp-feature-desc">Engineered to support the natural curvature of your cervical spine, eliminating morning stiffness and tension.</p>
+            </div>
+            <div class="pdp-feature-card">
+                <div class="pdp-feature-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5l-10 14M22 12H2M19 17L5 7"/></svg>
+                </div>
+                <h4 class="pdp-feature-title">Breathable Airflow Channels</h4>
+                <p class="pdp-feature-desc">Continuous micro-ventilation prevents heat retention, allowing refreshing air circulation throughout the night.</p>
+            </div>
+            <div class="pdp-feature-card">
+                <div class="pdp-feature-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                </div>
+                <h4 class="pdp-feature-title">Hypoallergenic & Pure</h4>
+                <p class="pdp-feature-desc">Resistant to dust mites, allergens, and odors. 100% non-toxic materials safe for sensitive skin and children.</p>
+            </div>
+            <div class="pdp-feature-card">
+                <div class="pdp-feature-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l2.5 2.5L16 9"></path></svg>
+                </div>
+                <h4 class="pdp-feature-title">Removable Washable Cover</h4>
+                <p class="pdp-feature-desc">Premium soft-touch bamboo glace cover with a hidden zipper that unzips smoothly for easy machine washing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== DYNAMIC RECOMMENDATIONS (Directly Below Key Highlights) ===== -->
+    <section class="pdp-recommendations-section" id="pdp-recommendations-section" style="margin-top: 3.5rem;">
+        <div class="pdp-section-header">
+            <span class="pdp-section-subtitle">Recommended Additions</span>
+            <h2 class="pdp-section-title">Customers Also Explored</h2>
+        </div>
+        <div class="pdp-rec-slider-wrap">
+            <div class="pdp-rec-grid" id="pdp-rec-grid">
+                <!-- Dynamically populated from RESTNEST_PRODUCTS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SLEEP POSITION & FIRMNESS METER (SleepyCat Hallmark) ===== -->
+    <section class="pdp-meter-section" id="pdp-meter-section">
+        <div class="pdp-meter-card">
+            <div class="pdp-meter-col">
+                <h3>Comfort & Firmness Scale</h3>
+                <p>Designed with adaptive responsiveness that provides instant gentle cushioning without sinking excessively.</p>
+                <div class="pdp-firmness-gauge">
+                    <div class="pdp-gauge-track">
+                        <div class="pdp-gauge-fill" id="pdp-gauge-fill"></div>
+                        <div class="pdp-gauge-pin" id="pdp-gauge-pin" style="left: 60%;"></div>
+                    </div>
+                    <div class="pdp-gauge-labels">
+                        <span>Plush Soft</span>
+                        <span style="font-weight: 700; color: var(--pdp-primary);">Medium Firm (Balanced)</span>
+                        <span>Extra Firm</span>
+                    </div>
                 </div>
             </div>
-            <div class="eng-feature">
-                <div class="eng-feature__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5l-10 14M22 12H2M19 17L5 7"></path></svg>
-                </div>
-                <div class="eng-feature__content">
-                    <h4>Breathable & Cool</h4>
-                    <p>Ventilated memory foam keeps you cool all night long.</p>
-                </div>
-            </div>
-            <div class="eng-feature">
-                <div class="eng-feature__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                </div>
-                <div class="eng-feature__content">
-                    <h4>Hypoallergenic</h4>
-                    <p>Resistant to dust mites, mold, and other allergens.</p>
-                </div>
-            </div>
-            <div class="eng-feature">
-                <div class="eng-feature__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </div>
-                <div class="eng-feature__content">
-                    <h4>Long Lasting Comfort</h4>
-                    <p>High-quality foam retains shape and support for years.</p>
+            <div class="pdp-meter-col">
+                <h3>Ideal Sleep Positions</h3>
+                <p>Engineered for optimal cervical support across primary sleeping postures:</p>
+                <div class="pdp-sleep-positions">
+                    <div class="pdp-pos-row">
+                        <span class="pdp-pos-name">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B3621" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                            Back Sleepers
+                        </span>
+                        <span class="pdp-pos-score">★★★★★ 100% Ideal</span>
+                    </div>
+                    <div class="pdp-pos-row">
+                        <span class="pdp-pos-name">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B3621" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                            Stomach Sleepers
+                        </span>
+                        <span class="pdp-pos-score">★★★★★ 100% Ideal (Low Loft)</span>
+                    </div>
+                    <div class="pdp-pos-row">
+                        <span class="pdp-pos-name">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B3621" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                            Side Sleepers
+                        </span>
+                        <span class="pdp-pos-score" style="color: #6B5B4F; background: #F5EFE6;">★★★★☆ Recommended</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== PRODUCT REVIEWS ===== -->
-    <section class="reviews" id="reviews" style="background: var(--bg-secondary); padding: 4rem 1rem;">
-        <div class="reviews__header" style="text-align: center; margin-bottom: 3rem;">
-            <span class="reviews__label">Real Experiences</span>
+    <!-- ===== SPECIFICATIONS & CARE ACCORDION ===== -->
+    <section class="pdp-specs-section">
+        <div class="pdp-section-header">
+            <span class="pdp-section-subtitle">Craftsmanship & Transparency</span>
+            <h2 class="pdp-section-title">Product Specifications & Care</h2>
+        </div>
+        <div class="pdp-accordion-wrap">
+            <div class="pdp-accordion-item open">
+                <button type="button" class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('open');">
+                    <span>Dimensions & Specifications</span>
+                    <span class="pdp-accordion-icon">+</span>
+                </button>
+                <div class="pdp-accordion-body">
+                    <table class="pdp-specs-table">
+                        <tbody>
+                            <tr>
+                                <th>Dimensions</th>
+                                <td id="spec-dimensions">Standard: 17 x 27 inches (approx. 43 x 68 cm)</td>
+                            </tr>
+                            <tr>
+                                <th>Loft Profile</th>
+                                <td id="spec-loft">Slim Ergonomic (2.5 - 3.5 inches low profile)</td>
+                            </tr>
+                            <tr>
+                                <th>Weight</th>
+                                <td id="spec-weight">Approx. 750g - 850g per unit</td>
+                            </tr>
+                            <tr>
+                                <th>Package Contents</th>
+                                <td id="spec-package">1 Piece</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pdp-accordion-item">
+                <button type="button" class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('open');">
+                    <span>Materials & Core Technology</span>
+                    <span class="pdp-accordion-icon">+</span>
+                </button>
+                <div class="pdp-accordion-body">
+                    <table class="pdp-specs-table">
+                        <tbody>
+                            <tr>
+                                <th>Outer Fabric Cover</th>
+                                <td>Breathable ultra-soft Glace Cotton / Bamboo knitted blend with smooth invisible zipper</td>
+                            </tr>
+                            <tr>
+                                <th>Core Cushioning</th>
+                                <td>Adaptive high-resilience memory foam / 100% virgin Recron hollow conjugate fiber</td>
+                            </tr>
+                            <tr>
+                                <th>Safety Standards</th>
+                                <td>OEKO-TEX compliant materials, 100% CFC and heavy metal free</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pdp-accordion-item">
+                <button type="button" class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('open');">
+                    <span>Wash & Maintenance Care</span>
+                    <span class="pdp-accordion-icon">+</span>
+                </button>
+                <div class="pdp-accordion-body">
+                    <p style="margin: 0 0 0.5rem;"><strong>Cover Care:</strong> Unzip the outer cover and machine wash gently in cold water with mild detergent. Tumble dry on low or air dry in shade.</p>
+                    <p style="margin: 0;"><strong>Inner Core Care:</strong> Do not machine wash or soak the inner core. Spot clean gently with a damp cloth if necessary and allow to air dry away from direct sunlight.</p>
+                </div>
+            </div>
+
+            <div class="pdp-accordion-item">
+                <button type="button" class="pdp-accordion-header" onclick="this.parentElement.classList.toggle('open');">
+                    <span>Warranty, Shipping & Easy Returns</span>
+                    <span class="pdp-accordion-icon">+</span>
+                </button>
+                <div class="pdp-accordion-body">
+                    <p style="margin: 0 0 0.5rem;"><strong>1 Year Warranty:</strong> Covers manufacturing defects, sagging greater than 1 inch, and stitching flaws.</p>
+                    <p style="margin: 0 0 0.5rem;"><strong>Express Shipping:</strong> Dispatched within 24-48 hours. Delivered in 3-5 business days across India.</p>
+                    <p style="margin: 0;"><strong>7-Day Returns:</strong> If you experience any defect upon arrival, our customer support will arrange a replacement or refund.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== COMPARE PILLOWS (SleepyCat Hallmark) ===== -->
+    <section class="pdp-compare-section" id="pdp-compare-section">
+        <div class="pdp-section-header">
+            <span class="pdp-section-subtitle">Find Your Perfect Match</span>
+            <h2 class="pdp-section-title">Compare Rest Nest Pillows</h2>
+        </div>
+        <div class="pdp-compare-wrapper">
+            <table class="pdp-compare-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Feature</th>
+                        <th class="current-product" id="compare-col-current">Form Slim Pillow</th>
+                        <th>Loom Glace Cotton</th>
+                        <th>Classic Fiber Midnight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="feature-title">Loft / Thickness</td>
+                        <td class="current-product-col">Slim Profile (2.5")</td>
+                        <td>Plush Medium (5.0")</td>
+                        <td>Medium Loft (4.5")</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">Firmness Level</td>
+                        <td class="current-product-col">Medium Firm</td>
+                        <td>Soft & Fluffy</td>
+                        <td>Medium Support</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">Best Sleeping Style</td>
+                        <td class="current-product-col">Stomach & Back Sleepers</td>
+                        <td>Back & Side Sleepers</td>
+                        <td>All-Round Sleepers</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">Core Material</td>
+                        <td class="current-product-col">Adaptive Microfiber / Memory</td>
+                        <td>Virgin Microfiber</td>
+                        <td>100% Virgin Recron</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">Cover Type</td>
+                        <td class="current-product-col">Removable Bamboo Zipper</td>
+                        <td>Silky Glace Cotton</td>
+                        <td>180 GSM Soft Fabric</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-title">Warranty</td>
+                        <td class="current-product-col">1 Year Warranty</td>
+                        <td>1 Year Warranty</td>
+                        <td>1 Year Warranty</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ===== CUSTOMER REVIEWS & RATINGS ===== -->
+    <section class="reviews" id="reviews" style="background: var(--bg-secondary); padding: 4.5rem 1rem 3.5rem;">
+        <div class="reviews__header" style="text-align: center; margin-bottom: 2rem;">
+            <span class="reviews__label">Verified Buyer Feedback</span>
             <h2 class="reviews__heading">Customer Reviews</h2>
         </div>
+
+        <!-- Rating Breakdown (SleepyCat signature) -->
+        <div class="pdp-reviews-breakdown">
+            <div class="pdp-rating-overview">
+                <div class="pdp-rating-big">4.8</div>
+                <div class="pdp-rating-stars-lg">
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div class="pdp-rating-count-text">Based on 256 verified reviews</div>
+            </div>
+            <div class="pdp-rating-bars">
+                <div class="pdp-bar-row">
+                    <span class="pdp-bar-label">5 Star</span>
+                    <div class="pdp-bar-track"><div class="pdp-bar-fill" style="width: 84%;"></div></div>
+                    <span class="pdp-bar-pct">84%</span>
+                </div>
+                <div class="pdp-bar-row">
+                    <span class="pdp-bar-label">4 Star</span>
+                    <div class="pdp-bar-track"><div class="pdp-bar-fill" style="width: 12%;"></div></div>
+                    <span class="pdp-bar-pct">12%</span>
+                </div>
+                <div class="pdp-bar-row">
+                    <span class="pdp-bar-label">3 Star</span>
+                    <div class="pdp-bar-track"><div class="pdp-bar-fill" style="width: 3%;"></div></div>
+                    <span class="pdp-bar-pct">3%</span>
+                </div>
+                <div class="pdp-bar-row">
+                    <span class="pdp-bar-label">2 Star</span>
+                    <div class="pdp-bar-track"><div class="pdp-bar-fill" style="width: 1%;"></div></div>
+                    <span class="pdp-bar-pct">1%</span>
+                </div>
+                <div class="pdp-bar-row">
+                    <span class="pdp-bar-label">1 Star</span>
+                    <div class="pdp-bar-track"><div class="pdp-bar-fill" style="width: 0%;"></div></div>
+                    <span class="pdp-bar-pct">0%</span>
+                </div>
+            </div>
+        </div>
+
         <div class="reviews__carousel">
             <button class="reviews__arrow reviews__arrow--prev" id="reviews-prev">‹</button>
             <div class="reviews__track" id="reviews-track">
@@ -498,7 +701,7 @@
                         <div class="review-card__box">
                             <h4 class="review-card__name">Rahul M.</h4>
                             <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"The quality of the material is exceptional. Truly feels like a premium product."</p>
+                            <p class="review-card__text">"The slim profile is perfection. Finally no neck pain in the morning! Outstanding quality."</p>
                         </div>
                     </div>
                 </div>
@@ -509,7 +712,7 @@
                         <div class="review-card__box">
                             <h4 class="review-card__name">Sneha P.</h4>
                             <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"I was skeptical at first, but this completely exceeded my expectations. Very comfortable!"</p>
+                            <p class="review-card__text">"I was skeptical about thin pillows, but it holds its shape beautifully. Soft cover is easily washable."</p>
                         </div>
                     </div>
                 </div>
@@ -520,7 +723,7 @@
                         <div class="review-card__box">
                             <h4 class="review-card__name">Vikram S.</h4>
                             <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"Fast delivery and the packaging was great. The product itself is super soft and well-made."</p>
+                            <p class="review-card__text">"Fast delivery and premium packaging. The breathability keeps my head cool all night long."</p>
                         </div>
                     </div>
                 </div>
@@ -531,83 +734,34 @@
                         <div class="review-card__box">
                             <h4 class="review-card__name">Anjali D.</h4>
                             <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"I've been using this for a week now, and it's the best purchase I've made this year."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-card">
-                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-2.jpg"/>
-                    <div class="review-card__content">
-                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
-                        <div class="review-card__box">
-                            <h4 class="review-card__name">Ravi K.</h4>
-                            <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"Exactly as described on the website. The stitching is flawless and support is great."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-card">
-                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-3.jpg"/>
-                    <div class="review-card__content">
-                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
-                        <div class="review-card__box">
-                            <h4 class="review-card__name">Pooja N.</h4>
-                            <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"Highly recommended! It gives the perfect amount of support and looks beautiful."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-card">
-                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-1.jpg"/>
-                    <div class="review-card__content">
-                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
-                        <div class="review-card__box">
-                            <h4 class="review-card__name">Arjun V.</h4>
-                            <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"Bought this for my parents and they absolutely love it. Will definitely buy again."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-card">
-                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-2.jpg"/>
-                    <div class="review-card__content">
-                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
-                        <div class="review-card__box">
-                            <h4 class="review-card__name">Meera T.</h4>
-                            <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"Worth every rupee. You can really feel the premium quality the moment you touch it."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-card">
-                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-3.jpg"/>
-                    <div class="review-card__content">
-                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
-                        <div class="review-card__box">
-                            <h4 class="review-card__name">Siddharth J.</h4>
-                            <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"I've tried many brands before, but RestNest really stands out in terms of comfort."</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="review-card">
-                    <img alt="Reviewer background" class="review-card__bg" src="../assets/testimony-1.jpg"/>
-                    <div class="review-card__content">
-                        <span class="review-card__tag">VERIFIED <strong>PURCHASE</strong></span>
-                        <div class="review-card__box">
-                            <h4 class="review-card__name">Kavya R.</h4>
-                            <div class="review-card__stars">★★★★★</div>
-                            <p class="review-card__text">"It's so cozy and soft! Makes my room feel like a luxury hotel. Absolutely fantastic."</p>
+                            <p class="review-card__text">"Bought a pack of 2 for my husband and myself. Both of us noticed improved sleep from night one!"</p>
                         </div>
                     </div>
                 </div>
             </div>
             <button class="reviews__arrow reviews__arrow--next" id="reviews-next">›</button>
         </div>
-        <div style="text-align: center; margin-top: 3rem;">
-            <button class="btn btn--primary" id="writeReviewBtn" style="padding: 1rem 2rem; font-weight: bold;">Write a Review</button>
+        <div style="text-align: center; margin-top: 2.5rem;">
+            <button class="btn btn--primary" id="writeReviewBtn" style="padding: 0.9rem 2rem; font-weight: 600; border-radius: 8px;">Write a Review</button>
         </div>
     </section>
+
+    <!-- ===== STICKY BOTTOM PURCHASE BAR (SleepyCat Conversion Booster) ===== -->
+    <div class="pdp-sticky-bar" id="pdp-sticky-bar">
+        <div class="pdp-sticky-inner">
+            <div class="pdp-sticky-info">
+                <img id="pdp-sticky-img" class="pdp-sticky-img" src="" alt="Thumbnail">
+                <div class="pdp-sticky-text">
+                    <span id="pdp-sticky-title" class="pdp-sticky-title">Product Title</span>
+                    <span id="pdp-sticky-price" class="pdp-sticky-price">Rs. 0.00</span>
+                </div>
+            </div>
+            <div class="pdp-sticky-actions">
+                <button type="button" class="pdp-sticky-cart-btn" id="pdp-sticky-cart-btn">Add to Cart</button>
+                <button type="button" class="pdp-sticky-buy-btn" id="pdp-sticky-buy-btn">Buy Now</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== SEARCH MODAL ===== -->
     <div class="search-modal" id="search-modal">
@@ -627,8 +781,6 @@
             <div class="search-modal__results" id="search-results" style="margin-top: 2rem; max-height: 50vh; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 1rem;"></div>
         </div>
     </div>
-
-    
 
     <!-- ===== WRITE REVIEW MODAL ===== -->
     <div class="search-modal" id="review-modal" style="z-index: 100000; display: none;">
@@ -654,7 +806,7 @@
         </div>
     </div>
 
-<!-- Cart Overlay & Dropdown -->
+    <!-- Cart Overlay & Dropdown -->
     <div class="cart-overlay" id="cartOverlay"></div>
     <div class="cart-dropdown" id="cartDropdown">
         <div class="cart-header">
@@ -672,68 +824,6 @@
             <button class="checkout-btn" id="checkoutBtn">Checkout</button>
         </div>
     </div>
-
-        <script src="../assets/products-data.js"></script>
-        <script src="../script.js?v=26"></script>
-        <script src="../assets/product-pdp.js"></script>
-        <script>
-            // Review Modal Logic
-            const reviewModal = document.getElementById('review-modal');
-            const writeReviewBtn = document.getElementById('writeReviewBtn');
-            const reviewClose = document.getElementById('review-close');
-            const reviewOverlay = document.getElementById('review-overlay');
-
-            if (writeReviewBtn && reviewModal) {
-                writeReviewBtn.addEventListener('click', () => {
-                    reviewModal.style.display = 'flex';
-                });
-                
-                const closeReviewModal = () => {
-                    reviewModal.style.display = 'none';
-                };
-                
-                reviewClose.addEventListener('click', closeReviewModal);
-                reviewOverlay.addEventListener('click', closeReviewModal);
-            }
-
-            async function submitReview(e) {
-                e.preventDefault();
-                const btn = document.getElementById('submitReviewBtn');
-                btn.disabled = true;
-                btn.textContent = 'Submitting...';
-                
-                const urlParams = new URLSearchParams(window.location.search);
-                const productId = urlParams.get('id') || 'unknown-product';
-                
-                const payload = {
-                    product_id: productId,
-                    reviewer_name: document.getElementById('reviewName').value,
-                    rating: document.getElementById('reviewRating').value,
-                    review_text: document.getElementById('reviewText').value
-                };
-                
-                try {
-                    const res = await fetch('https://restienestie.onrender.com/api/reviews', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        alert('Thank you for your review!');
-                        document.getElementById('reviewForm').reset();
-                        document.getElementById('review-modal').style.display = 'none';
-                    } else {
-                        alert('Failed to submit review. Please try again.');
-                    }
-                } catch (err) {
-                    alert('An error occurred while submitting your review.');
-                }
-                
-                btn.disabled = false;
-                btn.textContent = 'Submit Review';
-            }
-        </script>
 
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
@@ -791,8 +881,64 @@
         </div>
     </footer>
 
+    <!-- Scripts -->
+    <script src="../assets/products-data.js?v=20261126-3"></script>
+    <script src="../script.js?v=20261126-3"></script>
+    <script src="../assets/product-pdp.js?v=20261126-3"></script>
+    <script>
+        // Review Modal Logic
+        const reviewModal = document.getElementById('review-modal');
+        const writeReviewBtn = document.getElementById('writeReviewBtn');
+        const reviewClose = document.getElementById('review-close');
+        const reviewOverlay = document.getElementById('review-overlay');
+
+        if (writeReviewBtn && reviewModal) {
+            writeReviewBtn.addEventListener('click', () => {
+                reviewModal.style.display = 'flex';
+            });
+            const closeReviewModal = () => {
+                reviewModal.style.display = 'none';
+            };
+            reviewClose.addEventListener('click', closeReviewModal);
+            reviewOverlay.addEventListener('click', closeReviewModal);
+        }
+
+        async function submitReview(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitReviewBtn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id') || 'unknown-product';
+            
+            const payload = {
+                product_id: productId,
+                reviewer_name: document.getElementById('reviewName').value,
+                rating: document.getElementById('reviewRating').value,
+                review_text: document.getElementById('reviewText').value
+            };
+            
+            try {
+                const res = await fetch('https://restienestie.onrender.com/api/reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Thank you for your review!');
+                    document.getElementById('reviewForm').reset();
+                    document.getElementById('review-modal').style.display = 'none';
+                } else {
+                    alert('Failed to submit review. Please try again.');
+                }
+            } catch (err) {
+                alert('An error occurred while submitting your review.');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Submit Review';
+        }
+    </script>
 </body>
 </html>
-
-
-
