@@ -95,8 +95,15 @@ if (mongoose) {
         email: String,
         phone: String,
         address: String,
+        city: String,
+        state: String,
+        pincode: String,
         total_amount: Number,
+        subtotal: Number,
+        discount_amount: Number,
+        coupon_code: String,
         items: mongoose.Schema.Types.Mixed,
+        rawItems: String,
         status: String,
         payment_method: String,
         payment_id: String,
@@ -113,6 +120,23 @@ if (mongoose) {
     });
 
     Order = mongoose.model('Order', orderSchema);
+
+    // Auto-heal existing orders: mark any order with a valid BigShip shipment ID as Booked
+    Order.updateMany(
+        { 
+            bigship_shipment_id: { $regex: /^[0-9]/ }, 
+            bigship_status: { $ne: 'Booked' } 
+        },
+        { 
+            $set: { bigship_status: 'Booked', bigship_error: null } 
+        }
+    ).then(res => {
+        if (res.modifiedCount > 0) {
+            console.log(`Auto-healed ${res.modifiedCount} orders with valid BigShip shipment IDs to 'Booked'.`);
+        }
+    }).catch(err => {
+        console.warn('Auto-heal check note:', err.message);
+    });
 
     const userProfileSchema = new mongoose.Schema({
         user_id: { type: String, required: true, unique: true },
@@ -196,13 +220,20 @@ const razorpay = new Razorpay({
 });
 
 let bigshipToken = null;
+let bigshipTokenExpiresAt = 0;
 let lastBigshipAuthError = null;
+let cachedWarehouseId = null;
+let cachedWarehouseExpiresAt = 0;
 
 // ----------------------------------------------------
 // Helper: Authenticate with Big Ship Direct
 // ----------------------------------------------------
-async function getBigshipToken() {
-    if (bigshipToken) return bigshipToken;
+async function getBigshipToken(forceRefresh = false) {
+    const now = Date.now();
+    if (!forceRefresh && bigshipToken && now < bigshipTokenExpiresAt) {
+        return bigshipToken;
+    }
+    bigshipToken = null;
 
     const userName = process.env.BIGSHIP_USER_NAME || 'contact@restnest.in';
     const password = process.env.BIGSHIP_PASSWORD || '2051@Chirag';
@@ -217,6 +248,7 @@ async function getBigshipToken() {
 
             if (response.data && (response.data.status === 'Success' || response.data.data?.token || response.data.token)) {
                 bigshipToken = response.data.data?.token || response.data.token;
+                bigshipTokenExpiresAt = now + (12 * 60 * 60 * 1000); // 12 hours validity
                 lastBigshipAuthError = null;
                 return bigshipToken;
             } else {
@@ -242,6 +274,7 @@ async function getBigshipToken() {
 
             if (response.data && response.data.success && (response.data.data?.token || response.data.token)) {
                 bigshipToken = response.data.data?.token || response.data.token;
+                bigshipTokenExpiresAt = now + (12 * 60 * 60 * 1000);
                 lastBigshipAuthError = null;
                 return bigshipToken;
             }
@@ -254,17 +287,63 @@ async function getBigshipToken() {
 }
 
 // ----------------------------------------------------
+// Helper: Resolve Active BigShip Warehouse ID dynamically
+// ----------------------------------------------------
+async function getBigshipWarehouseId(token) {
+    if (process.env.BIGSHIP_PICKUP_LOCATION_ID) {
+        return Number(process.env.BIGSHIP_PICKUP_LOCATION_ID);
+    }
+    const now = Date.now();
+    if (cachedWarehouseId && now < cachedWarehouseExpiresAt) {
+        return cachedWarehouseId;
+    }
+    try {
+        const res = await axios.post(
+            'https://appapi.bigship.direct/api/get-warehouse-list',
+            { page: 1 },
+            { headers: { Authorization: `Bearer ${token}` }, timeout: 8000 }
+        );
+        const warehouses = res.data?.data?.warehouse || [];
+        if (Array.isArray(warehouses) && warehouses.length > 0) {
+            const restNestWh = warehouses.find(w => /rest\s*nest/i.test(w.warehouseName || ''));
+            const logisticsWh = warehouses.find(w => String(w.warehouseLogisticsTypeId) === '3');
+            const chosen = restNestWh || logisticsWh || warehouses[0];
+            if (chosen && chosen.warehouseId) {
+                cachedWarehouseId = Number(chosen.warehouseId);
+                cachedWarehouseExpiresAt = now + (6 * 60 * 60 * 1000);
+                return cachedWarehouseId;
+            }
+        }
+    } catch (err) {
+        console.warn('Failed to fetch BigShip warehouse list:', err.message);
+    }
+    return 215444; // Default to Rest Nest warehouse ID
+}
+
+// ----------------------------------------------------
 // Helper: Book Shipment directly on BigShip Direct
 // ----------------------------------------------------
-async function bookBigshipOrder(order) {
-    const token = await getBigshipToken();
+async function bookBigshipOrder(order, retryCount = 0) {
+    // 1. If order already has a valid BigShip shipment ID, it is ALREADY BOOKED!
+    if (order.bigship_shipment_id && order.bigship_shipment_id !== 'Pending' && order.bigship_shipment_id !== 'N/A') {
+        return {
+            success: true,
+            shipment_id: String(order.bigship_shipment_id),
+            awb_code: order.bigship_awb && order.bigship_awb !== 'Pending' ? order.bigship_awb : 'Assigned on Dispatch',
+            already_booked: true,
+            data: { status: 'Success', message: 'Order already booked on BigShip Direct' }
+        };
+    }
+
+    const token = await getBigshipToken(retryCount > 0);
     if (token === 'MOCK_TOKEN') {
         throw new Error(lastBigshipAuthError || 'BigShip authentication failed. Check credentials.');
     }
 
-    // BigShip allows alphanumeric, hyphen, forward slash, backward slash in invoice/order ID
+    // Clean order ID
     const rawId = String(order.id || ('RN-' + Date.now().toString().slice(-6)));
     const cleanOrderId = rawId.replace(/[^a-zA-Z0-9\-\/\\]/g, '-');
+    const invoiceNo = (retryCount > 0) ? `${cleanOrderId}-R${Date.now().toString().slice(-4)}` : cleanOrderId;
 
     const customerName = (order.customer_name || 'Customer').trim();
     const phone = String(order.phone || '9999999999').replace(/[^0-9]/g, '').slice(-10) || '9999999999';
@@ -274,8 +353,8 @@ async function bookBigshipOrder(order) {
     const rawPincode = String(order.pincode || (order.address?.match(/\b\d{6}\b/)?.[0]) || '110001');
 
     // Geo resolution: lookup exact city and state names recognized by BigShip Direct
-    let city = (order.city || 'DELHI').trim().toUpperCase();
-    let state = (order.state || 'DELHI').trim().toUpperCase();
+    let city = (order.city || '').trim().toUpperCase();
+    let state = (order.state || '').trim().toUpperCase();
     let country = 'India';
 
     try {
@@ -293,6 +372,9 @@ async function bookBigshipOrder(order) {
         console.warn('BigShip pincode lookup note:', geoErr.message);
     }
 
+    if (!city) city = 'DELHI';
+    if (!state) state = 'DELHI';
+
     // Clean address line 1 (max 75 chars) and line 2 (max 75 chars)
     const fullAddr = (order.address || 'Delivery Address').replace(/[\r\n]+/g, ', ').trim();
     const address1 = fullAddr.substring(0, 75).trim() || 'Delivery Address';
@@ -303,7 +385,23 @@ async function bookBigshipOrder(order) {
     const collectableAmount = isCod ? totalAmount : 0;
     const paymentMode = isCod ? '2' : '1';
 
-    const orderItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [];
+    // Robust parsing of order items
+    let orderItems = [];
+    if (Array.isArray(order.items) && order.items.length > 0) {
+        orderItems = order.items;
+    } else if (typeof order.items === 'string') {
+        try {
+            const parsed = JSON.parse(order.items);
+            if (Array.isArray(parsed)) orderItems = parsed;
+        } catch (_) {}
+    }
+    if (orderItems.length === 0 && order.rawItems) {
+        try {
+            const parsed = JSON.parse(order.rawItems);
+            if (Array.isArray(parsed)) orderItems = parsed;
+        } catch (_) {}
+    }
+
     const products = orderItems.length > 0 ? orderItems.map((item, idx) => {
         const qty = Number(item.quantity) || 1;
         const price = Number(item.price) || (totalAmount / (orderItems.length || 1));
@@ -342,7 +440,7 @@ async function bookBigshipOrder(order) {
 
     const today = new Date().toISOString().slice(0, 10);
     const time = new Date().toTimeString().slice(0, 8);
-    const pickupWarehouseId = Number(process.env.BIGSHIP_PICKUP_LOCATION_ID) || 209371;
+    const pickupWarehouseId = await getBigshipWarehouseId(token);
 
     const payload = {
         PlatformTypeId: '1',
@@ -354,7 +452,7 @@ async function bookBigshipOrder(order) {
         MasterOrderCollectableAmount: collectableAmount,
         MasterOrderPaymentMode: paymentMode,
         MasterCustomOrderId: cleanOrderId,
-        OrderInvoiceNo: cleanOrderId,
+        OrderInvoiceNo: invoiceNo,
         MasterOrderPickUpLocation: pickupWarehouseId,
         MasterOrderReturnLocation: pickupWarehouseId,
         totalNumOfBoxes: 1,
@@ -370,26 +468,79 @@ async function bookBigshipOrder(order) {
         boxes: JSON.stringify(boxes)
     };
 
-    const response = await axios.post('https://appapi.bigship.direct/api/create-order', payload, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-        },
-        timeout: 20000
-    });
+    try {
+        const response = await axios.post('https://appapi.bigship.direct/api/create-order', payload, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            timeout: 20000
+        });
 
-    if (response.data?.status === 'Success' || response.data?.data?.CustomGlobalOrderId) {
-        const shipmentId = response.data?.data?.CustomGlobalOrderId || response.data?.CustomGlobalOrderId;
-        return {
-            success: true,
-            shipment_id: String(shipmentId),
-            awb_code: 'Assigned on Dispatch',
-            data: response.data
-        };
-    } else {
-        const msg = response.data?.message || (response.data?.errors ? JSON.stringify(response.data.errors) : 'BigShip order creation failed');
-        throw new Error(msg);
+        if (response.data?.status === 'Success' || response.data?.data?.CustomGlobalOrderId) {
+            const shipmentId = response.data?.data?.CustomGlobalOrderId || response.data?.CustomGlobalOrderId;
+            return {
+                success: true,
+                shipment_id: String(shipmentId),
+                awb_code: 'Assigned on Dispatch',
+                data: response.data
+            };
+        } else {
+            const msg = response.data?.message || (response.data?.errors ? JSON.stringify(response.data.errors) : 'BigShip order creation failed');
+
+            // Handle duplicate invoice error
+            if (/unique|invoice|already\s*exist/i.test(msg)) {
+                if (order.bigship_shipment_id && order.bigship_shipment_id !== 'Pending' && order.bigship_shipment_id !== 'N/A') {
+                    return {
+                        success: true,
+                        shipment_id: String(order.bigship_shipment_id),
+                        awb_code: order.bigship_awb && order.bigship_awb !== 'Pending' ? order.bigship_awb : 'Assigned on Dispatch',
+                        already_booked: true,
+                        data: response.data
+                    };
+                }
+                if (retryCount < 2) {
+                    console.log(`Invoice ${invoiceNo} already exists on BigShip. Retrying with revised invoice number...`);
+                    return await bookBigshipOrder(order, retryCount + 1);
+                }
+            }
+
+            // Handle warehouse mismatch error
+            if (/warehouse.*not\s*associated/i.test(msg) && retryCount < 2) {
+                cachedWarehouseId = (pickupWarehouseId === 215444 ? 209371 : 215444);
+                return await bookBigshipOrder(order, retryCount + 1);
+            }
+
+            throw new Error(msg);
+        }
+    } catch (err) {
+        // Handle 401 Unauthorized token expiry
+        if (err.response?.status === 401 || (err.response?.data?.message && /token|auth/i.test(err.response.data.message))) {
+            if (retryCount < 1) {
+                console.warn('BigShip token expired, refreshing and retrying order creation...');
+                await getBigshipToken(true);
+                return await bookBigshipOrder(order, retryCount + 1);
+            }
+        }
+
+        const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
+
+        if (/unique|invoice|already\s*exist/i.test(errMsg)) {
+            if (order.bigship_shipment_id && order.bigship_shipment_id !== 'Pending' && order.bigship_shipment_id !== 'N/A') {
+                return {
+                    success: true,
+                    shipment_id: String(order.bigship_shipment_id),
+                    awb_code: order.bigship_awb && order.bigship_awb !== 'Pending' ? order.bigship_awb : 'Assigned on Dispatch',
+                    already_booked: true
+                };
+            }
+            if (retryCount < 2) {
+                return await bookBigshipOrder(order, retryCount + 1);
+            }
+        }
+
+        throw new Error(errMsg);
     }
 }
 
@@ -729,11 +880,15 @@ app.post('/api/create-shipment', async (req, res) => {
             email: orderData.email || '',
             phone: orderData.phone || '',
             address: formattedAddress,
+            city: orderData.city || '',
+            state: orderData.state || '',
+            pincode: orderData.pincode || '',
             total_amount: totalAmount,
             subtotal: Number(orderData.subtotal) || totalAmount,
             discount_amount: Number(orderData.discount_amount || orderData.discountAmount || 0),
             coupon_code: orderData.coupon_code || orderData.couponCode || null,
             items: orderItems,
+            rawItems: JSON.stringify(orderItems),
             status: orderData.status || 'Placed',
             payment_method: paymentLabel,
             paymentMethod: paymentLabel,
@@ -742,6 +897,7 @@ app.post('/api/create-shipment', async (req, res) => {
             cod_fee: codFee,
             bigship_awb: 'Pending',
             bigship_shipment_id: 'Pending',
+            bigship_status: 'Pending',
             shiprocket_awb: 'Pending',
             shiprocket_shipment_id: 'Pending'
         };
@@ -851,8 +1007,26 @@ const handleSingleShipmentPush = async (req, res) => {
         const order = await Order.findOne({ id: orderId });
         if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
 
-        // Reset token cache to re-authenticate with freshest credentials
-        bigshipToken = null;
+        // If the order already has a valid BigShip shipment ID, mark it Booked and return success!
+        if (order.bigship_shipment_id && order.bigship_shipment_id !== 'Pending' && order.bigship_shipment_id !== 'N/A') {
+            await Order.updateOne(
+                { id: order.id },
+                { 
+                    $set: { 
+                        bigship_status: 'Booked',
+                        bigship_error: null,
+                        bigship_awb: order.bigship_awb && order.bigship_awb !== 'Pending' ? order.bigship_awb : 'Assigned on Dispatch'
+                    } 
+                }
+            );
+            return res.json({
+                success: true,
+                message: `Order #${order.id} is confirmed and booked on BigShip Direct (Shipment ID: ${order.bigship_shipment_id})`,
+                shipment_id: order.bigship_shipment_id,
+                awb: order.bigship_awb || 'Assigned on Dispatch'
+            });
+        }
+
         const result = await bookBigshipOrder(order);
 
         const assignedAwb = result.awb_code || 'Assigned on Dispatch';
@@ -880,6 +1054,22 @@ const handleSingleShipmentPush = async (req, res) => {
     } catch (err) {
         const errMsg = err.response ? (err.response.data?.message || JSON.stringify(err.response.data)) : err.message;
         console.error('Retry/Push shipment error:', errMsg);
+
+        // If error was duplicate invoice and order already had a shipment ID, keep Booked!
+        const existingOrder = await Order.findOne({ id: orderId });
+        if (existingOrder && existingOrder.bigship_shipment_id && existingOrder.bigship_shipment_id !== 'Pending' && existingOrder.bigship_shipment_id !== 'N/A') {
+            await Order.updateOne(
+                { id: orderId },
+                { $set: { bigship_status: 'Booked', bigship_error: null } }
+            );
+            return res.json({
+                success: true,
+                message: `Order #${orderId} is confirmed and booked on BigShip Direct (Shipment ID: ${existingOrder.bigship_shipment_id})`,
+                shipment_id: existingOrder.bigship_shipment_id,
+                awb: existingOrder.bigship_awb || 'Assigned on Dispatch'
+            });
+        }
+
         if (Order && orderId) {
             await Order.updateOne(
                 { id: orderId },
@@ -908,9 +1098,6 @@ app.post('/api/push-selected-to-bigship', async (req, res) => {
             return res.status(404).json({ success: false, error: 'No matching orders found' });
         }
 
-        // Reset token once before batch
-        bigshipToken = null;
-
         const results = {
             total: orders.length,
             successCount: 0,
@@ -919,6 +1106,23 @@ app.post('/api/push-selected-to-bigship', async (req, res) => {
         };
 
         for (const order of orders) {
+            // If already booked with a valid BigShip shipment ID, mark Booked and record success!
+            if (order.bigship_shipment_id && order.bigship_shipment_id !== 'Pending' && order.bigship_shipment_id !== 'N/A') {
+                await Order.updateOne(
+                    { id: order.id },
+                    {
+                        $set: {
+                            bigship_status: 'Booked',
+                            bigship_error: null,
+                            bigship_awb: order.bigship_awb && order.bigship_awb !== 'Pending' ? order.bigship_awb : 'Assigned on Dispatch'
+                        }
+                    }
+                );
+                results.successCount++;
+                results.details.push({ id: order.id, status: 'Booked', shipment_id: order.bigship_shipment_id, awb: order.bigship_awb || 'Assigned on Dispatch' });
+                continue;
+            }
+
             try {
                 const booking = await bookBigshipOrder(order);
                 const assignedAwb = booking.awb_code || 'Assigned on Dispatch';
@@ -966,14 +1170,37 @@ app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
     try {
         const force = Boolean(req.body && (req.body.force === true || req.body.force === 'true'));
         const query = force ? {} : {
-            $or: [
-                { bigship_status: { $ne: 'Booked' } },
-                { bigship_status: { $exists: false } },
-                { bigship_awb: 'Pending' },
-                { bigship_awb: 'N/A' },
-                { bigship_awb: { $exists: false } }
+            $and: [
+                {
+                    $or: [
+                        { bigship_status: { $ne: 'Booked' } },
+                        { bigship_status: { $exists: false } }
+                    ]
+                },
+                {
+                    $or: [
+                        { bigship_shipment_id: 'Pending' },
+                        { bigship_shipment_id: 'N/A' },
+                        { bigship_shipment_id: { $exists: false } },
+                        { bigship_shipment_id: null }
+                    ]
+                }
             ]
         };
+
+        // If not force, first auto-heal any orders that have valid shipment IDs but were marked Failed
+        if (!force) {
+            await Order.updateMany(
+                {
+                    bigship_shipment_id: { $regex: /^[0-9]/ },
+                    bigship_status: { $ne: 'Booked' }
+                },
+                {
+                    $set: { bigship_status: 'Booked', bigship_error: null }
+                }
+            );
+        }
+
         const unbookedOrders = await Order.find(query).limit(100);
 
         if (unbookedOrders.length === 0) {
@@ -984,7 +1211,6 @@ app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
             });
         }
 
-        bigshipToken = null;
         const results = {
             total: unbookedOrders.length,
             successCount: 0,
@@ -993,6 +1219,23 @@ app.post('/api/push-all-unbooked-to-bigship', async (req, res) => {
         };
 
         for (const order of unbookedOrders) {
+            // If already has a valid shipment ID:
+            if (order.bigship_shipment_id && order.bigship_shipment_id !== 'Pending' && order.bigship_shipment_id !== 'N/A') {
+                await Order.updateOne(
+                    { id: order.id },
+                    {
+                        $set: {
+                            bigship_status: 'Booked',
+                            bigship_error: null,
+                            bigship_awb: order.bigship_awb && order.bigship_awb !== 'Pending' ? order.bigship_awb : 'Assigned on Dispatch'
+                        }
+                    }
+                );
+                results.successCount++;
+                results.details.push({ id: order.id, status: 'Booked', shipment_id: order.bigship_shipment_id, awb: order.bigship_awb || 'Assigned on Dispatch' });
+                continue;
+            }
+
             try {
                 const booking = await bookBigshipOrder(order);
                 const assignedAwb = booking.awb_code || 'Assigned on Dispatch';
@@ -1049,6 +1292,11 @@ app.get('/api/orders', async (req, res) => {
             } else if (typeof o.items === 'string') {
                 itemsSummary = o.items;
             }
+
+            const hasValidShipmentId = Boolean(o.bigship_shipment_id && o.bigship_shipment_id !== 'Pending' && o.bigship_shipment_id !== 'N/A');
+            const effectiveBigshipStatus = hasValidShipmentId ? 'Booked' : (o.bigship_status || 'Pending');
+            const effectiveBigshipError = hasValidShipmentId ? null : (o.bigship_error || null);
+
             return {
                 ...o,
                 id: o.id,
@@ -1069,8 +1317,9 @@ app.get('/api/orders', async (req, res) => {
                 bigship_awb: o.bigship_awb || o.bigshipAwb || 'N/A',
                 bigshipShipmentId: o.bigship_shipment_id || o.bigshipShipmentId || 'N/A',
                 bigship_shipment_id: o.bigship_shipment_id || o.bigshipShipmentId || 'N/A',
-                bigshipStatus: o.bigship_status || o.bigshipStatus || 'Pending',
-                bigship_status: o.bigship_status || o.bigshipStatus || 'Pending',
+                bigshipStatus: effectiveBigshipStatus,
+                bigship_status: effectiveBigshipStatus,
+                bigship_error: effectiveBigshipError,
                 shiprocketAwb: o.shiprocket_awb || o.bigship_awb || 'N/A',
                 createdAt: o.created_at ? new Date(o.created_at).getTime() : Date.now(),
                 date: o.created_at ? new Date(o.created_at).toLocaleDateString() : ''
@@ -1093,18 +1342,28 @@ app.post('/api/orders', async (req, res) => {
         const paymentLabel = isCod ? 'Cash on Delivery (COD)' : (orderData.payment_method || orderData.paymentMethod || 'Pre-paid (Razorpay)');
         const codFee = isCod ? (orderData.cod_fee !== undefined ? Number(orderData.cod_fee) : Math.round(Number(orderData.total_amount || 0) * 0.02)) : 0;
 
+        const orderItems = Array.isArray(orderData.items) ? orderData.items : [];
+        const addrParts = [orderData.address, orderData.city, orderData.state].filter(Boolean);
+        const formattedAddress = addrParts.length > 0 
+            ? `${addrParts.join(', ')}${orderData.pincode ? ' - ' + orderData.pincode : ''}` 
+            : (orderData.address || 'Delivery Address');
+
         const orderFields = {
             id: invoiceId,
             user_id: orderData.user_id || null,
             customer_name: orderData.name || orderData.customer_name || 'Customer',
             email: orderData.email || '',
             phone: orderData.phone || '',
-            address: orderData.address || '',
+            address: formattedAddress,
+            city: orderData.city || '',
+            state: orderData.state || '',
+            pincode: orderData.pincode || '',
             total_amount: Number(orderData.total_amount) || 0,
             subtotal: Number(orderData.subtotal) || (Number(orderData.total_amount) || 0),
             discount_amount: Number(orderData.discount_amount || orderData.discountAmount || 0),
             coupon_code: orderData.coupon_code || orderData.couponCode || null,
-            items: orderData.items,
+            items: orderItems.length > 0 ? orderItems : orderData.items,
+            rawItems: JSON.stringify(orderItems.length > 0 ? orderItems : orderData.items),
             status: orderData.status || 'Placed',
             payment_method: paymentLabel,
             paymentMethod: paymentLabel,
@@ -1113,6 +1372,7 @@ app.post('/api/orders', async (req, res) => {
             cod_fee: codFee,
             bigship_awb: orderData.bigship_awb || orderData.bigshipAwb || 'Pending',
             bigship_shipment_id: orderData.bigship_shipment_id || orderData.bigshipShipmentId || 'Pending',
+            bigship_status: orderData.bigship_status || 'Pending',
             shiprocket_awb: orderData.shiprocket_awb || orderData.shiprocketAwb || 'Pending',
             shiprocket_shipment_id: orderData.shiprocket_shipment_id || orderData.shiprocketShipmentId || 'Pending'
         };
@@ -1122,6 +1382,37 @@ app.post('/api/orders', async (req, res) => {
             { $set: orderFields },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+
+        // Background automatic push to BigShip so order is immediately sent
+        if (!orderFields.bigship_shipment_id || orderFields.bigship_shipment_id === 'Pending') {
+            setImmediate(async () => {
+                try {
+                    const booking = await bookBigshipOrder(orderFields);
+                    const assignedAwb = booking.awb_code || 'Assigned on Dispatch';
+                    await Order.updateOne(
+                        { id: invoiceId },
+                        {
+                            $set: {
+                                bigship_status: 'Booked',
+                                bigship_error: null,
+                                bigship_shipment_id: booking.shipment_id,
+                                bigship_awb: assignedAwb,
+                                shiprocket_awb: assignedAwb,
+                                shiprocket_shipment_id: booking.shipment_id
+                            }
+                        }
+                    );
+                    console.log(`Async BigShip auto-booking succeeded for order ${invoiceId}`);
+                } catch (bgErr) {
+                    console.warn(`Async BigShip auto-booking note for order ${invoiceId}:`, bgErr.message);
+                    await Order.updateOne(
+                        { id: invoiceId },
+                        { $set: { bigship_status: 'Failed', bigship_error: bgErr.message } }
+                    );
+                }
+            });
+        }
+
         res.json({ success: true, order: saved });
     } catch (err) {
         console.error('Error saving order directly:', err);
