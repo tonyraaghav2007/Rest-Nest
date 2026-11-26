@@ -49,9 +49,13 @@
     /**
      * Initialize PDP when DOM is ready
      */
-    document.addEventListener('DOMContentLoaded', function () {
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
         initSleepyCatPDP();
-    });
+    } else {
+        document.addEventListener('DOMContentLoaded', function () {
+            initSleepyCatPDP();
+        });
+    }
 
     // Also listen in case products data loaded asynchronously
     window.addEventListener('load', function () {
